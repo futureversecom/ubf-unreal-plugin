@@ -1,0 +1,1 @@
+Requires glTFRuntime plugin, can be downloaded and installed from here https://github.com/rdeioris/glTFRuntime

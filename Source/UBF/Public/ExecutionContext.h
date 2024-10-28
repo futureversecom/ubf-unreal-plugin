@@ -1,0 +1,149 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Dynamic.h"
+#include "Graph.h"
+#include "ubf_interpreter.h"
+#include "DataTypes/SceneNode.h"
+
+namespace UBF
+{
+	/**
+	 * Holds Unreal specific UserData for graph execution
+	 */
+	class FContextData
+	{
+	public:
+		~FContextData()
+		{
+			UE_LOG(LogUBF, Verbose, TEXT("Deleting FContextData"));
+			PinnedWorld->Release();
+			delete Root;
+		};
+
+		FString BlueprintId;
+		FSceneNode* Root;
+		IGraphProvider* GraphProvider;
+		ISubGraphResolver* SubGraphResolver;
+		UGCPin* PinnedWorld;
+		FGraphHandle Graph;
+		TFunction<void()> OnComplete;
+
+		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
+			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
+			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), SubGraphResolver(SubGraphResolver), Graph(Graph), OnComplete(MoveTemp(OnComplete))
+		{
+			if (Root->GetWorld())
+			{
+				PinnedWorld = UGCPin::Pin(Root->GetWorld());
+			}
+			else
+			{
+				UE_LOG(LogUBF, Error, TEXT("Root GetWorld is Invalid"));
+			}
+		}
+	};
+
+	// Implement macros as base so constructors can be overridden 
+	struct FExecutionHandleBase
+	{
+		IMPLEMENT_MANAGED_TYPE_CONSTRUCTOR(FExecutionHandleBase, FFI::ArcExecutionContext)
+		IMPLEMENT_MANAGED_TYPE(FExecutionHandleBase, FFI::ArcExecutionContext, ctx_release, ctx_retain)
+	};
+
+	/**
+	 * Handle for ExecutionContext that lives in rust.
+	 * Holds reference to FContextData which contains relevant unreal specific data
+	 *
+	 * Responsible for interfacing which the execution in rust, such as TriggerNext(), TryReadInput(), TryReadOutput() and WriteOutput()
+	 *
+	 * Handle can be copied, when the last handle goes out of scope and rust no longer references the value, it will be deleted
+	 */
+	struct UBF_API FExecutionContextHandle : public FExecutionHandleBase
+	{
+	public:
+		friend struct FGraphHandle;
+		friend struct FRegistryHandle;
+		
+		explicit FExecutionContextHandle(FFI::ArcExecutionContext* RustPtr)
+			: FExecutionHandleBase(RustPtr), DynamicContextData(CALL_RUST_FUNC(ctx_get_context_data)(RustPtr))
+		{
+			DynamicContextData.TryInterpretAs(this->ContextData);
+		}
+
+		FExecutionContextHandle() : FExecutionHandleBase(nullptr) {}
+
+		FSceneNode* GetRoot() const { return ContextData->Root; }
+		IGraphProvider* GetGraphProvider() const { return ContextData->GraphProvider; }
+		ISubGraphResolver* GetSubGraphResolver() const { return ContextData->SubGraphResolver; }
+		const FContextData* GetUserData() const { return ContextData; }
+
+		// Gets world from UserData Root
+		UWorld* GetWorld() const
+		{
+			check(this);
+			
+			if (ContextData == nullptr)
+				DynamicContextData.TryInterpretAs(ContextData);
+			
+			check(ContextData);
+			check(ContextData->Root);
+			return ContextData->Root->GetAttachmentComponent()->GetWorld();
+		}
+		
+		FString GetGraphID() const
+		{
+			return ContextData->BlueprintId;
+		}
+
+		void CompleteNode(const FFI::CompletionID CompletionID) const
+		{
+			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, CompletionID);
+		}
+
+		bool TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const;
+		
+		bool TryReadInput(FString const& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
+
+		// Use when DynamicValue is a pointer
+		template <class T>
+		bool TryReadInput(FString const& NodeId, const FString& PortKey, T*& Out) const;
+
+		// Use when DynamicValue is a value such as string, bool, int, float
+		template <typename T>
+		bool TryReadInputValue(FString const& NodeId, const FString& PortKey, T& Out) const;
+
+		// Use when DynamicValue is a pointer
+		template <class T>
+		bool TryReadInputArray(FString const& NodeId, const FString& PortKey, TArray<T*>& Out) const;
+
+		// Use when DynamicValue is a value such as string, bool, int, float
+		template <typename T>
+		bool TryReadInputValueArray(FString const& NodeId, const FString& PortKey, TArray<T>& Out) const;
+		
+		void TryGetResourcesWithFilter(const FString& Filter, TArray<FString>& FilteredResources) const;
+
+		bool TryReadOutput(const FString& BindingId, FDynamicHandle& Dynamic) const;
+		void WriteOutput(const FString& NodeId, const FString& PortKey, const FDynamicHandle& Dynamic) const;
+
+		/*
+		 * Used to retrieve generic data used in graph execution,
+		 * Eg ApplyMaterial uses it to find texture settings for a certain resource id
+		 */
+		bool GetDynamicDataEntry(const FString& Key, FDynamicHandle& DynamicHandle) const;
+		
+		/*
+		 * Used to store generic data used in graph execution,
+		 * Eg SetTextureSettings uses it apply texture settings to a certain resource id
+		 */
+		bool SetDynamicDataEntry(const FString& Key, const FDynamicHandle& DynamicHandle) const;
+
+		/* Get all inputs of a current node along with their values,
+		 * useful for executing blueprints which can have any number of inputs */
+		bool GetCurrentNodeInputs(const FString& NodeID, TMap<FString, FDynamicHandle>& InputMap) const;
+
+	private:
+		FDynamicHandle DynamicContextData = FDynamicHandle::Null();
+		mutable const FContextData* ContextData = nullptr;
+	};
+}
