@@ -53,7 +53,7 @@ void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FStrin
 		for (const auto AttachChild : Children)
 		{
 			TArray<AActor*> AttachedActorsChildren;
-			AttachChild->GetOwner()->GetAttachedActors(AttachedActorsChildren);
+			AttachChild->GetOwner()->GetAttachedActors(AttachedActorsChildren, false, true);
 			for (const auto AttachedActorChild : AttachedActorsChildren)
 			{
 				AttachedActorChild->Destroy();

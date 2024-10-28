@@ -179,6 +179,7 @@ namespace UBF
 		);
 		
 		InputMap.Append(*Context);
+		delete Context;
 		return bResult;
 	}
 
