@@ -1,6 +1,6 @@
 #pragma once
 #include "UBF.h"
-#include "ubf_interpreter.h"
+#include "UBF/Lib/ubf_interpreter.h"
 #include "UBFLog.h"
 
 #define IMPLEMENT_MANAGED_TYPE_CONSTRUCTOR(StructName, Type)                     \

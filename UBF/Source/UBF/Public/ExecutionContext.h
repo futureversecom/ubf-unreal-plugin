@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Dynamic.h"
 #include "Graph.h"
-#include "ubf_interpreter.h"
+#include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
 
 namespace UBF

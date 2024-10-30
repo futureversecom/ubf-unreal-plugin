@@ -4,7 +4,7 @@
 #include "Managed.h"
 #include "UBF.h"
 #include "UBFLog.h"
-#include "ubf_interpreter.h"
+#include "UBF/Lib/ubf_interpreter.h"
 
 namespace UBF
 {
