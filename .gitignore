@@ -47,6 +47,8 @@ SourceArt/**/*.tga
 
 !Binaries/Win64/ubf_interpreter.dll
 !Binaries/Win64/ubf_interpreter.lib
+!Source/UBF/Lib/ubf_interpreter.dll
+!Source/UBF/Lib/ubf_interpreter.lib
 # Binary Files
 Binaries/*
 Plugins/*/Binaries/*
