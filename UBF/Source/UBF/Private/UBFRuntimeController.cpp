@@ -73,6 +73,12 @@ void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FStrin
 	});
 }
 
+void UUBFRuntimeController::SetGraphProviders(IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver)
+{
+	CurrentGraphProvider = GraphProvider;
+	CurrentSubGraphResolver = SubGraphResolver;
+}
+
 void UUBFRuntimeController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);

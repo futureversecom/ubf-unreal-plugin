@@ -24,6 +24,9 @@ public:
 	void TryExecute(const FString& GraphId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
 		IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
 		UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete) const;
+
+	void SetGraphProviders(IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver);
+	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
