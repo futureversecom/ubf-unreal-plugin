@@ -39,8 +39,9 @@ void UBF::FCreateSceneNode::ExecuteAsync() const
 		UE_LOG(LogUBF, Warning, TEXT("New node's Parent wasn't provided. Attaching new node to ContextRoot"));
 		NewNode->AttachToComponent(GetContext().GetRoot()->GetAttachmentComponent(), FAttachmentTransformRules::KeepRelativeTransform, GetContext().GetRoot()->GetAttachmentSocket());
 	}
-	
+#if WITH_EDITOR
 	NewNode->SetActorLabel(NodeName, true);
+#endif
 	WriteOutput("Node", FDynamicHandle::ForeignHandled(new FSceneNode(NewNode->GetRootComponent())));
 	TriggerNext();
 	CompleteAsyncExecution();

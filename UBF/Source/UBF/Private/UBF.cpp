@@ -14,10 +14,11 @@ static void UELogCallback(const char* Bytes)
 
 void FUBFModule::StartupModule()
 {
-	const FString DLLName = "ubf_interpreter.dll";
+	const FString DLLPath = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("UBF/UBF"), TEXT("Binaries/Win64/ubf_interpreter.dll"));
+	UE_LOG(LogUBF, Log, TEXT("[UBF] Loading Plugin from %s"), *DLLPath);
 
 	UE_LOG(LogUBF, Log, TEXT("[UBF] Loading Plugin"));
-	DLLHandle = FPlatformProcess::GetDllHandle(*DLLName);
+	DLLHandle = FPlatformProcess::GetDllHandle(*DLLPath);
 	if (DLLHandle == nullptr)
 	{
 		UE_LOG(LogUBF, Error, TEXT("[UBF] Dll open failed"));

@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using UnrealBuildTool;
 
 public class UBF : ModuleRules
@@ -9,14 +11,12 @@ public class UBF : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				// ... add public include paths required here ...
-			}
-			);
-				
+		if(Target.Platform == UnrealTargetPlatform.Win64){
+			RuntimeDependencies.Add("$(TargetOutputDir)/../../Plugins/UBF/UBF/Binaries/Win64/ubf_interpreter.lib");
+			RuntimeDependencies.Add("$(TargetOutputDir)/../../Plugins/UBF/UBF/Binaries/Win64/ubf_interpreter.dll");
+		}
 		
-		PrivateIncludePaths.AddRange(
+		PublicIncludePaths.AddRange(
 			new string[] {
                 Path.Combine(ModuleDirectory, "Lib"),
                 Path.Combine(ModuleDirectory, "Nodes")
@@ -63,16 +63,6 @@ public class UBF : ModuleRules
 			{
                 Path.Combine(ModuleDirectory, "Lib/ubf_interpreter.lib")
 			}
-		);
-
-		RuntimeDependencies.Add(
-			"$(BinaryOutputDir)/ubf_interpreter.lib",
-			Path.Combine(ModuleDirectory, "Lib/ubf_interpreter.lib")
-		);
-
-		RuntimeDependencies.Add(
-			"$(BinaryOutputDir)/ubf_interpreter.dll",
-			Path.Combine(ModuleDirectory, "Lib/ubf_interpreter.dll")
 		);
     }
 }
