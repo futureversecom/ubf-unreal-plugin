@@ -9,8 +9,8 @@
 /**
  * 
  */
-UCLASS(Config=Game, defaultconfig, meta = (DisplayName = "UBF Material Settings"))
-class UBF_API UUBFMaterialSettings : public UDeveloperSettings
+UCLASS(Config=UBF, meta = (DisplayName = "UBF Material Settings"))
+class UBF_API UUBFMaterialSettings : public UObject
 {
 	GENERATED_BODY()
 public:

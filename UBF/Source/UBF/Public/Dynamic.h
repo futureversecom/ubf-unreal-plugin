@@ -139,7 +139,7 @@ namespace UBF
 			
 			if (CALL_RUST_FUNC(dynamic_as_string)(RustPtr, &OutStr, &OutPtr, &OutLen))
 			{
-				Out = FString(OutLen, OutPtr);
+				Out = FString::ConstructFromPtrSize(OutPtr, OutLen);
 				CALL_RUST_FUNC(box_release)(OutStr);
 				return true;
 			}
