@@ -6,7 +6,7 @@
 
 bool UBF::FSGPropertiesBase::ExecuteSync() const
 {
-	UE_LOG(LogUBF, Log, TEXT("UBF::FSGPropertiesBase::ExecuteSync"));
+	UE_LOG(LogUBF, Verbose, TEXT("[SGPropertiesBase] Executing Node"));
 	FShaderProperties* DecalProperties = new FShaderProperties();
 	DecalProperties->BaseShaderName = GetBaseShaderName();
 	AddProperties(DecalProperties->Properties);

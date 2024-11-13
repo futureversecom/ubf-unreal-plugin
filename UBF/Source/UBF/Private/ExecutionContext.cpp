@@ -53,6 +53,8 @@ namespace UBF
 			return false;
 		}
 
+		UE_LOG(LogUBF, VeryVerbose, TEXT("Read dynamic input value %s"), *Ptr.ToString());
+
 		return Ptr.TryInterpretAs(Out);
 	}
 
