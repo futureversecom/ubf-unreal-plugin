@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ExecutionContext.h"
 #include "UBFBindingObject.h"
 #include "Components/ActorComponent.h"
 #include "UBFRuntimeController.generated.h"
@@ -32,4 +33,5 @@ public:
 private:
 	mutable IGraphProvider* CurrentGraphProvider;
 	mutable ISubGraphResolver* CurrentSubGraphResolver;
+	UBF::FExecutionContextHandle LastExecutionContext;
 };

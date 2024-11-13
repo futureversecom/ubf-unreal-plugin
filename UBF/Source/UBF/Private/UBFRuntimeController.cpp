@@ -13,7 +13,6 @@ void UUBFRuntimeController::ExecuteGraph(FString GraphId, const TMap<FString, UU
 
 	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::ExecuteGraph: %s Num Inputs: %d"), *GraphId, InputMap.Num());
 	
-	UBF::FExecutionContextHandle ExecutionContext;
 	TMap<FString, UBF::FDynamicHandle> Inputs;
 
 	for (const auto& InputPair : InputMap)
@@ -22,7 +21,7 @@ void UUBFRuntimeController::ExecuteGraph(FString GraphId, const TMap<FString, UU
 		Inputs.Add(InputPair.Key, InputPair.Value->GetDynamicFromValue());
 	}
 	
-	TryExecute(GraphId, Inputs, CurrentGraphProvider, CurrentSubGraphResolver, ExecutionContext, OnComplete);
+	TryExecute(GraphId, Inputs, CurrentGraphProvider, CurrentSubGraphResolver, LastExecutionContext, OnComplete);
 }
 
 void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
