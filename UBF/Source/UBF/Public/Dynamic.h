@@ -139,7 +139,6 @@ namespace UBF
 			
 			if (CALL_RUST_FUNC(dynamic_as_string)(RustPtr, &OutStr, &OutPtr, &OutLen))
 			{
-				UE_LOG(LogUBF, VeryVerbose, TEXT("Converting dynamic_as_string values to FString OutLen %llu"), OutLen);
 				Out = OutLen == 0 ? FString() : FString::ConstructFromPtrSize(OutPtr, OutLen);
 				CALL_RUST_FUNC(box_release)(OutStr);
 				return true;
