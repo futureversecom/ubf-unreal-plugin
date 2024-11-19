@@ -139,7 +139,11 @@ namespace UBF
 			
 			if (CALL_RUST_FUNC(dynamic_as_string)(RustPtr, &OutStr, &OutPtr, &OutLen))
 			{
+#if ENGINE_MAJOR_VERSION==5 && ENGINE_MINOR_VERSION > 3
 				Out = OutLen == 0 ? FString() : FString::ConstructFromPtrSize(OutPtr, OutLen);
+#else
+				Out = OutLen == 0 ? FString() : FString(OutLen, OutPtr);
+#endif
 				CALL_RUST_FUNC(box_release)(OutStr);
 				return true;
 			}

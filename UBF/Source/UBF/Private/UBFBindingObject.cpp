@@ -3,6 +3,8 @@
 
 #include "UBFBindingObject.h"
 
+#include "UBFUtils.h"
+
 FString UUBFBindingObject::DynamicToString(const UBF::FDynamicHandle& DynamicHandle) const
 {
 	FString InputValue;
@@ -43,27 +45,5 @@ FString UUBFBindingObject::DynamicToString(const UBF::FDynamicHandle& DynamicHan
 
 UBF::FDynamicHandle UUBFBindingObject::DynamicToString(const FString& InputValue) const
 {
-	if (BindingInfo.Type == "string")
-	{
-		return UBF::FDynamicHandle::String(InputValue);
-	}
-	if (BindingInfo.Type == "int")
-	{
-		return UBF::FDynamicHandle::Int(FCString::Atoi(*InputValue));
-	}
-	if (BindingInfo.Type == "Color")
-	{
-		return UBF::FDynamicHandle::String(InputValue);
-	}
-	if (BindingInfo.Type == "float")
-	{
-		return UBF::FDynamicHandle::Float(FCString::Atof(*InputValue));
-	}
-	if (BindingInfo.Type == "boolean")
-	{
-		return UBF::FDynamicHandle::Bool(InputValue == "true");
-	}
-
-	UE_LOG(LogUBF, Warning, TEXT("Failed to convert input to dynamic for Id:%s Type: %s"), *BindingInfo.Id, *BindingInfo.Type);
-	return UBF::FDynamicHandle::Null();
+	return UBFUtils::CreateNewDynamicHandle(BindingInfo.Type, InputValue);
 }

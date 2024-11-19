@@ -19,4 +19,31 @@ namespace UBFUtils
 		}
 		return Result;
 	}
+
+	inline UBF::FDynamicHandle CreateNewDynamicHandle(const FString& Type, const FString& Value)
+	{
+		if (Type == "string")
+		{
+			return UBF::FDynamicHandle::String(Value);
+		}
+		if (Type == "int")
+		{
+			return UBF::FDynamicHandle::Int(FCString::Atoi(*Value));
+		}
+		if (Type == "Color")
+		{
+			return UBF::FDynamicHandle::String(Value);
+		}
+		if (Type == "float")
+		{
+			return UBF::FDynamicHandle::Float(FCString::Atof(*Value));
+		}
+		if (Type == "boolean")
+		{
+			return UBF::FDynamicHandle::Bool(Value == "true");
+		}
+
+		UE_LOG(LogUBF, Warning, TEXT("Failed to create new dynamic for Type:%s Value: %s"), *Type, *Value);
+		return UBF::FDynamicHandle::Null();
+	}
 }
