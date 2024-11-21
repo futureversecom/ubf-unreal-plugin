@@ -124,6 +124,7 @@ namespace UBF
 			FDynamicHandle Dynamic = FDynamicHandle(DynamicPtr);
 			UE_LOG(LogUBF, Verbose, TEXT("Output Id: %s"), *IdString);
 			UE_LOG(LogUBF, Verbose, TEXT("Output Type: %s"), *TypeString);
+			UE_LOG(LogUBF, Verbose, TEXT("Output Value: %s"), *Dynamic.ToString());
 			
 			Outputs->Add(FBindingInfo(IdString, TypeString, Dynamic));
 

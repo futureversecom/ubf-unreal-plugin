@@ -188,6 +188,11 @@ namespace UBF
 	bool FExecutionContextHandle::TryReadOutput(const FString& BindingId, FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;
+		if (!RustPtr)
+		{
+			UE_LOG(LogUBF, Warning, TEXT("FExecutionContextHandle::TryReadOutput RustPtr is invalid %s"), *BindingId);
+			return false;
+		}
 		if (!CALL_RUST_FUNC(ctx_read_output)(
 			RustPtr,
 			TCHAR_TO_UTF16(*BindingId),
