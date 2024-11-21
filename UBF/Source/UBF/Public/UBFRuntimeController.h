@@ -27,7 +27,8 @@ public:
 		UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete) const;
 
 	void SetGraphProviders(IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver);
-	
+
+	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:

@@ -78,6 +78,14 @@ void UUBFRuntimeController::SetGraphProviders(IGraphProvider* GraphProvider, ISu
 	CurrentSubGraphResolver = SubGraphResolver;
 }
 
+void UUBFRuntimeController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (RootComponent == nullptr)
+		RootComponent = GetOwner()->GetRootComponent();
+}
+
 void UUBFRuntimeController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
