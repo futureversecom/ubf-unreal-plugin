@@ -7,6 +7,11 @@
 *.o
 *.obj
 
+!Binaries/Win64/ubf_interpreter.dll
+!Binaries/Win64/ubf_interpreter.lib
+!Source/UBF/Lib/ubf_interpreter.dll
+!Source/UBF/Lib/ubf_interpreter.lib
+
 # Precompiled Headers
 *.gch
 *.pch
@@ -45,13 +50,18 @@
 SourceArt/**/*.png
 SourceArt/**/*.tga
 
-!UBF/Binaries/Win64/ubf_interpreter.dll
-!UBF/Binaries/Win64/ubf_interpreter.lib
-!UBF/Source/UBF/Lib/ubf_interpreter.dll
-!UBF/Source/UBF/Lib/ubf_interpreter.lib
 # Binary Files
 Binaries/*
 Plugins/*/Binaries/*
+Binaries/Win64/*
+
+
+!Binaries/
+!Binaries/Win64/
+!Binaries/Win64/ubf_interpreter.dll
+!Binaries/Win64/ubf_interpreter.lib
+!Source/UBF/Lib/ubf_interpreter.dll
+!Source/UBF/Lib/ubf_interpreter.lib
 
 # Builds
 Build/*
