@@ -5,6 +5,22 @@
 
 namespace UBF
 {
+	void FContextData::SetReadyToComplete() const
+	{
+		bIsReadyToComplete = true;
+
+		if (bIsReadyToComplete && bIsComplete)
+			OnComplete();
+	}
+
+	void FContextData::SetComplete() const
+	{
+		bIsComplete = true;
+
+		if (bIsReadyToComplete && bIsComplete)
+			OnComplete();
+	}
+
 	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const
 	{
 		return CALL_RUST_FUNC(ctx_trigger_node)(

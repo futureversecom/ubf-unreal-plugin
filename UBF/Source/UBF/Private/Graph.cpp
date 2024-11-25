@@ -35,7 +35,7 @@ namespace UBF
 				UE_LOG(LogUBF, Warning, TEXT("Failed to set input with key %s into DynamicMap"), *Tuple.Key);
 		}
 
-		Handle = FExecutionContextHandle(CALL_RUST_FUNC(graph_execute)(
+		FExecutionContextHandle TempHandle(CALL_RUST_FUNC(graph_execute)(
 			RustPtr,
 			DynamicMap.GetRustPtr(),
 			ParentNode ? ParentNode->GetRustContext() : nullptr,
@@ -44,6 +44,9 @@ namespace UBF
 			DynamicUserData.GetRustPtr(),
 			&FGraphHandle::OnComplete
 		));
+
+		Handle = TempHandle;
+		ContextData->SetReadyToComplete();
 	}
 	
 	void FGraphHandle::OnComplete(FFI::Dynamic* RawUserData)
@@ -55,7 +58,7 @@ namespace UBF
 		
 		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
 		{
-			ContextUserData->OnComplete();
+			ContextUserData->SetComplete();
 		}
 		else
 		{

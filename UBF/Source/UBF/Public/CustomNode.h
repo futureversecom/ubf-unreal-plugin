@@ -115,7 +115,7 @@ namespace UBF
 			return Context.GetGraphID();
 		}
 
-		FExecutionContextHandle GetContext() const
+		const FExecutionContextHandle& GetContext() const
 		{
 			return Context;
 		}

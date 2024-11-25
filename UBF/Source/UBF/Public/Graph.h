@@ -74,6 +74,7 @@ namespace UBF
 		void GetInputs(TArray<FBindingInfo>& Inputs) const;
 
 	private:
+	
 		mutable FString CachedId;
 	};
 }

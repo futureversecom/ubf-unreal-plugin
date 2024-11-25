@@ -29,6 +29,8 @@ namespace UBF
 		FGraphHandle Graph;
 		TFunction<void()> OnComplete;
 
+
+
 		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
 			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
 			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), SubGraphResolver(SubGraphResolver), Graph(Graph), OnComplete(MoveTemp(OnComplete))
@@ -42,6 +44,13 @@ namespace UBF
 				UE_LOG(LogUBF, Error, TEXT("Root GetWorld is Invalid"));
 			}
 		}
+
+		void SetReadyToComplete() const;
+		void SetComplete() const;
+
+	private:
+		mutable bool bIsReadyToComplete = false;
+		mutable bool bIsComplete = false;
 	};
 
 	// Implement macros as base so constructors can be overridden 
