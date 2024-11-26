@@ -28,8 +28,11 @@ namespace UBF
 		if (!TryReadInput("Parent", ParentInput))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("[SpawnMesh] Failed to Read 'Parent' Input"));
-			HandleFailureFinish();
-			return;
+
+			// todo: disabling this temporarily for the demo
+			//HandleFailureFinish();
+			//return;
+			ParentInput = GetRoot();
 		}
 
 		FMeshConfig* MeshConfig = nullptr;
