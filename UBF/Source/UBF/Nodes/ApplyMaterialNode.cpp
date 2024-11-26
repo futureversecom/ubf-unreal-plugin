@@ -152,6 +152,7 @@ namespace UBF
 			{
 				if (!TextureResult.Result.Key)
 				{
+					UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
 					Promise->SetValue(false);
 					return;
 				}
@@ -159,6 +160,14 @@ namespace UBF
 				UTexture* Texture = TextureResult.Result.Value;
 				if (Texture == nullptr)
 				{
+					UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture was null"));
+					Promise->SetValue(false);
+					return;
+				}
+
+				if (!IsValid(Mat))
+				{
+					UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Applying Texture Property failed because Mat was no longer valid"));
 					Promise->SetValue(false);
 					return;
 				}
