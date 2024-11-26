@@ -294,6 +294,21 @@ namespace UBF
 			return TEXT("Invalid");
 		}
 
+		FString GetTypeString() const
+		{
+			switch (Type)
+			{
+				case FFI::DynamicType::Unknown:    return "unknown";
+				case FFI::DynamicType::Bool:       return "bool";
+				case FFI::DynamicType::Int:        return "int";
+				case FFI::DynamicType::Float:      return "float";
+				case FFI::DynamicType::String:     return "string";
+				case FFI::DynamicType::Array:      return "array";
+				case FFI::DynamicType::Dictionary: return "dictionary";
+				case FFI::DynamicType::Foreign:    return "foreign";
+				default:                      return "invalid";
+			}
+		}
 
 	private:
 		static void OnComplete(intptr_t Pointer);

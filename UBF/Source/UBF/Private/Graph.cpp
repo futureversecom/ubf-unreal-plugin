@@ -125,9 +125,9 @@ namespace UBF
 			FString IdString = UBFUtils::FromBytesToString(Id, IdLen);
 			FString TypeString = UBFUtils::FromBytesToString(Type, TypeLen);
 			FDynamicHandle Dynamic = FDynamicHandle(DynamicPtr);
-			UE_LOG(LogUBF, Verbose, TEXT("Output Id: %s"), *IdString);
-			UE_LOG(LogUBF, Verbose, TEXT("Output Type: %s"), *TypeString);
-			UE_LOG(LogUBF, Verbose, TEXT("Output Value: %s"), *Dynamic.ToString());
+			UE_LOG(LogUBF, VeryVerbose, TEXT("Output Id: %s"), *IdString);
+			UE_LOG(LogUBF, VeryVerbose, TEXT("Output Type: %s"), *TypeString);
+			UE_LOG(LogUBF, VeryVerbose, TEXT("Output Value: %s"), *Dynamic.ToString());
 			
 			Outputs->Add(FBindingInfo(IdString, TypeString, Dynamic));
 

@@ -120,21 +120,6 @@ namespace UBF
 		return true;
 	}
 
-	void FExecutionContextHandle::TryGetResourcesWithFilter(const FString& Filter, TArray<FString>& FilteredResources) const
-	{
-		// TODO: reimplement this after refactor
-		// TArray<FString> GraphResources;
-		// UserData->Graph.GetResources(GraphResources);
-		//
-		// for (auto& ResourceInfo : GraphResources)
-		// {
-		// 	
-		// 	if (!ResourceInfo.Uri.ToLower().Contains(Filter)) continue;
-		//
-		// 	FilteredResources.Add(ResourceInfo);
-		// }
-	}
-
 	void FExecutionContextHandle::WriteOutput(const FString& NodeId, const FString& PortKey, const FDynamicHandle& Dynamic) const
 	{
 		CALL_RUST_FUNC(ctx_write_output)(

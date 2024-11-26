@@ -25,14 +25,24 @@ namespace UBF
 			return;
 		}
 		
-		TMap<FString, FDynamicHandle> NodeInputs;
-		GetContext().GetCurrentNodeInputs(GetNodeId(), NodeInputs);
+		TMap<FString, FDynamicHandle> ExpectedInputs;
+		GetContext().GetCurrentNodeInputs(GetNodeId(), ExpectedInputs);
+		TMap<FString, FDynamicHandle> ActualInputs;
+
+		for (auto ExpectedInput : ExpectedInputs)
+		{
+			FDynamicHandle DynamicOutput;
+			if (TryReadInput(ExpectedInput.Key, DynamicOutput))
+			{
+				ActualInputs.Add(ExpectedInput.Key, DynamicOutput);
+			}
+		}
 		
-		UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] NodeInputs Count %d for Key: %s"), NodeInputs.Num(), *Key);
+		UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] NodeInputs Count %d for Key: %s"), ExpectedInputs.Num(), *Key);
 		
 		TMap<FString, FDynamicHandle> ResolvedInputs;
 		FString BlueprintId;
-		if (!GetContext().GetSubGraphResolver()->TryResolveSubGraph(Key, NodeInputs, BlueprintId, ResolvedInputs))
+		if (!GetContext().GetSubGraphResolver()->TryResolveSubGraph(Key, ActualInputs, BlueprintId, ResolvedInputs))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] Unable to resolve subgraph for key %s"), *Key);
 			TriggerNext();
