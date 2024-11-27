@@ -13,7 +13,7 @@ void UBF::FCreateSceneNode::ExecuteAsync() const
 	FString NodeName = "NewSceneNode";
 	if (!TryReadInputValue("Name", NodeName))
 	{
-		UE_LOG(LogUBF, Warning, TEXT("Failed to Read Name Input"));
+		UE_LOG(LogUBF, Warning, TEXT("[CreateSceneNode] Failed to Read Name Input"));
 		TriggerNext();
 		CompleteAsyncExecution();
 		return;
@@ -21,7 +21,7 @@ void UBF::FCreateSceneNode::ExecuteAsync() const
 	
 	if (!GetWorld())
 	{
-		UE_LOG(LogUBF, Error, TEXT("CreateSceneNode GetWorld() is invalid"));
+		UE_LOG(LogUBF, Error, TEXT("[CreateSceneNode] GetWorld() is invalid"));
 
 		TriggerNext();
 		CompleteAsyncExecution();
@@ -36,11 +36,14 @@ void UBF::FCreateSceneNode::ExecuteAsync() const
 	}
 	else
 	{
-		UE_LOG(LogUBF, Warning, TEXT("New node's Parent wasn't provided. Attaching new node to ContextRoot"));
+		UE_LOG(LogUBF, Warning, TEXT("[CreateSceneNode] New node's Parent wasn't provided. Attaching new node to ContextRoot"));
 		NewNode->AttachToComponent(GetContext().GetRoot()->GetAttachmentComponent(), FAttachmentTransformRules::KeepRelativeTransform, GetContext().GetRoot()->GetAttachmentSocket());
 	}
 #if WITH_EDITOR
-	NewNode->SetActorLabel(NodeName, true);
+	if(!NodeName.IsEmpty())
+	{
+		NewNode->SetActorLabel(NodeName, true);
+	}
 #endif
 	WriteOutput("Node", FDynamicHandle::ForeignHandled(new FSceneNode(NewNode->GetRootComponent())));
 	TriggerNext();

@@ -12,13 +12,13 @@ namespace UBF
 
 	private:
 		TFuture<bool> EvaluateProperty(const TTuple<FString, FShaderPropertyValue>& Prop,
-		                                      UMaterialInstanceDynamic* Mat) const;
+		                                      TWeakObjectPtr<UMaterialInstanceDynamic> Mat) const;
 
 		void CheckFuturesComplete(bool bWasSuccessful) const;
 
 		mutable int AwaitingFutures = 0;
 		mutable UMeshComponent* WorkingMeshRenderer = nullptr;
-		mutable UMaterialInstanceDynamic* WorkingMaterialInstance = nullptr;
+		mutable TWeakObjectPtr<UMaterialInstanceDynamic> WorkingMaterialInstance = nullptr;
 	};
 }
 

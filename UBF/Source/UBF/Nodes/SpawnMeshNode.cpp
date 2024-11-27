@@ -54,7 +54,7 @@ namespace UBF
 			return;
 		}
 		
-		GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
+		GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadDataArrayResult Result)
 		{
 			if (!Result.Result.Key)
 			{
@@ -63,9 +63,21 @@ namespace UBF
 				return;
 			}
 			
-			const auto MeshAsset = Result.Result.Value;
+			const auto MeshData = Result.Result.Value;
+			FglTFRuntimeConfig LoaderConfig = MeshConfigData.RuntimeConfig;
+			
+			UglTFRuntimeAsset* Asset = NewObject<UglTFRuntimeAsset>();
+			Asset->RuntimeContextObject = LoaderConfig.RuntimeContextObject;
+			Asset->RuntimeContextString = LoaderConfig.RuntimeContextString;
 
-			if (!MeshAsset)
+			if (!Asset->LoadFromData(MeshData.GetData(), MeshData.Num(), LoaderConfig))
+			{
+				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] Failed to Load Mesh from Data %s"), *ResourceID);
+				HandleFailureFinish();
+				return;
+			}
+			
+			if (!Asset)
 			{
 				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
 				HandleFailureFinish();
@@ -78,7 +90,7 @@ namespace UBF
 			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
 			const auto SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
-			SpawnedActor->Asset = MeshAsset;
+			SpawnedActor->Asset = Asset;
 			SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
 			SpawnedActor->FinishSpawning(FTransform::Identity);
 				

@@ -74,14 +74,14 @@ namespace UBF
 		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Material %s to MeshComponent %s"),*WorkingMaterialInstance->GetName(), *WorkingMeshRenderer->GetName());
 
 		// todo: find right element index
-		WorkingMeshRenderer->SetMaterial(0, WorkingMaterialInstance);
+		WorkingMeshRenderer->SetMaterial(0, WorkingMaterialInstance.Get());
 		
 		TriggerNext();
 		CompleteAsyncExecution();
 	}
 
 	TFuture<bool> FApplyMaterialNode::EvaluateProperty(const TTuple<FString, FShaderPropertyValue>& Prop,
-	                                                   UMaterialInstanceDynamic* Mat) const
+	                                                   TWeakObjectPtr<UMaterialInstanceDynamic> Mat) const
 	{
 		TSharedPtr<TPromise<bool>> Promise = MakeShareable(new TPromise<bool>());
 		TFuture<bool> Future = Promise->GetFuture();
@@ -140,7 +140,7 @@ namespace UBF
 			UTexture* TestValue;
 			if (!Mat->GetTextureParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Texture Property: %s not found from Material"), *Prop.Key);
+				UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Texture Property: %s not found from Material"), *Prop.Key);
 				Promise->SetValue(false);
 				return Future;
 			}
@@ -165,7 +165,7 @@ namespace UBF
 					return;
 				}
 
-				if (!IsValid(Mat))
+				if (!IsValid(Mat.Get()))
 				{
 					UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Applying Texture Property failed because Mat was no longer valid"));
 					Promise->SetValue(false);

@@ -13,6 +13,9 @@ struct UBF_API FMeshConfigData
 	
 	UPROPERTY(EditAnywhere)
 	FglTFRuntimeSkeletalMeshConfig SkeletalMeshConfig;
+	
+	UPROPERTY(EditAnywhere)
+	FglTFRuntimeConfig RuntimeConfig;
 };
 
 namespace UBF

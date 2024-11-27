@@ -36,7 +36,7 @@ public:
 	
 	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& BlueprintId, const FString& ResourceId) = 0;
 	
-	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& BlueprintId, const FString& ResourceId) = 0;
+	virtual TFuture<UBF::FLoadDataArrayResult> GetMeshResource(const FString& BlueprintId, const FString& ResourceId) = 0;
 
 	virtual ~IGraphProvider() {}
 };
@@ -79,13 +79,13 @@ public:
 		return Future;
 	}
 
-	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& BlueprintId, const FString& ResourceId) override
+	virtual TFuture<UBF::FLoadDataArrayResult> GetMeshResource(const FString& BlueprintId, const FString& ResourceId) override
 	{
-		TSharedPtr<TPromise<UBF::FLoadMeshResult>> Promise = MakeShareable(new TPromise<UBF::FLoadMeshResult>());
-		TFuture<UBF::FLoadMeshResult> Future = Promise->GetFuture();
-		UBF::FLoadMeshResult LoadResult;
-		
-		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(false, nullptr);
+		TSharedPtr<TPromise<UBF::FLoadDataArrayResult>> Promise = MakeShareable(new TPromise<UBF::FLoadDataArrayResult>());
+		TFuture<UBF::FLoadDataArrayResult> Future = Promise->GetFuture();
+		UBF::FLoadDataArrayResult LoadResult;
+		TArray<uint8> Data;
+		LoadResult.Result = TPair<bool, TArray<uint8>>(false, Data);
 
 		Promise->SetValue(LoadResult);
 		
