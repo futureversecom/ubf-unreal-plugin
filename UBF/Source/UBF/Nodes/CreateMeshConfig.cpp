@@ -22,7 +22,7 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	check(Settings);
 	FMeshConfigData MeshConfigData = Settings->GetMeshConfigData(ResourceID);
 	
-	GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, MeshConfigData, ResourceID](const FLoadDataArrayResult Result)
+	GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, MeshConfigData, ResourceID](const FLoadDataArrayResult& Result)
 	{
 		FMeshConfigData MutableMeshConfig = MeshConfigData;
 		
@@ -48,13 +48,13 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 			MutableMeshConfig.SkeletalMeshConfig.bOverwriteRefSkeleton = true;
 		}
 		
-		Complete(MeshConfigData);
+		Complete(MutableMeshConfig);
 	});
 }
 
 void UBF::FCreateMeshConfig::Complete(const FMeshConfigData& MeshConfigData) const
 {
-	WriteOutput("Config", FDynamicHandle::ForeignHandled(new FMeshConfig(MeshConfigData)));
+	WriteOutput("MeshConfig", FDynamicHandle::ForeignHandled(new FMeshConfig(MeshConfigData)));
 	TriggerNext();
 	CompleteAsyncExecution();
 }

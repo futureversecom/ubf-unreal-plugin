@@ -37,13 +37,14 @@ namespace UBF
 
 		FMeshConfig* MeshConfig = nullptr;
 		FMeshConfigData MeshConfigData;
-		if (!TryReadInput("MeshConfig", MeshConfig))
+		if (!TryReadInput("Config", MeshConfig))
 		{
 			UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] no MeshConfig provided, using default mesh config"));
 			MeshConfigData = GetDefault<UUBFMeshConfigSettings>()->GetMeshConfigData();
 		}
 		else
 		{
+			UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] found meshconfig override"));
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
