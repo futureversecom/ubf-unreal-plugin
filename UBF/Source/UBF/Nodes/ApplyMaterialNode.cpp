@@ -106,7 +106,7 @@ namespace UBF
 			float TestValue;
 			if (!Mat->GetScalarParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Bool Property: %s not found from Material"), *Prop.Key);
+				UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Bool Property: %s not found from Material"), *Prop.Key);
 			}
 			
 			Mat->SetScalarParameterValue(*Prop.Key, Value);
@@ -152,7 +152,7 @@ namespace UBF
 			{
 				if (!TextureResult.Result.Key)
 				{
-					UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
+					UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
 					Promise->SetValue(false);
 					return;
 				}
