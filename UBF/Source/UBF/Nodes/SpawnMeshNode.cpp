@@ -93,6 +93,11 @@ namespace UBF
 			const auto SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
 			SpawnedActor->Asset = Asset;
 			SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
+			
+			SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
+			SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;
+			SpawnedActor->bAllowSkeletalAnimations = MeshConfigData.bLoadAnimation;
+			SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->FinishSpawning(FTransform::Identity);
 				
 			// assuming that if the parent is a child transform, it's a bone transform

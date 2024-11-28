@@ -16,6 +16,9 @@ struct UBF_API FMeshConfigData
 	
 	UPROPERTY(EditAnywhere)
 	FglTFRuntimeConfig RuntimeConfig;
+
+	UPROPERTY(EditAnywhere)
+	bool bLoadAnimation = false;
 };
 
 namespace UBF
