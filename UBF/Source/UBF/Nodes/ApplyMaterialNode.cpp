@@ -70,7 +70,13 @@ namespace UBF
 		AwaitingFutures--;
 
 		if (AwaitingFutures > 0) return;
-
+		// if game shuts down while still waiting, it will be invalid
+		if (!WorkingMaterialInstance.Get() || !WorkingMeshRenderer)
+		{
+			TriggerNext();
+			CompleteAsyncExecution();
+			return;
+		}
 		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Material %s to MeshComponent %s"),*WorkingMaterialInstance->GetName(), *WorkingMeshRenderer->GetName());
 
 		// todo: find right element index
