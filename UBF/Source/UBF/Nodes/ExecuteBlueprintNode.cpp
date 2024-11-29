@@ -57,6 +57,8 @@ namespace UBF
 			if (!Result.Result.Key)
 			{
 				UE_LOG(LogUBF, Error, TEXT("[ExecuteBlueprintNode] Aborting execution: graph '%s' is invalid"), *BlueprintId);
+				TriggerNext();
+				CompleteAsyncExecution();
 				return;
 			}
 			
