@@ -19,7 +19,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* RootComponent;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta = (AutoCreateRefTerm = "OnComplete"))
 	void ExecuteGraph(FString GraphId, const TMap<FString, UUBFBindingObject*>& InputMap, const FOnComplete& OnComplete);
 	
 	void TryExecute(const FString& GraphId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
