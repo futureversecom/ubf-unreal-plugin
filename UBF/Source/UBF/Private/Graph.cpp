@@ -1,7 +1,6 @@
 #include "Graph.h"
 
 #include "Dynamic.h"
-#include "GraphProvider.h"
 #include "Registry.h"
 #include "SubGraphResolver.h"
 #include "UBF.h"
@@ -14,7 +13,7 @@ namespace UBF
 		const FString& BlueprintId,
 		USceneComponent* Root,
 		IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
-		const TMap<FString, FDynamicHandle>& Inputs, const FCustomNode* ParentNode,
+		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
@@ -38,9 +37,6 @@ namespace UBF
 		FExecutionContextHandle TempHandle(CALL_RUST_FUNC(graph_execute)(
 			RustPtr,
 			DynamicMap.GetRustPtr(),
-			ParentNode ? ParentNode->GetRustContext() : nullptr,
-			ParentNode ? TCHAR_TO_UTF16(*ParentNode->GetNodeId()) : nullptr,
-			ParentNode ? ParentNode->GetNodeId().Len() : 0,
 			DynamicUserData.GetRustPtr(),
 			&FGraphHandle::OnComplete
 		));
@@ -80,34 +76,6 @@ namespace UBF
 		
 		Graph = FGraphHandle(RustPtr);
 		return true;
-	}
-	
-	void FGraphHandle::GetResources(TArray<FString>& Resources) const
-	{
-		check(this);
-		check(IsInGameThread());
-
-		auto Context = new TArray<FString>();
-
-		auto ResourcesIterator = [](intptr_t Context, const uint8_t* Id, int32_t IdLen) -> bool
-		{
-			auto Resources = reinterpret_cast<TArray<FString>*>(Context);
-			
-			FString IdString = UBFUtils::FromBytesToString(Id, IdLen);
-			
-			UE_LOG(LogUBF, VeryVerbose, TEXT("Resource Id: %s"), *IdString);
-			
-			Resources->Add(IdString);
-
-			return true;
-		};
-	
-		CALL_RUST_FUNC(graph_iter_resources)(RustPtr, reinterpret_cast<intptr_t>(Context), ResourcesIterator);
-		
-		Resources.Append(*Context);
-		
-		// Clean up the context
-		delete Context;
 	}
 
 	void FGraphHandle::GetOutputs(TArray<FBindingInfo>& Outputs) const
@@ -169,5 +137,19 @@ namespace UBF
 		Inputs.Append(*Context);
 		
 		delete Context;
+	}
+
+	FGraphVersion FGraphHandle::GetGraphVersion() const
+	{
+		if (CachedVersion.IsValid()) return CachedVersion;
+		
+		FString OutString;
+		uintptr_t OutStringLen;
+		const uint16_t* OutStringPtr = TCHAR_TO_UTF16(*OutString);
+		CALL_RUST_FUNC(graph_version)(RustPtr, &OutStringPtr, &OutStringLen);
+		const FString VersionString = UBFUtils::FromBytesToString(OutStringPtr, OutStringLen);
+
+		CachedVersion = FGraphVersion(VersionString);
+		return CachedVersion;
 	}
 }

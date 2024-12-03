@@ -47,6 +47,63 @@ namespace UBF
 			return FString::Printf(TEXT("Id: %s Uri: %s"), *Id, *Uri);
 		}
 	};
+
+	struct FGraphVersion
+	{
+		FGraphVersion() {}
+		FGraphVersion(const FString& VersionString)
+		{
+			const auto Version = FromString(VersionString);
+			Major = Version.Get<0>();
+			Minor = Version.Get<1>();
+			Patch = Version.Get<2>();
+		}
+
+		bool IsValid() const
+		{
+			return Major > -1 && Minor > -1 && Patch > -1;
+		}
+		
+		FString ToString() const
+		{
+			return FString::Printf(TEXT("%d.%d.%d"), Major, Minor, Patch);
+		}
+
+		bool operator<=>(const FGraphVersion& Other) const
+		{
+			const auto OtherVersion = FromString(Other.ToString());
+			return Major > OtherVersion.Get<0>()
+				|| (Major == OtherVersion.Get<0>() && Minor > OtherVersion.Get<1>())
+				|| (Major == OtherVersion.Get<0>() && Minor == OtherVersion.Get<1>() && Patch >= OtherVersion.Get<2>());
+		}
+		
+	private:
+		static TTuple<int32,int32,int32> FromString(const FString& VersionString)
+		{
+			TArray<FString> Parts;
+			VersionString.ParseIntoArray(Parts, TEXT(","),true);
+
+		 	TTuple<int32,int32,int32> Version;
+			if(Parts.IsValidIndex(0))
+			{
+				Version.Get<0>() = FCString::Atoi(*Parts[0]);
+			}
+			if(Parts.IsValidIndex(1))
+			{
+				Version.Get<1>() = FCString::Atoi(*Parts[1]);
+			}
+			if(Parts.IsValidIndex(2))
+			{
+				Version.Get<2>()= FCString::Atoi(*Parts[2]);
+			}
+			return Version;
+		}
+		
+		int32 Major = -1;
+		int32 Minor = -1;
+		int32 Patch = -1;
+	
+	};
 	
 	struct UBF_API FGraphHandle
 	{
@@ -60,7 +117,6 @@ namespace UBF
 			IGraphProvider* GraphProvider,
 			ISubGraphResolver* SubGraphResolver,
 			const TMap<FString, FDynamicHandle>& Inputs,
-			const FCustomNode* ParentNode,
 			TFunction<void()>&& OnComplete,
 			FExecutionContextHandle& Handle) const;
 		
@@ -68,13 +124,13 @@ namespace UBF
 		
 		static bool Load(const FRegistryHandle& Registry, const FString &Json, FGraphHandle& Graph);
 
-		void GetResources(TArray<FString>& Resources) const;
-		
 		void GetOutputs(TArray<FBindingInfo>& Outputs) const;
 		void GetInputs(TArray<FBindingInfo>& Inputs) const;
+		FGraphVersion GetGraphVersion() const;
 
 	private:
 	
 		mutable FString CachedId;
+		mutable FGraphVersion CachedVersion ;
 	};
 }

@@ -20,6 +20,23 @@ namespace UBFUtils
 		return Result;
 	}
 
+	inline FString FromBytesToString(const uint16* In, int32 Count)
+	{
+		FString Result;
+		Result.Empty(Count);
+
+		while (Count)
+		{
+			int16 Value = *In;
+
+			Result += static_cast<TCHAR>(Value);
+
+			++In;
+			Count--;
+		}
+		return Result;
+	}
+
 	inline UBF::FDynamicHandle CreateNewDynamicHandle(const FString& Type, const FString& Value)
 	{
 		if (Type == "string")

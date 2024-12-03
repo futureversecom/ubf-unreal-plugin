@@ -156,36 +156,6 @@ namespace UBF
 		return bResult;
 	}
 
-	bool FExecutionContextHandle::GetCurrentNodeInputs(const FString& NodeID, TMap<FString, FDynamicHandle>& InputMap) const
-	{
-		auto Context = new TMap<FString, FDynamicHandle>();
-		
-		auto InputsIter = [](intptr_t Context, const uint8_t* Id, int32_t IdLen, FFI::Dynamic* Dynamic) -> bool
-		{
-			auto Inputs = reinterpret_cast<TMap<FString, FDynamicHandle>*>(Context);
-			
-			FString Key = UBFUtils::FromBytesToString(Id, IdLen);
-			
-			FDynamicHandle DynamicHandle(Dynamic);
-
-			Inputs->Add(Key, DynamicHandle);
-			
-			return true;
-		};
-		
-		bool bResult = CALL_RUST_FUNC(ctx_get_all_node_inputs)(
-			RustPtr,
-			reinterpret_cast<intptr_t>(Context),
-			TCHAR_TO_UTF16(*NodeID),
-			NodeID.Len(),
-			InputsIter
-		);
-		
-		InputMap.Append(*Context);
-		delete Context;
-		return bResult;
-	}
-
 	bool FExecutionContextHandle::TryReadOutput(const FString& BindingId, FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;

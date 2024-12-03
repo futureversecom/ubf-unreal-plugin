@@ -130,8 +130,6 @@ namespace UBF
 		template <typename T>
 		bool TryReadInputValueArray(FString const& NodeId, const FString& PortKey, TArray<T>& Out) const;
 		
-		void TryGetResourcesWithFilter(const FString& Filter, TArray<FString>& FilteredResources) const;
-
 		bool TryReadOutput(const FString& BindingId, FDynamicHandle& Dynamic) const;
 		void WriteOutput(const FString& NodeId, const FString& PortKey, const FDynamicHandle& Dynamic) const;
 
@@ -146,10 +144,6 @@ namespace UBF
 		 * Eg SetTextureSettings uses it apply texture settings to a certain resource id
 		 */
 		bool SetDynamicDataEntry(const FString& Key, const FDynamicHandle& DynamicHandle) const;
-
-		/* Get all inputs of a current node along with their values,
-		 * useful for executing blueprints which can have any number of inputs */
-		bool GetCurrentNodeInputs(const FString& NodeID, TMap<FString, FDynamicHandle>& InputMap) const;
 
 	private:
 		FDynamicHandle DynamicContextData = FDynamicHandle::Null();

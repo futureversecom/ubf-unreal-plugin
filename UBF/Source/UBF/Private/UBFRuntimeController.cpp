@@ -67,7 +67,7 @@ void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FStrin
 		};
 
 		const UBF::FGraphHandle Graph = Result.Result.Value;
-		Graph.Execute(GraphId, RootComponent, CurrentGraphProvider, CurrentSubGraphResolver, Inputs, nullptr, OnCompleteFunc, ExecutionContext);
+		Graph.Execute(GraphId, RootComponent, CurrentGraphProvider, CurrentSubGraphResolver, Inputs, OnCompleteFunc, ExecutionContext);
 		UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute Post Graph.Execute"));
 	});
 }
