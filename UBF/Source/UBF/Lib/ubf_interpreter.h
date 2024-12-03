@@ -36,6 +36,8 @@ extern "C" {
 
 GraphInstance *graph_load(NodeRegistry *registry, const uint16_t *json, int32_t json_len);
 
+bool graph_version(GraphInstance *graph, const uint16_t **out_ptr, uintptr_t *out_len);
+
 void graph_iter_inputs(GraphInstance *graph, intptr_t context, bool (*iterator)(intptr_t,
                                                                                 const uint8_t*,
                                                                                 int32_t,
@@ -50,16 +52,9 @@ void graph_iter_outputs(GraphInstance *graph, intptr_t context, bool (*iterator)
                                                                                  int32_t,
                                                                                  Dynamic*));
 
-void graph_iter_resources(GraphInstance *graph, intptr_t context, bool (*iterator)(intptr_t,
-                                                                                   const uint8_t*,
-                                                                                   int32_t));
-
 /// Execute the UBF Graph.
 ArcExecutionContext *graph_execute(GraphInstance *graph,
                                    Dynamic *inputs,
-                                   ArcExecutionContext *parent_context,
-                                   const uint16_t *parent_node_id,
-                                   int32_t parent_node_id_len,
                                    Dynamic *context_data,
                                    void (*on_complete)(Dynamic*));
 
@@ -112,11 +107,9 @@ bool ctx_get_declared_node_inputs(ArcExecutionContext *execution_context,
                                   intptr_t context,
                                   bool (*iterator)(intptr_t, const uint8_t*, int32_t));
 
-bool ctx_get_all_node_inputs(ArcExecutionContext *execution_context,
-                             intptr_t context,
-                             const uint16_t *node_id,
-                             int32_t node_id_len,
-                             bool (*iterator)(intptr_t, const uint8_t*, int32_t, Dynamic*));
+bool ctx_get_graph_outputs(ArcExecutionContext *execution_context,
+                           intptr_t context,
+                           bool (*iterator)(intptr_t, const uint8_t*, int32_t, Dynamic*));
 
 /// Write a value to the current execution context.
 void ctx_write_output(ArcExecutionContext *execution_context,
