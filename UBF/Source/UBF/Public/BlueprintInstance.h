@@ -1,6 +1,15 @@
 #pragma once
 #include "Dynamic.h"
 
+struct UBF_API FBlueprintInstanceBinding
+{
+	FBlueprintInstanceBinding(){}
+	
+	FString Id;
+	FString Type;
+	FString Value;
+};
+
 class UBF_API IBlueprintInstance
 {
 public:
