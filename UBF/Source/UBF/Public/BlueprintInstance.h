@@ -10,33 +10,39 @@ struct UBF_API FBlueprintInstanceBinding
 	FString Value;
 };
 
-class UBF_API IBlueprintInstance
+struct UBF_API FBlueprintInstance
 {
 public:
-	virtual FString GetId() = 0;
-	virtual FString GetBlueprintId() = 0;
-	virtual TMap<FString, UBF::FDynamicHandle>& GetVariables() = 0;
-
-	virtual ~IBlueprintInstance() {}
-};
-
-
-struct UBF_API FDefaultBlueprintInstance : IBlueprintInstance
-{
+	FBlueprintInstance(){}
+	virtual ~FBlueprintInstance(){}
 	
-public:
-
-	FDefaultBlueprintInstance(const FString& Id, const TMap<FString, UBF::FDynamicHandle>& NewVariables)
+	FBlueprintInstance(const FString& NewBlueprintId, const TMap<FString, FBlueprintInstanceBinding>& NewBindings)
 	{
-		BlueprintId = Id;
-		Variables = NewVariables;
+		BlueprintId = NewBlueprintId;
+		Bindings = NewBindings;
 	}
 	
-	virtual FString GetId() override { return BlueprintId; }
-	virtual FString GetBlueprintId() override { return BlueprintId; }
-	virtual TMap<FString, UBF::FDynamicHandle>& GetVariables() override { return Variables; }
+	virtual FString GetId() const { return Id; }
+	
+	virtual FString GetBlueprintId() const { return BlueprintId; }
+	void SetBlueprintId(const FString& NewBlueprintId) { BlueprintId = NewBlueprintId; }
+	
+	virtual TMap<FString, UBF::FDynamicHandle>& GetVariablesRef() const;
+	
+	TMap<FString, FBlueprintInstanceBinding>& GetBindingsRef() { return Bindings; }
+	void AddBinding(const FString& BindingId, const FBlueprintInstanceBinding& Binding)
+	{
+		Bindings.Add(BindingId, Binding);
+	}
+
+	bool operator==(const FBlueprintInstance& Other) const
+	{
+		return Id == Other.GetId();
+	}
 
 private:
+	FString Id = FGuid::NewGuid().ToString();
 	FString BlueprintId;
 	TMap<FString, UBF::FDynamicHandle> Variables;
+	TMap<FString, FBlueprintInstanceBinding> Bindings;
 };

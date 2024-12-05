@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BlueprintInstance.h"
 #include "Graph.h"
 #include "Registry.h"
 #include "UObject/Interface.h"
 
-class IBlueprintInstance;
 class UUBFGraphReference;
 class UglTFRuntimeAsset;
 
@@ -20,7 +20,8 @@ namespace UBF
 	};
 	
 	struct UBF_API FLoadGraphResult final : TLoadResult<FGraphHandle> {};
-	struct UBF_API FLoadGraphInstanceResult final : TLoadResult<IBlueprintInstance*> {};
+	
+	struct UBF_API FLoadGraphInstanceResult final : TLoadResult<FBlueprintInstance> {};
 
 	struct UBF_API FLoadTextureResult final : TLoadResult<UTexture*> {};
 
@@ -55,7 +56,7 @@ public:
 		Graphs.Add(Id, Graph);
 	}
 
-	void RegisterInstance(const FString& Id, IBlueprintInstance* Instance)
+	void RegisterInstance(const FString& Id, const FBlueprintInstance& Instance)
 	{
 		Instances.Add(Id, Instance);
 	}
@@ -82,8 +83,8 @@ public:
 		UBF::FLoadGraphInstanceResult LoadResult;
 
 		LoadResult.Result = Instances.Contains(InstanceId)
-			? TPair<bool, IBlueprintInstance*>(true, Instances[InstanceId])
-			: TPair<bool, IBlueprintInstance*>(false, nullptr);
+			? TPair<bool, FBlueprintInstance>(true, Instances[InstanceId])
+			: TPair<bool, FBlueprintInstance>(false, FBlueprintInstance());
 	
 		Promise->SetValue(LoadResult);
 		
@@ -118,5 +119,5 @@ public:
 	
 private:
 	TMap<FString, UBF::FGraphHandle> Graphs;
-	TMap<FString, IBlueprintInstance*> Instances;
+	TMap<FString, FBlueprintInstance> Instances;
 };
