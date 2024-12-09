@@ -1,9 +1,11 @@
 #include "BlueprintInstance.h"
 
-TMap<FString, UBF::FDynamicHandle>& FBlueprintInstance::GetVariablesRef() const
+#include "UBFUtils.h"
+
+void FBlueprintInstance::GetVariables(TMap<FString, UBF::FDynamicHandle>& OutVariables) const
 {
-	TMap<FString, UBF::FDynamicHandle> Variables;
-	
-	// todo convert bindings into variables
-	return Variables;
+	for (auto BindingTuple : Bindings)
+	{
+		OutVariables.Add(BindingTuple.Key, UBFUtils::CreateNewDynamicHandle(BindingTuple.Value.Type, BindingTuple.Value.Value));
+	}
 }

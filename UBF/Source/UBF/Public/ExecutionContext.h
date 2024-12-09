@@ -145,6 +145,12 @@ namespace UBF
 		 */
 		bool SetDynamicDataEntry(const FString& Key, const FDynamicHandle& DynamicHandle) const;
 
+		/*
+		 * Used to get node's declared inputs
+		 * Eg ExecuteBlueprintNode uses it to get inputs
+		 */
+		bool GetDeclaredNodeInputs(const FString& NodeId, TArray<FString>& OutInputs) const;
+
 	private:
 		FDynamicHandle DynamicContextData = FDynamicHandle::Null();
 		mutable const FContextData* ContextData = nullptr;

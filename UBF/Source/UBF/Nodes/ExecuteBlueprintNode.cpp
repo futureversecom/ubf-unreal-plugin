@@ -25,16 +25,16 @@ namespace UBF
 			return;
 		}
 		
-		TMap<FString, FDynamicHandle> ExpectedInputs;
-		GetContext().GetCurrentNodeInputs(GetNodeId(), ExpectedInputs);
+		TArray<FString> ExpectedInputs;
+		GetContext().GetDeclaredNodeInputs(GetNodeId(), ExpectedInputs);
+		
 		TMap<FString, FDynamicHandle> ActualInputs;
-
 		for (auto ExpectedInput : ExpectedInputs)
 		{
 			FDynamicHandle DynamicOutput;
-			if (TryReadInput(ExpectedInput.Key, DynamicOutput))
+			if (TryReadInput(ExpectedInput, DynamicOutput))
 			{
-				ActualInputs.Add(ExpectedInput.Key, DynamicOutput);
+				ActualInputs.Add(ExpectedInput, DynamicOutput);
 			}
 		}
 		
@@ -52,7 +52,7 @@ namespace UBF
 
 		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Executing Key: %s BlueprintId: %s UBF"), *Key, *BlueprintId);
 		
-		GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, ResolvedInputs, BlueprintId](const UBF::FLoadGraphResult& Result)
+		GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, ResolvedInputs, BlueprintId](const FLoadGraphResult& Result)
 		{
 			if (!Result.Result.Key)
 			{
@@ -91,7 +91,7 @@ namespace UBF
 
 			const FGraphHandle Graph = Result.Result.Value;
 			Graph.Execute(BlueprintId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetSubGraphResolver(),
-				ResolvedInputs, this, OnCompleteFunc, ExecContext);
+				ResolvedInputs, OnCompleteFunc, ExecContext);
 		});
 	}
 }

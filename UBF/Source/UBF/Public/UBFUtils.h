@@ -1,4 +1,5 @@
 #pragma once
+#include "UBFBindingObject.h"
 
 namespace UBFUtils
 {
@@ -62,5 +63,33 @@ namespace UBFUtils
 
 		UE_LOG(LogUBF, Warning, TEXT("Failed to create new dynamic for Type:%s Value: %s"), *Type, *Value);
 		return UBF::FDynamicHandle::Null();
+	}
+
+	inline TMap<FString, UUBFBindingObject*> AsBindingObjectMap(const TMap<FString, UBF::FDynamicHandle>& NewInputMap)
+	{
+		TMap<FString, UUBFBindingObject*> ConvertedMap;
+		
+		for (auto& NewInput : NewInputMap)
+		{
+			UUBFBindingObject* BindingObject = NewObject<UUBFBindingObject>();
+			const UBF::FBindingInfo BindingInfo(NewInput.Key, NewInput.Value.GetTypeString(), NewInput.Value);
+			BindingObject->Initialize(BindingInfo);
+			
+			ConvertedMap.Add(NewInput.Key, BindingObject);
+		}
+		
+		return ConvertedMap;
+	}
+
+	inline TMap<FString, UBF::FDynamicHandle> AsDynamicMap(const TMap<FString, UUBFBindingObject*>& NewInputMap)
+	{
+		TMap<FString, UBF::FDynamicHandle> ConvertedMap;
+		
+		for (auto& BindingObjectTuple : NewInputMap)
+		{
+			ConvertedMap.Add(BindingObjectTuple.Key, BindingObjectTuple.Value->GetDynamicFromValue());
+		}
+		
+		return ConvertedMap;
 	}
 }
