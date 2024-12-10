@@ -72,6 +72,10 @@ namespace UBFUtils
 		{
 			return UBF::FDynamicHandle::String(Value);
 		}
+		if (Type == "MeshConfig")
+		{
+			return UBF::FDynamicHandle::String(Value);
+		}
 
 		UE_LOG(LogUBF, Warning, TEXT("Failed to create new dynamic for Type:%s Value: %s"), *Type, *Value);
 		return UBF::FDynamicHandle::Null();
