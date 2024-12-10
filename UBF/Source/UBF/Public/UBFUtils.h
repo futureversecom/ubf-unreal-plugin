@@ -60,6 +60,18 @@ namespace UBFUtils
 		{
 			return UBF::FDynamicHandle::Bool(Value == "true");
 		}
+		if (Type == "SceneNode")
+		{
+			return UBF::FDynamicHandle::Null();
+		}
+		if (Type == "Resource<Mesh>")
+		{
+			return UBF::FDynamicHandle::String(Value);
+		}
+		if (Type == "Resource<Texture>")
+		{
+			return UBF::FDynamicHandle::String(Value);
+		}
 
 		UE_LOG(LogUBF, Warning, TEXT("Failed to create new dynamic for Type:%s Value: %s"), *Type, *Value);
 		return UBF::FDynamicHandle::Null();
