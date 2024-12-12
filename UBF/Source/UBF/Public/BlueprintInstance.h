@@ -29,7 +29,7 @@ public:
 	FString GetBlueprintId() const { return BlueprintId; }
 	void SetBlueprintId(const FString& NewBlueprintId) { BlueprintId = NewBlueprintId; }
 	
-	void GetVariables(TMap<FString, UBF::FDynamicHandle>& OutVariables) const;
+	TMap<FString, UBF::FDynamicHandle> GetVariables() const;
 	
 	TMap<FString, FBlueprintInstanceBinding>& GetBindingsRef() { return Bindings; }
 	void AddBinding(const FString& BindingId, const FBlueprintInstanceBinding& Binding)
