@@ -38,7 +38,7 @@ namespace UBF
 			}
 		}
 		
-		UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] NodeInputs Count %d for Key: %s"), ExpectedInputs.Num(), *Key);
+		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] NodeInputs Count %d for Key: %s"), ExpectedInputs.Num(), *Key);
 		
 		TMap<FString, FDynamicHandle> ResolvedInputs;
 		FString BlueprintId;
