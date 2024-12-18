@@ -73,7 +73,7 @@ namespace UBF
 				
 				for (auto Output : Outputs)
 				{
-					UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] Looking up Output from subgraph. Binding Id: %s"), *Output.Id);
+					UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Looking up Output from subgraph. Binding Id: %s"), *Output.Id);
 						
 					FDynamicHandle Dynamic;
 					if (ExecContext.TryReadOutput(Output.Id, Dynamic))
