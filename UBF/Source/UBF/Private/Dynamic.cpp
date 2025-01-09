@@ -2,11 +2,6 @@
 
 #include "GCPin.h"
 
-inline UBF::FDynamicHandle UBF::FDynamicHandle::Null()
-{
-	return FDynamicHandle();
-}
-
 void UBF::FDynamicHandle::OnComplete(intptr_t Pointer)
 {
 }

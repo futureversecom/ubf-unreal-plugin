@@ -105,7 +105,7 @@ namespace UBF
 			);
 		}
 
-		static FDynamicHandle Null();
+		static FDynamicHandle Null() { return FDynamicHandle(); }
 
 		bool Push(const FDynamicHandle& Value) const
 		{
