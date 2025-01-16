@@ -17,6 +17,8 @@
 #include "SGFurPropertiesNode.h"
 #include "SGPBRPropertiesNode.h"
 #include "SpawnMeshNode.h"
+#include "TransformPositionNode.h"
+#include "TransformScaleNode.h"
 #include "UBF.h"
 #include "UBFLog.h"
 
@@ -90,6 +92,8 @@ namespace UBF
 		Registry.Register<FExecuteBlueprintNode>("ExecuteBlueprint");
 		Registry.Register<FCreateMeshConfig>("CreateMeshConfig");
 		Registry.Register<FFindRenderer>("FindRenderer");
+		Registry.Register<FTransformPositionNode>("TransformPosition");
+		Registry.Register<FTransformScaleNode>("TransformScale");
 		
 		return Registry;
 	}
