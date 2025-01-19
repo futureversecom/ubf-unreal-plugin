@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlueprintInstance.h"
+#include "BlueprintJson.h"
 #include "Graph.h"
 #include "Registry.h"
 #include "UObject/Interface.h"
@@ -21,7 +21,7 @@ namespace UBF
 	
 	struct UBF_API FLoadGraphResult final : TLoadResult<FGraphHandle> {};
 	
-	struct UBF_API FLoadGraphInstanceResult final : TLoadResult<FBlueprintInstance> {};
+	struct UBF_API FLoadGraphInstanceResult final : TLoadResult<FBlueprintJson> {};
 
 	struct UBF_API FLoadTextureResult final : TLoadResult<UTexture*> {};
 
@@ -35,7 +35,7 @@ namespace UBF
 class UBF_API IGraphProvider
 {
 public:
-	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& InstanceId) = 0;
+	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& CatalogId, const FString& ArtifactId) = 0;
 	
 	virtual TFuture<UBF::FLoadGraphInstanceResult> GetGraphInstance(const FString& InstanceId) = 0;
 	
@@ -56,19 +56,19 @@ public:
 		Graphs.Add(Id, Graph);
 	}
 
-	void RegisterInstance(const FString& Id, const FBlueprintInstance& Instance)
+	void RegisterInstance(const FString& Id, const FBlueprintJson& Instance)
 	{
 		Instances.Add(Id, Instance);
 	}
 
-	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& InstanceId) override
+	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& CatalogId, const FString& ArtifactId) override
 	{
 		TSharedPtr<TPromise<UBF::FLoadGraphResult>> Promise = MakeShareable(new TPromise<UBF::FLoadGraphResult>());
 		TFuture<UBF::FLoadGraphResult> Future = Promise->GetFuture();
 		UBF::FLoadGraphResult LoadResult;
 
-		LoadResult.Result = Graphs.Contains(InstanceId)
-			? TPair<bool, UBF::FGraphHandle>(true, Graphs[InstanceId])
+		LoadResult.Result = Graphs.Contains(ArtifactId)
+			? TPair<bool, UBF::FGraphHandle>(true, Graphs[ArtifactId])
 			: TPair<bool, UBF::FGraphHandle>(false, UBF::FGraphHandle());
 	
 		Promise->SetValue(LoadResult);
@@ -83,8 +83,8 @@ public:
 		UBF::FLoadGraphInstanceResult LoadResult;
 
 		LoadResult.Result = Instances.Contains(InstanceId)
-			? TPair<bool, FBlueprintInstance>(true, Instances[InstanceId])
-			: TPair<bool, FBlueprintInstance>(false, FBlueprintInstance());
+			? TPair<bool, FBlueprintJson>(true, Instances[InstanceId])
+			: TPair<bool, FBlueprintJson>(false, FBlueprintJson());
 	
 		Promise->SetValue(LoadResult);
 		
@@ -119,5 +119,5 @@ public:
 	
 private:
 	TMap<FString, UBF::FGraphHandle> Graphs;
-	TMap<FString, FBlueprintInstance> Instances;
+	TMap<FString, FBlueprintJson> Instances;
 };

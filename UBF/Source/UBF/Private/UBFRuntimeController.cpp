@@ -40,7 +40,7 @@ void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FStrin
 	CurrentGraphProvider = GraphProvider;
 	CurrentSubGraphResolver = SubGraphResolver;
 	
-	CurrentGraphProvider->GetGraph(GraphId).Next([this, GraphId, Inputs, &ExecutionContext, OnComplete](const UBF::FLoadGraphResult& Result)
+	CurrentGraphProvider->GetGraph(GraphId, GraphId).Next([this, GraphId, Inputs, &ExecutionContext, OnComplete](const UBF::FLoadGraphResult& Result)
 	{
 		if (!Result.Result.Key)
 		{

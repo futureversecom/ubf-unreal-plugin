@@ -41,8 +41,8 @@ namespace UBF
 		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] NodeInputs Count %d for Key: %s"), ExpectedInputs.Num(), *Key);
 		
 		TMap<FString, FDynamicHandle> ResolvedInputs;
-		FString BlueprintId;
-		if (!GetContext().GetSubGraphResolver()->TryResolveSubGraph(Key, ActualInputs, BlueprintId, ResolvedInputs))
+		FString ArtifactId;
+		if (!GetContext().GetSubGraphResolver()->TryResolveSubGraph(Key, ActualInputs, ArtifactId, ResolvedInputs))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] Unable to resolve subgraph for key %s"), *Key);
 			TriggerNext();
@@ -50,21 +50,21 @@ namespace UBF
 			return;
 		}
 
-		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Executing Key: %s BlueprintId: %s UBF"), *Key, *BlueprintId);
+		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Executing Key: %s BlueprintId: %s UBF"), *Key, *ArtifactId);
 		
-		GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, ResolvedInputs, BlueprintId](const FLoadGraphResult& Result)
+		GetContext().GetGraphProvider()->GetGraph(GetContext().GetGraphID(), ArtifactId).Next([this, ResolvedInputs, ArtifactId](const FLoadGraphResult& Result)
 		{
 			if (!Result.Result.Key)
 			{
-				UE_LOG(LogUBF, Error, TEXT("[ExecuteBlueprintNode] Aborting execution: graph '%s' is invalid"), *BlueprintId);
+				UE_LOG(LogUBF, Error, TEXT("[ExecuteBlueprintNode] Aborting execution: graph '%s' is invalid"), *ArtifactId);
 				TriggerNext();
 				CompleteAsyncExecution();
 				return;
 			}
 			
-			auto OnCompleteFunc = [Result, this, BlueprintId]
+			auto OnCompleteFunc = [Result, this, ArtifactId]
 			{
-				UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Completed Executing Graph %s"), *BlueprintId);
+				UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Completed Executing Graph %s"), *ArtifactId);
 		
 				TArray<FBindingInfo> Outputs;
 				Result.Result.Value.GetOutputs(Outputs);
@@ -90,7 +90,7 @@ namespace UBF
 			};
 
 			const FGraphHandle Graph = Result.Result.Value;
-			Graph.Execute(BlueprintId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetSubGraphResolver(),
+			Graph.Execute(ArtifactId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetSubGraphResolver(),
 				ResolvedInputs, OnCompleteFunc, ExecContext);
 		});
 	}
