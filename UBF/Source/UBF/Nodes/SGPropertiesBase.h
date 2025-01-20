@@ -101,6 +101,14 @@ namespace UBF
             return PropertyValue;
         }
     };
+
+    class FShaderProperties
+    {
+    public:
+        FName BaseShaderName;
+        TMap<FString, FShaderPropertyValue> Properties;
+    };
+
     
 	class FSGPropertiesBase : public FCustomNode
 	{

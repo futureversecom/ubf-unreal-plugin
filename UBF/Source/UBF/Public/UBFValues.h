@@ -2,19 +2,10 @@
 
 namespace UBF
 {
-	struct FShaderPropertyValue;
-
-	class FShaderProperties
-	{
-	public:
-		FName BaseShaderName;
-		TMap<FString, FShaderPropertyValue> Properties;
-	};
-
 	class FMaterialValue
 	{
 	public:
-		FShaderProperties* ShaderProperties;
+		class FShaderProperties* ShaderProperties;
 		UMaterialInterface* MaterialInterface;
 	};
 }
