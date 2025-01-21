@@ -69,21 +69,30 @@ namespace UBF
 			return FString::Printf(TEXT("%d.%d.%d"), Major, Minor, Patch);
 		}
 
-		bool operator<=>(const FGraphVersion& Other) const
+		bool operator>(const FGraphVersion& Other) const
+		{
+			// worry about Major and Minor for now
+			const auto OtherVersion = FromString(Other.ToString());
+			return Major > OtherVersion.Get<0>()
+				|| (Major == OtherVersion.Get<0>() && Minor > OtherVersion.Get<1>());
+				//|| (Major == OtherVersion.Get<0>() && Minor == OtherVersion.Get<1>() && Patch > OtherVersion.Get<2>());
+		}
+		
+		bool operator==(const FGraphVersion& Other) const
 		{
 			const auto OtherVersion = FromString(Other.ToString());
 			return Major > OtherVersion.Get<0>()
-				|| (Major == OtherVersion.Get<0>() && Minor > OtherVersion.Get<1>())
-				|| (Major == OtherVersion.Get<0>() && Minor == OtherVersion.Get<1>() && Patch >= OtherVersion.Get<2>());
+				|| (Major == OtherVersion.Get<0>() && Minor == OtherVersion.Get<1>())
+				|| (Major == OtherVersion.Get<0>() && Minor == OtherVersion.Get<1>() && Patch == OtherVersion.Get<2>());
 		}
 		
 	private:
 		static TTuple<int32,int32,int32> FromString(const FString& VersionString)
 		{
 			TArray<FString> Parts;
-			VersionString.ParseIntoArray(Parts, TEXT(","),true);
+			VersionString.ParseIntoArray(Parts, TEXT("."),true);
 
-		 	TTuple<int32,int32,int32> Version;
+		 	TTuple<int32,int32,int32> Version(-1, -1, -1);
 			if(Parts.IsValidIndex(0))
 			{
 				Version.Get<0>() = FCString::Atoi(*Parts[0]);
@@ -133,4 +142,6 @@ namespace UBF
 		mutable FString CachedId;
 		mutable FGraphVersion CachedVersion ;
 	};
+
+	static FGraphVersion SupportedGraphVersion = FGraphVersion(TEXT("0.1.0"));
 }
