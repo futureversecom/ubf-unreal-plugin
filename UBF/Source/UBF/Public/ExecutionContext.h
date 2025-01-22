@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BlueprintInstance.h"
 #include "Dynamic.h"
 #include "Graph.h"
 #include "UBF/Lib/ubf_interpreter.h"
@@ -24,16 +25,14 @@ namespace UBF
 		FString BlueprintId;
 		FSceneNode* Root;
 		IGraphProvider* GraphProvider;
-		ISubGraphResolver* SubGraphResolver;
+		TMap<FString, FBlueprintInstance> InstancedBlueprints;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
 		TFunction<void()> OnComplete;
-
-
-
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
+		
+		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, IGraphProvider* GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
-			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), SubGraphResolver(SubGraphResolver), Graph(Graph), OnComplete(MoveTemp(OnComplete))
+			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), InstancedBlueprints(InstancedBlueprints) ,Graph(Graph), OnComplete(MoveTemp(OnComplete))
 		{
 			if (Root->GetWorld())
 			{
@@ -84,8 +83,19 @@ namespace UBF
 
 		FSceneNode* GetRoot() const { return ContextData->Root; }
 		IGraphProvider* GetGraphProvider() const { return ContextData->GraphProvider; }
-		ISubGraphResolver* GetSubGraphResolver() const { return ContextData->SubGraphResolver; }
 		const FContextData* GetUserData() const { return ContextData; }
+
+		bool BlueprintInstanceExistsForId(const FString& InstanceId) const
+		{
+			if (ContextData == nullptr) return false;
+			return ContextData->InstancedBlueprints.Contains(InstanceId);
+		}
+
+		FBlueprintInstance GetInstanceForId(const FString& InstanceId) const
+		{
+			if (ContextData == nullptr) return FBlueprintInstance();
+			return ContextData->InstancedBlueprints[InstanceId];
+		}
 
 		// Gets world from UserData Root
 		UWorld* GetWorld() const

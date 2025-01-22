@@ -5,6 +5,7 @@
 #include "CreateMeshConfig.h"
 #include "CreateSceneNode.h"
 #include "DebugLog.h"
+#include "ExecuteBlueprint2Node.h"
 #include "ExecuteBlueprintNode.h"
 #include "FindFirstSceneNode.h"
 #include "FindRenderer.h"
@@ -89,11 +90,12 @@ namespace UBF
 		Registry.Register<FSetTextureSettingsNode>("SetTextureSettings");
 		Registry.Register<FSetBlendshapeNode>("SetBlendshape");
 		Registry.Register<FBindMeshes>("BindMeshes");
-		Registry.Register<FExecuteBlueprintNode>("ExecuteBlueprint");
+		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint");
 		Registry.Register<FCreateMeshConfig>("CreateMeshConfig");
 		Registry.Register<FFindRenderer>("FindRenderer");
 		Registry.Register<FTransformPositionNode>("TransformPosition");
 		Registry.Register<FTransformScaleNode>("TransformScale");
+		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint2");
 		
 		return Registry;
 	}

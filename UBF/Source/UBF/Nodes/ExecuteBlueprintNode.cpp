@@ -42,13 +42,13 @@ namespace UBF
 		
 		TMap<FString, FDynamicHandle> ResolvedInputs;
 		FString ArtifactId;
-		if (!GetContext().GetSubGraphResolver()->TryResolveSubGraph(Key, ActualInputs, ArtifactId, ResolvedInputs))
-		{
-			UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] Unable to resolve subgraph for key %s"), *Key);
-			TriggerNext();
-			CompleteAsyncExecution();
-			return;
-		}
+		// if (!GetContext().GetSubGraphResolver()->TryResolveSubGraph(Key, ActualInputs, ArtifactId, ResolvedInputs))
+		// {
+		// 	UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprintNode] Unable to resolve subgraph for key %s"), *Key);
+		// 	TriggerNext();
+		// 	CompleteAsyncExecution();
+		// 	return;
+		// }
 
 		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Executing Key: %s BlueprintId: %s UBF"), *Key, *ArtifactId);
 		
@@ -90,8 +90,8 @@ namespace UBF
 			};
 
 			const FGraphHandle Graph = Result.Result.Value;
-			Graph.Execute(ArtifactId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetSubGraphResolver(),
-				ResolvedInputs, OnCompleteFunc, ExecContext);
+			// Graph.Execute(ArtifactId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetSubGraphResolver(),
+			// 	ResolvedInputs, OnCompleteFunc, ExecContext);
 		});
 	}
 }

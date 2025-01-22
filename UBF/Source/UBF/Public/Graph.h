@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BlueprintInstance.h"
 #include "Dynamic.h"
 #include "Managed.h"
 
@@ -115,7 +116,7 @@ namespace UBF
 			const FString& BlueprintId,
 			USceneComponent* Root,
 			IGraphProvider* GraphProvider,
-			ISubGraphResolver* SubGraphResolver,
+			const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const TMap<FString, FDynamicHandle>& Inputs,
 			TFunction<void()>&& OnComplete,
 			FExecutionContextHandle& Handle) const;

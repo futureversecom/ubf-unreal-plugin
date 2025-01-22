@@ -266,7 +266,7 @@ inline bool UBFIncubate::RunTest(const FString& Parameters)
   ISubGraphResolver* SubGraphResolver = new FDefaultSubGraphResolver();
   UBF::FExecutionContextHandle Context;
   TMap<FString, UBF::FDynamicHandle> Inputs;
-  Graph.Execute("", Root->GetRootComponent(), GraphProvider, SubGraphResolver, Inputs, OnCompleteFunc, Context);
+  Graph.Execute("", Root->GetRootComponent(), GraphProvider, TMap<FString, UBF::FBlueprintInstance>(), Inputs, OnCompleteFunc, Context);
 
   return true;
 }

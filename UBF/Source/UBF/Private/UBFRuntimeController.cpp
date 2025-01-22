@@ -7,44 +7,51 @@
 #include "UBFBindingObject.h"
 #include "UBFLog.h"
 
-void UUBFRuntimeController::ExecuteGraph(FString GraphId, const TMap<FString, UUBFBindingObject*>& InputMap, const FOnComplete& OnComplete)
+void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
 {
 	if (!ensure(RootComponent)) return;
 
-	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::ExecuteGraph: %s Num Inputs: %d"), *GraphId, InputMap.Num());
+	UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint: %s Num Inputs: %d Num BlueprintInstances: %d"), *BlueprintId, ExecutionData.InputMap.Num(), ExecutionData.BlueprintInstances.Num());
 	
 	TMap<FString, UBF::FDynamicHandle> Inputs;
 
-	for (const auto& InputPair : InputMap)
+	for (const auto& InputPair : ExecutionData.InputMap)
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("Adding Input: %s"), *InputPair.Value->ToString());
+		UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint Adding Input: %s"), *InputPair.Value->ToString());
 		Inputs.Add(InputPair.Key, InputPair.Value->GetDynamicFromValue());
 	}
+
+	TMap<FString, UBF::FBlueprintInstance> InstanceMap;
+
+	for (const UBF::FBlueprintInstance& BlueprintInstance : ExecutionData.BlueprintInstances)
+	{
+		UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint Adding BlueprintInstance: %s"), *BlueprintInstance.ToString());
+		InstanceMap.Add(BlueprintInstance.GetBlueprintId(), BlueprintInstance);
+	}
 	
-	TryExecute(GraphId, Inputs, CurrentGraphProvider, CurrentSubGraphResolver, LastExecutionContext, OnComplete);
+	TryExecute(BlueprintId, Inputs, CurrentGraphProvider,InstanceMap, LastExecutionContext, OnComplete);
 }
 
-void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-		IGraphProvider* GraphProvider,  ISubGraphResolver* SubGraphResolver,
+void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
+		IGraphProvider* GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
 		UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete) const
 {
 	if (!ensure(RootComponent)) return;
 	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute"));
 
-	if (GraphProvider == nullptr || SubGraphResolver == nullptr)
+	if (GraphProvider == nullptr)
 	{
 		UE_LOG(LogUBF, Error, TEXT("Aborting execution: Invalid Graphprovider or SubGraphResolver provided!"));
 		return;
 	}
 		
 	CurrentGraphProvider = GraphProvider;
-	CurrentSubGraphResolver = SubGraphResolver;
 	
-	CurrentGraphProvider->GetGraph(GraphId, GraphId).Next([this, GraphId, Inputs, &ExecutionContext, OnComplete](const UBF::FLoadGraphResult& Result)
+	CurrentGraphProvider->GetGraph(BlueprintId, BlueprintId).Next([this, BlueprintId, Inputs, &ExecutionContext, OnComplete, BlueprintInstances](const UBF::FLoadGraphResult& Result)
 	{
 		if (!Result.Result.Key)
 		{
-			UE_LOG(LogUBF, Error, TEXT("Aborting execution: graph '%s' is invalid"), *GraphId);
+			UE_LOG(LogUBF, Error, TEXT("Aborting execution: graph '%s' is invalid"), *BlueprintId);
 			return;
 		}
 
@@ -67,15 +74,14 @@ void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FStrin
 		};
 
 		const UBF::FGraphHandle Graph = Result.Result.Value;
-		Graph.Execute(GraphId, RootComponent, CurrentGraphProvider, CurrentSubGraphResolver, Inputs, OnCompleteFunc, ExecutionContext);
+		Graph.Execute(BlueprintId, RootComponent, CurrentGraphProvider, BlueprintInstances, Inputs, OnCompleteFunc, ExecutionContext);
 		UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute Post Graph.Execute"));
 	});
 }
 
-void UUBFRuntimeController::SetGraphProviders(IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver)
+void UUBFRuntimeController::SetGraphProviders(IGraphProvider* GraphProvider)
 {
 	CurrentGraphProvider = GraphProvider;
-	CurrentSubGraphResolver = SubGraphResolver;
 }
 
 void UUBFRuntimeController::BeginPlay()

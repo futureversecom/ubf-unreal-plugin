@@ -1,5 +1,4 @@
 #pragma once
-#include "Dynamic.h"
 
 struct UBF_API FBlueprintJson
 {
@@ -21,9 +20,6 @@ public:
 	{
 		return Id == Other.GetId();
 	}
-
-	// TODO implement
-	TMap<FString, UBF::FDynamicHandle> GetVariables() const {return TMap<FString, UBF::FDynamicHandle>();};
 
 private:
 	FString Id;

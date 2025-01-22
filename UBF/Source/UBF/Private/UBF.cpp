@@ -8,8 +8,36 @@
 static void UELogCallback(const char* Bytes)
 {
 	const size_t n = strlen(Bytes);
-    const FString& Str = FString(n, Bytes);
-	UE_LOG(LogUBF, VeryVerbose, TEXT("%s"), *Str);
+	const FString Str = FString(n, Bytes);
+
+	// Convert the FString to lowercase for case-insensitive comparison
+	FString LowerStr = Str.ToLower();
+
+	// Determine log level based on keywords
+	ELogVerbosity::Type LogLevelToUse = ELogVerbosity::VeryVerbose;
+
+	if (LowerStr.Contains(TEXT("fail")) || LowerStr.Contains(TEXT("error")))
+	{
+		LogLevelToUse = ELogVerbosity::Error;
+	}
+	else if (LowerStr.Contains(TEXT("warn")))
+	{
+		LogLevelToUse = ELogVerbosity::Warning;
+	}
+
+	// Log with the determined log level
+	switch (LogLevelToUse)
+	{
+	case ELogVerbosity::Error:
+		UE_LOG(LogUBF, Error, TEXT("[NativeLog] %s"), *Str);
+		break;
+	case ELogVerbosity::Warning:
+		UE_LOG(LogUBF, Warning, TEXT("[NativeLog] %s"), *Str);
+		break;
+	default:
+		UE_LOG(LogUBF, VeryVerbose, TEXT("[NativeLog] %s"), *Str);
+		break;
+	}
 }
 
 void FUBFModule::StartupModule()

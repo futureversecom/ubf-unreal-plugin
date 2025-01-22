@@ -2,7 +2,6 @@
 
 #include "Dynamic.h"
 #include "Registry.h"
-#include "SubGraphResolver.h"
 #include "UBF.h"
 #include "UBFLog.h"
 #include "UBFUtils.h"
@@ -12,14 +11,13 @@ namespace UBF
 	void FGraphHandle::Execute(
 		const FString& BlueprintId,
 		USceneComponent* Root,
-		IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
+		IGraphProvider* GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
 		check(Root);
-		SubGraphResolver == nullptr ? new FDefaultSubGraphResolver() : SubGraphResolver;
-		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, SubGraphResolver, *this, MoveTemp(OnComplete));
+		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, InstancedBlueprints, *this, MoveTemp(OnComplete));
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
 
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute"));
