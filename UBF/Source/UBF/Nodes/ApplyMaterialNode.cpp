@@ -184,7 +184,10 @@ namespace UBF
 					FTextureSettings* TextureSettings = nullptr;
 									
 					if (DynamicHandle.TryInterpretAs(TextureSettings) && TextureSettings)
+					{
 						Texture->SRGB = TextureSettings->bUseSRGB;
+						Texture->UpdateResource();
+					}
 				}
 				
 				UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Texture Property: %s With Value: %s to Material"), *Prop.Key,
