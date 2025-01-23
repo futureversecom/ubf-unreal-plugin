@@ -15,6 +15,8 @@ namespace UBF
 		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
+		UE_LOG(LogUBF, Log, TEXT("Executing Graph with a version: %s"), *GetGraphVersion().ToString());
+		
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
 		check(Root);
 		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, InstancedBlueprints, *this, MoveTemp(OnComplete));
@@ -30,6 +32,12 @@ namespace UBF
 			
 			if (!DynamicMap.TrySet(Tuple.Key, Tuple.Value))
 				UE_LOG(LogUBF, Warning, TEXT("Failed to set input with key %s into DynamicMap"), *Tuple.Key);
+		}
+		
+		if (GetGraphVersion() > SupportedGraphVersion)
+		{
+			UE_LOG(LogUBF, Warning, TEXT("Attemping to execute an unsupported Graph Version! It could produce unexpected result!"
+			" Current Graph Version: %s Supported Graph Version: %s"), *GetGraphVersion().ToString(), *SupportedGraphVersion.ToString());
 		}
 
 		FExecutionContextHandle TempHandle(CALL_RUST_FUNC(graph_execute)(

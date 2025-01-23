@@ -120,25 +120,81 @@ namespace UBF
 			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, CompletionID);
 		}
 
-		bool TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const;
+		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey) const;
 		
-		bool TryReadInput(FString const& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
 
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInput(FString const& NodeId, const FString& PortKey, T*& Out) const;
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, T*& Out) const
+		{
+			FDynamicHandle Ptr;
+			if (!TryReadInput(NodeId, PortKey, Ptr))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
+		
+			if constexpr (TIsDerivedFrom<T, UObject>::Value)
+			{
+				UObject* Input;
+				if (!Ptr.TryInterpretAs(Input))
+				{
+					UE_LOG(LogUBF, Warning, TEXT("Failed to read input as UObject (%s->%s)"), *NodeId, *FString(PortKey));
+					return false;
+				}
+				Out = Cast<T>(Input);
+				return true;
+			}
+			else
+			{
+				return Ptr.TryInterpretAs<T>(Out);
+			}
+		}
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValue(FString const& NodeId, const FString& PortKey, T& Out) const;
+		bool TryReadInputValue(const FString& NodeId, const FString& PortKey, T& Out) const
+		{
+			FDynamicHandle Ptr;
+			if (!TryReadInput(NodeId, PortKey, Ptr))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (%s->%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
 
+			UE_LOG(LogUBF, VeryVerbose, TEXT("Read dynamic input value %s"), *Ptr.ToString());
+
+			return Ptr.TryInterpretAs(Out);
+		}
+		
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInputArray(FString const& NodeId, const FString& PortKey, TArray<T*>& Out) const;
+		bool TryReadInputArray(const FString& NodeId, const FString& PortKey, TArray<T*>& Out) const
+		{
+			FDynamicHandle DynamicArray;
+			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
 
+			return DynamicArray.TryInterpretAsArray<T*>(Out);
+		}
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValueArray(FString const& NodeId, const FString& PortKey, TArray<T>& Out) const;
+		bool TryReadInputValueArray(const FString& NodeId, const FString& PortKey,
+		TArray<T>& Out) const
+		{
+			FDynamicHandle DynamicArray;
+			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
+
+			return DynamicArray.TryInterpretAsArray<T>(Out);
+		}
 		
 		bool TryReadOutput(const FString& BindingId, FDynamicHandle& Dynamic) const;
 		void WriteOutput(const FString& NodeId, const FString& PortKey, const FDynamicHandle& Dynamic) const;
