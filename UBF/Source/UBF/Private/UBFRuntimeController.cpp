@@ -26,7 +26,7 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 	for (const UBF::FBlueprintInstance& BlueprintInstance : ExecutionData.BlueprintInstances)
 	{
 		UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint Adding BlueprintInstance: %s"), *BlueprintInstance.ToString());
-		InstanceMap.Add(BlueprintInstance.GetBlueprintId(), BlueprintInstance);
+		InstanceMap.Add(BlueprintInstance.GetInstanceId(), BlueprintInstance);
 	}
 	
 	TryExecute(BlueprintId, Inputs, CurrentGraphProvider,InstanceMap, LastExecutionContext, OnComplete);

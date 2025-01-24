@@ -27,6 +27,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 	if (GetContext().BlueprintInstanceExistsForId(BlueprintId))
 	{
 		FBlueprintInstance BlueprintInstance = GetContext().GetInstanceForId(BlueprintId);
+		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] Found blueprint instance for BlueprintId: '%s' BlueprintId will be replaced with '%s'"), *BlueprintId, *BlueprintInstance.GetBlueprintId());
 		BlueprintId = BlueprintInstance.GetBlueprintId();
 		ActualInputs = BlueprintInstance.GetInputs();
 	}
