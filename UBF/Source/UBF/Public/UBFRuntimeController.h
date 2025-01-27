@@ -26,6 +26,9 @@ public:
 		IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
 		UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete) const;
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FString> GetLastOutputNames();
+	
 	void SetGraphProviders(IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver);
 
 	virtual void BeginPlay() override;
@@ -34,5 +37,6 @@ public:
 private:
 	mutable IGraphProvider* CurrentGraphProvider;
 	mutable ISubGraphResolver* CurrentSubGraphResolver;
-	UBF::FExecutionContextHandle LastExecutionContext;
+	mutable UBF::FExecutionContextHandle LastExecutionContext;
+	mutable UBF::FGraphHandle LastGraphHandle;
 };

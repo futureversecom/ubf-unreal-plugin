@@ -66,10 +66,24 @@ void UUBFRuntimeController::TryExecute(const FString& GraphId, const TMap<FStrin
 			OnComplete.ExecuteIfBound();
 		};
 
-		const UBF::FGraphHandle Graph = Result.Result.Value;
-		Graph.Execute(GraphId, RootComponent, CurrentGraphProvider, CurrentSubGraphResolver, Inputs, OnCompleteFunc, ExecutionContext);
+		LastGraphHandle = Result.Result.Value;
+		LastGraphHandle.Execute(GraphId, RootComponent, CurrentGraphProvider, CurrentSubGraphResolver, Inputs, OnCompleteFunc, ExecutionContext);
 		UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute Post Graph.Execute"));
 	});
+}
+
+TArray<FString> UUBFRuntimeController::GetLastOutputNames()
+{
+	TArray<UBF::FBindingInfo> Outputs;
+	LastGraphHandle.GetOutputs(Outputs);
+	TArray<FString> OutputNames;
+
+	for (auto Output : Outputs)
+	{
+		OutputNames.Add(Output.Id);
+	}
+
+	return OutputNames;
 }
 
 void UUBFRuntimeController::SetGraphProviders(IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver)

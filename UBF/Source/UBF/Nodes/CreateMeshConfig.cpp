@@ -17,6 +17,8 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 		Complete(Settings->GetMeshConfigData());
 		return;
 	}
+
+	UE_LOG(LogUBF, Verbose, TEXT("[CreateMeshConfig] Finding MeshConfig for ResourceId: %s"), *ResourceID);
 	
 	const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();
 	check(Settings);
