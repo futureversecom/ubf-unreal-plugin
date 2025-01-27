@@ -52,7 +52,7 @@ namespace UBF
 
 		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprintNode] Executing Key: %s BlueprintId: %s UBF"), *Key, *ArtifactId);
 		
-		GetContext().GetGraphProvider()->GetGraph(GetContext().GetGraphID(), ArtifactId).Next([this, ResolvedInputs, ArtifactId](const FLoadGraphResult& Result)
+		GetContext().GetGraphProvider()->GetGraph(ArtifactId).Next([this, ArtifactId](const FLoadGraphResult& Result)
 		{
 			if (!Result.Result.Key)
 			{

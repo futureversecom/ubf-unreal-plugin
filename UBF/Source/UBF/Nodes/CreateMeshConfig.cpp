@@ -22,7 +22,7 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	check(Settings);
 	FMeshConfigData MeshConfigData = Settings->GetMeshConfigData(ResourceID);
 	
-	GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, MeshConfigData, ResourceID](const FLoadDataArrayResult& Result)
+	GetContext().GetGraphProvider()->GetMeshResource(ResourceID).Next([this, MeshConfigData, ResourceID](const FLoadDataArrayResult& Result)
 	{
 		FMeshConfigData MutableMeshConfig = MeshConfigData;
 		

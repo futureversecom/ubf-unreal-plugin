@@ -47,7 +47,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 		
 	CurrentGraphProvider = GraphProvider;
 	
-	CurrentGraphProvider->GetGraph(BlueprintId, BlueprintId).Next([this, BlueprintId, Inputs, &ExecutionContext, OnComplete, BlueprintInstances](const UBF::FLoadGraphResult& Result)
+	CurrentGraphProvider->GetGraph(BlueprintId).Next([this, BlueprintId, Inputs, &ExecutionContext, OnComplete, BlueprintInstances](const UBF::FLoadGraphResult& Result)
 	{
 		if (!Result.Result.Key)
 		{

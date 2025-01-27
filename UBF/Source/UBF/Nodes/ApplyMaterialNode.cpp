@@ -153,7 +153,7 @@ namespace UBF
 
 			const auto TextureHandle = Prop.Value.TextureValue;
 			FString ResourceId = TextureHandle.ResourceId;
-			GetContext().GetGraphProvider()->GetTextureResource(GetGraphId(), TextureHandle.ResourceId).Next(
+			GetContext().GetGraphProvider()->GetTextureResource(TextureHandle.ResourceId).Next(
 				[this, Promise, Mat, Prop, ResourceId](const FLoadTextureResult& TextureResult)
 			{
 				if (!TextureResult.Result.Key)

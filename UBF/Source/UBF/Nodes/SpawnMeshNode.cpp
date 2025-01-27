@@ -55,7 +55,7 @@ namespace UBF
 			return;
 		}
 		
-		GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadDataArrayResult Result)
+		GetContext().GetGraphProvider()->GetMeshResource(ResourceID).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadDataArrayResult Result)
 		{
 			if (!Result.Result.Key)
 			{

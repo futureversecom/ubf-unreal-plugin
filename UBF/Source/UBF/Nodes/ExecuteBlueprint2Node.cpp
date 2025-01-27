@@ -16,7 +16,10 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 
 	if (BlueprintId.IsEmpty())
 	{
-		UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprint2Node] BlueprintId found was empty on graph: '%s'"), *GetContext().GetGraphID());
+		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] BlueprintId found was empty on graph: '%s'"), *GetContext().GetGraphID());
+		TriggerNext();
+		CompleteAsyncExecution();
+		return;
 	}
 	
 	TArray<FString> ExpectedInputs;
@@ -44,7 +47,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 	
 	UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] NodeInputs Count %d for BlueprintId: '%s'"), ExpectedInputs.Num(), *BlueprintId);
 
-	GetContext().GetGraphProvider()->GetGraph(GetContext().GetGraphID(), BlueprintId).Next([this, BlueprintId, ActualInputs](const FLoadGraphResult& Result)
+	GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, BlueprintId, ActualInputs](const FLoadGraphResult& Result)
 	{
 		if (!Result.Result.Key)
 		{

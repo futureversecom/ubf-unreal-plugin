@@ -28,8 +28,16 @@ namespace UBF
 
 		FString ID;
 		float Value;
-		if (!ensure(TryReadInputValue("ID", ID))) return;
-		if (!ensure(TryReadInputValue("Value", Value))) return;
+		if (!TryReadInputValue("ID", ID))
+		{
+			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'ID' cannot set blendshape"));
+			return;
+		}
+		if (!TryReadInputValue("Value", Value))
+		{
+			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'Value' cannot set blendshape"));
+			return;
+		}
 		
 		TArray<USkeletalMeshComponent*> SkeletalMeshComponents;
 		Target->GetAttachmentComponent()->GetOwner()->GetComponents(SkeletalMeshComponents);
