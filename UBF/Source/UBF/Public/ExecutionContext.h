@@ -159,7 +159,6 @@ namespace UBF
 			FDynamicHandle Ptr;
 			if (!TryReadInput(NodeId, PortKey, Ptr))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (%s->%s)"), *NodeId, *FString(PortKey));
 				return false;
 			}
 

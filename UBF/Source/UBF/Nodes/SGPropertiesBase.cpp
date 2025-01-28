@@ -62,7 +62,7 @@ void UBF::FSGPropertiesBase::AddTexture(TMap<FString, FShaderPropertyValue>& Pro
 	FString ResourceID;
 	if (!TryReadInputValue(ResourceName, ResourceID))
 	{
-		UE_LOG(LogUBF, Warning, TEXT("UBF::FSGPropertiesBase::AddTexture failed to get ResourceInfo from ResourceID %s"), *ResourceName);
+		UE_LOG(LogUBF, Verbose, TEXT("UBF::FSGPropertiesBase::AddTexture failed to get ResourceInfo from ResourceID %s"), *ResourceName);
 		return;
 	}
 	FTextureHandle TextureHandle;
