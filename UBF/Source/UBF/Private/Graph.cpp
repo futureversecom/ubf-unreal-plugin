@@ -15,7 +15,7 @@ namespace UBF
 		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
-		UE_LOG(LogUBF, Log, TEXT("Executing Graph with a version: %s"), *GetGraphVersion().ToString());
+		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
 		check(Root);
