@@ -131,7 +131,11 @@ namespace UBF
 		bool TryInterpretAs(FString& Out) const
 		{
 			Out = nullptr;
-			if (Type != FFI::DynamicType::String) return false;
+			if (Type != FFI::DynamicType::String)
+			{
+				UE_LOG(LogUBF, Error, TEXT("bool TryInterpretAs(FString& Out) Type is not set to String. Dynamic %s"), *ToString());
+				return false;
+			}
 
 			void* OutStr;
 			const uint16_t* OutPtr;
