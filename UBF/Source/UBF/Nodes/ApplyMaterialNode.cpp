@@ -51,6 +51,7 @@ namespace UBF
 		FName DynamicMaterialName = FName(Material->MaterialInterface->GetName() + TEXT("_Dynamic"));
 		// TODO this can be GC because there is no UPROPERTY() ref. Need to add to root or something
 		WorkingMaterialInstance = UMaterialInstanceDynamic::Create(Material->MaterialInterface, GetWorld(), DynamicMaterialName);
+		WorkingMeshRenderer->SetMaterial(0, WorkingMaterialInstance.Get());
 		
 		auto OnNext = [this](bool bWasSuccess){CheckFuturesComplete(bWasSuccess);};
 
