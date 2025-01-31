@@ -4,9 +4,11 @@ namespace UBF
 {
 	void FSGDecalPropertiesNode::AddProperties(TMap<FString, FShaderPropertyValue>& Properties) const
 	{
-		AddBool(Properties, TEXT("Use Diffuse"), TEXT("_USEDIFFUSE"));
-		AddColor(Properties, TEXT("Base Color"), TEXT("_BaseColor"));
+		AddInt(Properties, TEXT("Render Mode"), TEXT("_RenderMode"));
+		AddColor(Properties, TEXT("Base Color"), TEXT("_Tint"));
 		AddBool(Properties, TEXT("Use Alpha"), TEXT("_UseAlpha"));
+		AddBool(Properties, TEXT("UseAlphaTexture"), TEXT("_UseAlphaTexture"));
+		AddTexture(Properties, TEXT("AlphaTex"), TEXT("_AlphaTex"));
 		AddFloat(Properties, TEXT("Fresnel_IOR"), TEXT("_Fresnel_IOR"));
 		AddFloat(Properties, TEXT("Opacity"), TEXT("_Opacity"));
 		AddBool(Properties, TEXT("Use Emission"), TEXT("_USEEMISSION"));
