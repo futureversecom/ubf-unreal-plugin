@@ -11,14 +11,19 @@ namespace UBF
 	void FGraphHandle::Execute(
 		const FString& BlueprintId,
 		USceneComponent* Root,
-		IGraphProvider* GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+		TSharedPtr<IGraphProvider> GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
+		if (!IsValid(Root))
+		{
+			UE_LOG(LogUBF, Verbose, TEXT("FGraphHandle::Execute Root is invalid, aborting execution"));
+			return;
+		}
+		
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
-		check(Root);
 		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, InstancedBlueprints, *this, MoveTemp(OnComplete));
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
 

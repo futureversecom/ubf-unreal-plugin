@@ -33,16 +33,16 @@ public:
 	void ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData, const FOnComplete& OnComplete);
 	
 	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-	                IGraphProvider* GraphProvider,
+	                const TSharedPtr<IGraphProvider>&  GraphProvider,
 	                const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
 	                FOnComplete& OnComplete) const;
 
-	void SetGraphProviders(IGraphProvider* GraphProvider);
+	void SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider);
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
-	mutable IGraphProvider* CurrentGraphProvider;
+	mutable TSharedPtr<IGraphProvider> CurrentGraphProvider;
 	UBF::FExecutionContextHandle LastExecutionContext;
 };

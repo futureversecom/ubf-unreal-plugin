@@ -48,7 +48,7 @@ namespace UBF
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
-		if (!GetWorld())
+		if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
 		{
 			UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 			HandleFailureFinish();
@@ -60,6 +60,13 @@ namespace UBF
 			if (!Result.Result.Key)
 			{
 				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
+				HandleFailureFinish();
+				return;
+			}
+
+			if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
+			{
+				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 				HandleFailureFinish();
 				return;
 			}

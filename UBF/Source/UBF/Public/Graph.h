@@ -124,7 +124,7 @@ namespace UBF
 		void Execute(
 			const FString& BlueprintId,
 			USceneComponent* Root,
-			IGraphProvider* GraphProvider,
+			TSharedPtr<IGraphProvider> GraphProvider,
 			const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const TMap<FString, FDynamicHandle>& Inputs,
 			TFunction<void()>&& OnComplete,

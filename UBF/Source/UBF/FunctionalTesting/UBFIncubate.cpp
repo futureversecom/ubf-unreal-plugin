@@ -261,9 +261,8 @@ inline bool UBFIncubate::RunTest(const FString& Parameters)
     UE_LOG(LogUBF, Log, TEXT("Completed Executing Graph"));
   };
   const auto Root = World->SpawnActor<AUBFActor>();
-  FDefaultGraphProvider* GraphProvider = new FDefaultGraphProvider();
+  TSharedPtr<FDefaultGraphProvider> GraphProvider = MakeShared<FDefaultGraphProvider>();
   GraphProvider->RegisterGraph("", Graph);
-  ISubGraphResolver* SubGraphResolver = new FDefaultSubGraphResolver();
   UBF::FExecutionContextHandle Context;
   TMap<FString, UBF::FDynamicHandle> Inputs;
   Graph.Execute("", Root->GetRootComponent(), GraphProvider, TMap<FString, UBF::FBlueprintInstance>(), Inputs, OnCompleteFunc, Context);

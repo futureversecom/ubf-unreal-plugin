@@ -29,11 +29,11 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 		InstanceMap.Add(BlueprintInstance.GetInstanceId(), BlueprintInstance);
 	}
 	
-	TryExecute(BlueprintId, Inputs, CurrentGraphProvider,InstanceMap, LastExecutionContext, OnComplete);
+	TryExecute(BlueprintId, Inputs, CurrentGraphProvider, InstanceMap, LastExecutionContext, OnComplete);
 }
 
 void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-		IGraphProvider* GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
+		const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
 		UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete) const
 {
 	if (!ensure(RootComponent)) return;
@@ -79,7 +79,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 	});
 }
 
-void UUBFRuntimeController::SetGraphProviders(IGraphProvider* GraphProvider)
+void UUBFRuntimeController::SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider)
 {
 	CurrentGraphProvider = GraphProvider;
 }

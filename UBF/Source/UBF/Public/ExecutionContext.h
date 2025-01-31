@@ -24,13 +24,13 @@ namespace UBF
 
 		FString BlueprintId;
 		FSceneNode* Root;
-		IGraphProvider* GraphProvider;
+		TSharedPtr<IGraphProvider> GraphProvider;
 		TMap<FString, FBlueprintInstance> InstancedBlueprints;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
 		TFunction<void()> OnComplete;
 		
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, IGraphProvider* GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
 			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), InstancedBlueprints(InstancedBlueprints) ,Graph(Graph), OnComplete(MoveTemp(OnComplete))
 		{
@@ -82,7 +82,7 @@ namespace UBF
 		FExecutionContextHandle() : FExecutionHandleBase(nullptr) {}
 
 		FSceneNode* GetRoot() const { return ContextData->Root; }
-		IGraphProvider* GetGraphProvider() const { return ContextData->GraphProvider; }
+		TSharedPtr<IGraphProvider> GetGraphProvider() const { return ContextData->GraphProvider; }
 		const FContextData* GetUserData() const { return ContextData; }
 
 		bool BlueprintInstanceExistsForId(const FString& InstanceId) const
@@ -107,7 +107,16 @@ namespace UBF
 			
 			check(ContextData);
 			check(ContextData->Root);
-			return ContextData->Root->GetAttachmentComponent()->GetWorld();
+
+			if (USceneComponent* SceneComponent = ContextData->Root->GetAttachmentComponent())
+			{
+				if (!IsValid(SceneComponent))
+					return nullptr;
+
+				return SceneComponent->GetWorld();
+			}
+			
+			return nullptr;
 		}
 		
 		FString GetGraphID() const
