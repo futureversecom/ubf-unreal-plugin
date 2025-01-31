@@ -37,6 +37,9 @@ public:
 	                const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
 	                FOnComplete& OnComplete) const;
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FString> GetLastOutputNames();
+
 	void SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider);
 
 	virtual void BeginPlay() override;
@@ -44,5 +47,6 @@ public:
 
 private:
 	mutable TSharedPtr<IGraphProvider> CurrentGraphProvider;
-	UBF::FExecutionContextHandle LastExecutionContext;
+	mutable UBF::FExecutionContextHandle LastExecutionContext;
+	mutable UBF::FGraphHandle LastGraphHandle;
 };

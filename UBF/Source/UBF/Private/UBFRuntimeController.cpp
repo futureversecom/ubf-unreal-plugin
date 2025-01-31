@@ -73,8 +73,8 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 			OnComplete.ExecuteIfBound();
 		};
 
-		const UBF::FGraphHandle Graph = Result.Result.Value;
-		Graph.Execute(BlueprintId, RootComponent, CurrentGraphProvider, BlueprintInstances, Inputs, OnCompleteFunc, ExecutionContext);
+		LastGraphHandle = Result.Result.Value;
+		LastGraphHandle.Execute(BlueprintId, RootComponent, CurrentGraphProvider, BlueprintInstances, Inputs, OnCompleteFunc, ExecutionContext);
 		UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute Post Graph.Execute"));
 	});
 }
@@ -82,6 +82,20 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 void UUBFRuntimeController::SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider)
 {
 	CurrentGraphProvider = GraphProvider;
+}
+
+TArray<FString> UUBFRuntimeController::GetLastOutputNames()
+{
+	TArray<UBF::FBindingInfo> Outputs;
+	LastGraphHandle.GetOutputs(Outputs);
+	TArray<FString> OutputNames;
+
+	for (auto Output : Outputs)
+	{
+		OutputNames.Add(Output.Id);
+	}
+
+	return OutputNames;
 }
 
 void UUBFRuntimeController::BeginPlay()
