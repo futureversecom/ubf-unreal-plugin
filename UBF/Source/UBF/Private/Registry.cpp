@@ -12,6 +12,7 @@
 #include "FindSceneNodes.h"
 #include "MaterialNode.h"
 #include "SetBlendshapeNode.h"
+#include "SetSceneNodeEnabledNode.h"
 #include "SetTextureSettingsNode.h"
 #include "SGDecalPropertiesNode.h"
 #include "SGFurCardPropertiesNode.h"
@@ -96,6 +97,7 @@ namespace UBF
 		Registry.Register<FTransformPositionNode>("TransformPosition");
 		Registry.Register<FTransformScaleNode>("TransformScale");
 		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint2");
+		Registry.Register<FSetSceneNodeEnabledNode>("SetSceneNodeEnabled");
 		
 		return Registry;
 	}
