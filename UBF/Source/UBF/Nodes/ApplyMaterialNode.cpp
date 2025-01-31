@@ -30,6 +30,12 @@ namespace UBF
 			CompleteAsyncExecution();
 			return;
 		}
+
+		int ElementIndex = 0;
+		if (!TryReadInputValue("Index", ElementIndex))
+		{
+			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Failed to Read Index"));
+		}
 		
 		WorkingMeshRenderer = Renderer->GetMesh();
 		if (!IsValid(WorkingMeshRenderer))
@@ -39,7 +45,7 @@ namespace UBF
 			CompleteAsyncExecution();
 			return;
 		}
-
+		
 		if (!IsValid(Material->MaterialInterface))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Material does not have valid MaterialInterface"));
@@ -51,7 +57,7 @@ namespace UBF
 		FName DynamicMaterialName = FName(Material->MaterialInterface->GetName() + TEXT("_Dynamic"));
 		// TODO this can be GC because there is no UPROPERTY() ref. Need to add to root or something
 		WorkingMaterialInstance = UMaterialInstanceDynamic::Create(Material->MaterialInterface, GetWorld(), DynamicMaterialName);
-		WorkingMeshRenderer->SetMaterial(0, WorkingMaterialInstance.Get());
+		WorkingMeshRenderer->SetMaterial(ElementIndex, WorkingMaterialInstance.Get());
 		
 		auto OnNext = [this](bool bWasSuccess){CheckFuturesComplete(bWasSuccess);};
 
@@ -80,9 +86,6 @@ namespace UBF
 			return;
 		}
 		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Material %s to MeshComponent %s"),*WorkingMaterialInstance->GetName(), *WorkingMeshRenderer->GetName());
-
-		// todo: find right element index
-		WorkingMeshRenderer->SetMaterial(0, WorkingMaterialInstance.Get());
 		
 		TriggerNext();
 		CompleteAsyncExecution();
