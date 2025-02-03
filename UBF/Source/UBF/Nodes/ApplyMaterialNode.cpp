@@ -158,6 +158,14 @@ namespace UBF
 
 			const auto TextureHandle = Prop.Value.TextureValue;
 			FString ResourceId = TextureHandle.ResourceId;
+			
+			if (ResourceId.IsEmpty())
+			{
+				UE_LOG(LogUBF, Verbose, TEXT("FApplyMaterialNode::EvaluateProperty empty resource id provided for texture param %s"), *Prop.Key);
+				Promise->SetValue(true);
+				return Future;
+			}
+
 			GetContext().GetGraphProvider()->GetTextureResource(TextureHandle.ResourceId).Next(
 				[this, Promise, Mat, Prop, ResourceId](const FLoadTextureResult& TextureResult)
 			{

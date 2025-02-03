@@ -21,7 +21,7 @@ void UBF::FSGPBRPropertiesNode::AddProperties(TMap<FString, FShaderPropertyValue
 	AddBool(Properties, TEXT("Use Normal Map"), TEXT("_USENORMALMAP"));
 	AddTexture(Properties, TEXT("Normal Tex"), TEXT("_NormalTex"), true);
 	AddBool(Properties, TEXT("Use ORM"), TEXT("_USEORM"));
-	AddTexture(Properties, TEXT("ORM"), TEXT("_ORMTex"));
+	AddTexture(Properties, TEXT("ORM"), TEXT("_ORM"));
 	AddFloat(Properties, TEXT("Occlusion"), TEXT("_Occlusion"));
 	AddFloat(Properties, TEXT("Roughness"), TEXT("_Roughness"));
 	AddFloat(Properties, TEXT("Metallic"), TEXT("_Metallic"));
