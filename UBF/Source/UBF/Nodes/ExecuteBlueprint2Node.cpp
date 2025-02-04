@@ -73,10 +73,8 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 				FDynamicHandle Dynamic;
 				if (ExecContext.TryReadOutput(Output.Id, Dynamic))
 				{
-					// IMPORTANT We must prepend the 'Out.' prefix to the output
-					// id to match the expected output binding when forwarding.
 					UE_LOG(LogUBF, Verbose, TEXT("Writing Output: Id: '%s' Value: %s"), *Output.Id, *Dynamic.ToString())
-					WriteOutput("Out." + Output.Id, Dynamic);
+					WriteOutput(Output.Id, Dynamic);
 				}
 			}
 					

@@ -32,10 +32,9 @@ namespace UBF
 		}
 
 		int ElementIndex = 0;
-		if (!TryReadInputValue("Index", ElementIndex))
-		{
-			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Failed to Read Index"));
-		}
+		TryReadInputValue("Index", ElementIndex);
+
+		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying material to %d slot"), ElementIndex);
 		
 		WorkingMeshRenderer = Renderer->GetMesh();
 		if (!IsValid(WorkingMeshRenderer))
