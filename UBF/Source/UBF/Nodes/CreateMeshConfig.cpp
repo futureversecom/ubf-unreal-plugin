@@ -10,7 +10,7 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	FString ResourceID;
 	if (!TryReadInputValue("Resource", ResourceID))
 	{
-		UE_LOG(LogUBF, Warning, TEXT("[CreateMeshConfig] to read MeshResource input"));
+		UE_LOG(LogUBF, Warning, TEXT("[CreateMeshConfig] failed to read MeshResource input"));
 		
 		const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();
 		check(Settings);
@@ -18,11 +18,15 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 		return;
 	}
 
-	UE_LOG(LogUBF, Verbose, TEXT("[CreateMeshConfig] Finding MeshConfig for ResourceId: %s"), *ResourceID);
-	
+	FString ConfigKey;
+	TryReadInputValue("ConfigOverrideKey", ConfigKey);
+
+	UE_LOG(LogUBF, Verbose, TEXT("[CreateMeshConfig] Finding MeshConfig for: %s"), *ConfigKey);
+
+	// if config key is empty, it will use default config
 	const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();
 	check(Settings);
-	FMeshConfigData MeshConfigData = Settings->GetMeshConfigData(ResourceID);
+	FMeshConfigData MeshConfigData = Settings->GetMeshConfigData(ConfigKey);
 	
 	GetContext().GetGraphProvider()->GetMeshResource(ResourceID).Next([this, MeshConfigData, ResourceID](const FLoadDataArrayResult& Result)
 	{
