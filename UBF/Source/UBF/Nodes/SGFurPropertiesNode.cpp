@@ -6,8 +6,8 @@ void UBF::FSGFurPropertiesNode::AddProperties(TMap<FString, FShaderPropertyValue
 	AddTexture(Properties, TEXT("Diffuse Texture"), TEXT("_DiffuseTex"));
 	AddColor(Properties, TEXT("Base Color"), TEXT("_Tint"));
 	AddBool(Properties, TEXT("Use Alpha"), TEXT("_UseAlpha"));
-	AddBool(Properties, TEXT("UseAlphaTex"), TEXT("_UseAlphaTexture"));
-	AddTexture(Properties, TEXT("AlphaTex"), TEXT("_AlphaTex"));
+	// AddBool(Properties, TEXT("UseAlphaTex"), TEXT("_UseAlphaTexture"));
+	// AddTexture(Properties, TEXT("AlphaTex"), TEXT("_AlphaTex"));
 	AddFloat(Properties, TEXT("Fresnel_IOR"), TEXT("_Fresnel_IOR"));
 	AddFloat(Properties, TEXT("Opacity"), TEXT("_Opacity"));
 
