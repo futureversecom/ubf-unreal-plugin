@@ -17,6 +17,7 @@
 #include "SGDecalPropertiesNode.h"
 #include "SGFurCardPropertiesNode.h"
 #include "SGFurPropertiesNode.h"
+#include "SGHairPropertiesNode.h"
 #include "SGPBRPropertiesNode.h"
 #include "SpawnMeshNode.h"
 #include "TransformPositionNode.h"
@@ -85,6 +86,7 @@ namespace UBF
 		Registry.Register<FMaterialNode>("Material");
 		Registry.Register<FSGDecalPropertiesNode>("SGDecalProperties");
 		Registry.Register<FSGPBRPropertiesNode>("PBRProperties");
+		Registry.Register<FSGHairPropertiesNode>("MakeHairProperties");
 		Registry.Register<FSGFurPropertiesNode>("SGFurProperties");
 		Registry.Register<FSGFurCardPropertiesNode>("SGFurCardProperties");
 		Registry.Register<FSpawnMeshNode>("SpawnMesh");
