@@ -18,7 +18,7 @@ void UBF::FSGPBRPropertiesNode::AddProperties(TMap<FString, FShaderPropertyValue
 	AddColor(Properties, TEXT("Emissive Tint"), TEXT("_EmissiveTint"));
 	AddFloat(Properties, TEXT("Emissive Tint Boost"), TEXT("_EmissiveTintBoost"));
 
-	AddBool(Properties, TEXT("Use Normal Map"), TEXT("_UseNormalMap"));
+	AddBool(Properties, TEXT("Use Normal Map"), TEXT("_UseNormal"));
 	AddTexture(Properties, TEXT("Normal Tex"), TEXT("_NormalTex"), true);
 	AddBool(Properties, TEXT("Use ORM"), TEXT("_UseORM"));
 	AddTexture(Properties, TEXT("ORM"), TEXT("_ORM"));
