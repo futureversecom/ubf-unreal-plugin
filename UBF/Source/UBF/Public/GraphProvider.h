@@ -35,6 +35,8 @@ namespace UBF
 class UBF_API IGraphProvider
 {
 public:
+	virtual void PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString = FString()) = 0;
+	
 	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& ArtifactId) = 0;
 	
 	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ResourceId) = 0;
@@ -99,7 +101,9 @@ public:
 		
 		return Future;
 	}
-	
+
+	virtual void PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString) override {}
+
 private:
 	TMap<FString, UBF::FGraphHandle> Graphs;
 	TMap<FString, FBlueprintJson> Instances;

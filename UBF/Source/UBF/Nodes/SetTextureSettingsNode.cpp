@@ -6,6 +6,7 @@ bool UBF::FSetTextureSettingsNode::ExecuteSync() const
 	if (!TryReadInputValue("Texture Resource", ResourceID))
 	{
 		UE_LOG(LogUBF, Verbose, TEXT("[SetTextureSettings] No valid texture provided"));
+		WriteOutput("Texture", FDynamicHandle::String(FString()));
 		return true;
 	}
 

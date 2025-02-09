@@ -133,7 +133,8 @@ namespace UBF
 			Out = nullptr;
 			if (Type != FFI::DynamicType::String)
 			{
-				UE_LOG(LogUBF, Error, TEXT("bool TryInterpretAs(FString& Out) Type is not set to String. Dynamic %s"), *ToString());
+				if (Type != FFI::DynamicType::Unknown)
+					UE_LOG(LogUBF, Error, TEXT("bool TryInterpretAs(FString& Out) Type is not set to String. Dynamic %s"), *ToString());
 				return false;
 			}
 

@@ -16,7 +16,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 
 	if (BlueprintId.IsEmpty())
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] BlueprintId found was empty on graph: '%s'"), *GetContext().GetGraphID());
+		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] BlueprintId found was empty on graph: '%s'"), *GetContext().GetBlueprintID());
 		TriggerNext();
 		CompleteAsyncExecution();
 		return;

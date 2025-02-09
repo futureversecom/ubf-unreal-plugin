@@ -4,6 +4,7 @@
 #include "BlueprintInstance.h"
 #include "Dynamic.h"
 #include "Graph.h"
+#include "GraphProvider.h"
 #include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
 
@@ -119,10 +120,15 @@ namespace UBF
 			return nullptr;
 		}
 		
-		FString GetGraphID() const
+		FString GetBlueprintID() const
 		{
+			if (ContextData == nullptr)
+				return FString("NoBlueprintIdContextDataIsNull");
+			
 			return ContextData->BlueprintId;
 		}
+
+		void PrintBlueprintDebug(const FString& ContextString = FString()) const;
 
 		void CompleteNode(const FFI::CompletionID CompletionID) const
 		{

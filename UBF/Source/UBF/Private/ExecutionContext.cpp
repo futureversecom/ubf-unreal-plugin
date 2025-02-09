@@ -1,6 +1,7 @@
 #include "ExecutionContext.h"
 
 #include "UBFLog.h"
+#include "GraphProvider.h"
 #include "UBFUtils.h"
 
 namespace UBF
@@ -21,6 +22,14 @@ namespace UBF
 			OnComplete();
 	}
 
+	void FExecutionContextHandle::PrintBlueprintDebug(const FString& ContextString) const
+	{
+		if (ContextData == nullptr || ContextData->GraphProvider == nullptr)
+			return;
+
+		ContextData->GraphProvider->PrintBlueprintDebug(GetBlueprintID(), ContextString);
+	}
+
 	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const
 	{
 		return CALL_RUST_FUNC(ctx_trigger_node)(
@@ -32,7 +41,7 @@ namespace UBF
 		);
 	}
 
-	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey,
+	bool FExecutionContextHandle::						TryReadInput(FString const& NodeId, const FString& PortKey,
 	                                           FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;
@@ -44,7 +53,8 @@ namespace UBF
 			PortKey.Len(),
 			&DynamicPtr))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("No Input Found (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+			UE_LOG(LogUBF, Warning, TEXT("No Input Found (Node:%s Port:%s) on BlueprintId: %s"), *NodeId, *FString(PortKey), *GetBlueprintID());
+			PrintBlueprintDebug(FString::Printf(TEXT("No Input Found (Node:%s Port:%s)"), *NodeId, *FString(PortKey)));
 			return false;
 		}
 		Dynamic = FDynamicHandle(DynamicPtr);
