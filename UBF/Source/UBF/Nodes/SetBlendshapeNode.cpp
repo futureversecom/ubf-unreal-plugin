@@ -31,11 +31,15 @@ namespace UBF
 		if (!TryReadInputValue("ID", ID))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'ID' cannot set blendshape"));
+			TriggerNext();
+			CompleteAsyncExecution();
 			return;
 		}
 		if (!TryReadInputValue("Value", Value))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'Value' cannot set blendshape"));
+			TriggerNext();
+			CompleteAsyncExecution();
 			return;
 		}
 		
