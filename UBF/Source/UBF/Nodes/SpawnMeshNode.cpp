@@ -55,7 +55,7 @@ namespace UBF
 			return;
 		}
 		
-		GetContext().GetGraphProvider()->GetMeshResource(ResourceID).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadDataArrayResult Result)
+		GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
 		{
 			if (!Result.Result.Key)
 			{
@@ -71,19 +71,7 @@ namespace UBF
 				return;
 			}
 			
-			const auto MeshData = Result.Result.Value;
-			FglTFRuntimeConfig LoaderConfig = MeshConfigData.RuntimeConfig;
-			
-			UglTFRuntimeAsset* Asset = NewObject<UglTFRuntimeAsset>();
-			Asset->RuntimeContextObject = LoaderConfig.RuntimeContextObject;
-			Asset->RuntimeContextString = LoaderConfig.RuntimeContextString;
-
-			if (!Asset->LoadFromData(MeshData.GetData(), MeshData.Num(), LoaderConfig))
-			{
-				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] Failed to Load Mesh from Data %s"), *ResourceID);
-				HandleFailureFinish();
-				return;
-			}
+			UglTFRuntimeAsset* Asset = Result.Result.Value;
 			
 			if (!Asset)
 			{

@@ -8,6 +8,7 @@
 #include "Registry.h"
 #include "UObject/Interface.h"
 
+struct FglTFRuntimeConfig;
 class UUBFGraphReference;
 class UglTFRuntimeAsset;
 
@@ -39,72 +40,9 @@ public:
 	
 	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& ArtifactId) = 0;
 	
-	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ResourceId) = 0;
+	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ArtifactId) = 0;
 	
-	virtual TFuture<UBF::FLoadDataArrayResult> GetMeshResource(const FString& ResourceId) = 0;
+	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& ArtifactId, const FglTFRuntimeConfig& Config) = 0;
 
 	virtual ~IGraphProvider() {}
-};
-
-
-class FDefaultGraphProvider final : public IGraphProvider
-{
-	
-public:
-	void RegisterGraph(const FString& Id, const UBF::FGraphHandle& Graph)
-	{
-		Graphs.Add(Id, Graph);
-	}
-
-	void RegisterInstance(const FString& Id, const FBlueprintJson& Instance)
-	{
-		Instances.Add(Id, Instance);
-	}
-
-	virtual TFuture<UBF::FLoadGraphResult> GetGraph(const FString& ArtifactId) override
-	{
-		TSharedPtr<TPromise<UBF::FLoadGraphResult>> Promise = MakeShareable(new TPromise<UBF::FLoadGraphResult>());
-		TFuture<UBF::FLoadGraphResult> Future = Promise->GetFuture();
-		UBF::FLoadGraphResult LoadResult;
-
-		LoadResult.Result = Graphs.Contains(ArtifactId)
-			? TPair<bool, UBF::FGraphHandle>(true, Graphs[ArtifactId])
-			: TPair<bool, UBF::FGraphHandle>(false, UBF::FGraphHandle());
-	
-		Promise->SetValue(LoadResult);
-		
-		return Future;
-	}
-
-	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ResourceId) override
-	{
-		TSharedPtr<TPromise<UBF::FLoadTextureResult>> Promise = MakeShareable(new TPromise<UBF::FLoadTextureResult>());
-		TFuture<UBF::FLoadTextureResult> Future = Promise->GetFuture();
-		UBF::FLoadTextureResult LoadResult;
-		
-		LoadResult.Result = TPair<bool, UTexture2D*>(false, nullptr);
-
-		Promise->SetValue(LoadResult);
-		
-		return Future;
-	}
-
-	virtual TFuture<UBF::FLoadDataArrayResult> GetMeshResource(const FString& ResourceId) override
-	{
-		TSharedPtr<TPromise<UBF::FLoadDataArrayResult>> Promise = MakeShareable(new TPromise<UBF::FLoadDataArrayResult>());
-		TFuture<UBF::FLoadDataArrayResult> Future = Promise->GetFuture();
-		UBF::FLoadDataArrayResult LoadResult;
-		TArray<uint8> Data;
-		LoadResult.Result = TPair<bool, TArray<uint8>>(false, Data);
-
-		Promise->SetValue(LoadResult);
-		
-		return Future;
-	}
-
-	virtual void PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString) override {}
-
-private:
-	TMap<FString, UBF::FGraphHandle> Graphs;
-	TMap<FString, FBlueprintJson> Instances;
 };

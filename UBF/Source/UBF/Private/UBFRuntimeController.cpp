@@ -32,9 +32,27 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 	TryExecute(BlueprintId, Inputs, CurrentGraphProvider, InstanceMap, LastExecutionContext, OnComplete);
 }
 
+void UUBFRuntimeController::ClearBlueprint()
+{
+	TArray<TObjectPtr<USceneComponent>> Children = RootComponent->GetAttachChildren();
+	for (const auto AttachChild : Children)
+	{
+		TArray<AActor*> AttachedActorsChildren;
+		AttachChild->GetOwner()->GetAttachedActors(AttachedActorsChildren, false, true);
+		for (const auto AttachedActorChild : AttachedActorsChildren)
+		{
+			AttachedActorChild->Destroy();
+		}
+				
+		AttachChild->GetOwner()->Destroy();
+	}
+
+	// TODO cancel any current blueprint executions
+}
+
 void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-		const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
-		UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete) const
+                                       const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
+                                       UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete)
 {
 	if (!ensure(RootComponent)) return;
 	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute"));
@@ -55,18 +73,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 			return;
 		}
 
-		TArray<TObjectPtr<USceneComponent>> Children = RootComponent->GetAttachChildren();
-		for (const auto AttachChild : Children)
-		{
-			TArray<AActor*> AttachedActorsChildren;
-			AttachChild->GetOwner()->GetAttachedActors(AttachedActorsChildren, false, true);
-			for (const auto AttachedActorChild : AttachedActorsChildren)
-			{
-				AttachedActorChild->Destroy();
-			}
-				
-			AttachChild->GetOwner()->Destroy();
-		}
+		ClearBlueprint();
 
 		auto OnCompleteFunc = [OnComplete]
 		{

@@ -141,7 +141,7 @@ namespace UBF
 	private:
 	
 		mutable FString CachedId;
-		mutable FGraphVersion CachedVersion ;
+		mutable FGraphVersion CachedVersion;
 	};
 
 	static FGraphVersion SupportedGraphVersion = FGraphVersion(TEXT("0.1.0"));

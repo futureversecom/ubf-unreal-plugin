@@ -31,11 +31,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta = (AutoCreateRefTerm = "OnComplete"))
 	void ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData, const FOnComplete& OnComplete);
+
+	UFUNCTION(BlueprintCallable)
+	void ClearBlueprint();
 	
 	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
 	                const TSharedPtr<IGraphProvider>&  GraphProvider,
 	                const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
-	                FOnComplete& OnComplete) const;
+	                FOnComplete& OnComplete);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FString> GetLastOutputNames();
