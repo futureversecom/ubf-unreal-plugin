@@ -101,6 +101,11 @@ namespace UBF
 			Context.CompleteNode(CompletionID);
 			delete this; // Should this delete? FRegistry makes it seem like rust should be in charge of deleting nodes
 		}
+
+		void Log(EUBFLogLevel Level, const FString& Log) const
+		{
+			GetContext().Log(Level, Log);
+		}
 		
 	public:
 		virtual ~FCustomNode() = default;

@@ -12,7 +12,7 @@ namespace UBF
 		FShaderProperties* ShaderProperties;
 		if (!TryReadInput<FShaderProperties>("Properties", ShaderProperties))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("Material node could not find input 'Properties'"));
+			UBF_LOG(Warning, TEXT("Material node could not find input 'Properties'"));
 			return true;
 		}
 

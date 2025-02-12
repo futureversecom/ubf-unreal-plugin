@@ -8,7 +8,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 	FString BlueprintId;
 	if (!TryReadInputValue("Blueprint", BlueprintId))
 	{
-		UE_LOG(LogUBF, Warning, TEXT("[ExecuteBlueprint2Node] Failed to read Key Input"));
+		UBF_LOG(Warning, TEXT("[ExecuteBlueprint2Node] Failed to read Key Input"));
 		TriggerNext();
 		CompleteAsyncExecution();
 		return;
@@ -16,7 +16,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 
 	if (BlueprintId.IsEmpty())
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] BlueprintId found was empty on graph: '%s'"), *GetContext().GetBlueprintID());
+		UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] BlueprintId found was empty on graph: '%s'"), *GetContext().GetBlueprintID());
 		TriggerNext();
 		CompleteAsyncExecution();
 		return;
@@ -30,7 +30,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 	if (GetContext().BlueprintInstanceExistsForId(BlueprintId))
 	{
 		FBlueprintInstance BlueprintInstance = GetContext().GetInstanceForId(BlueprintId);
-		UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] Found blueprint instance for BlueprintId: '%s' BlueprintId will be replaced with '%s'"), *BlueprintId, *BlueprintInstance.GetBlueprintId());
+		UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Found blueprint instance for BlueprintId: '%s' BlueprintId will be replaced with '%s'"), *BlueprintId, *BlueprintInstance.GetBlueprintId());
 		BlueprintId = BlueprintInstance.GetBlueprintId();
 		ActualInputs = BlueprintInstance.GetInputs();
 	}
@@ -45,13 +45,13 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 		}
 	}
 	
-	UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] NodeInputs Count %d for BlueprintId: '%s'"), ExpectedInputs.Num(), *BlueprintId);
+	UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] NodeInputs Count %d for BlueprintId: '%s'"), ExpectedInputs.Num(), *BlueprintId);
 
 	GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, BlueprintId, ActualInputs](const FLoadGraphResult& Result)
 	{
 		if (!Result.Result.Key)
 		{
-			UE_LOG(LogUBF, Error, TEXT("[ExecuteBlueprint2Node] Aborting execution: graph '%s' is invalid"), *BlueprintId);
+			UBF_LOG(Error, TEXT("[ExecuteBlueprint2Node] Aborting execution: graph '%s' is invalid"), *BlueprintId);
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -59,21 +59,21 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 		
 		auto OnCompleteFunc = [Result, this, BlueprintId]
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] Completed Executing Graph '%s'"), *BlueprintId);
+			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Completed Executing Graph '%s'"), *BlueprintId);
 	
 			TArray<FBindingInfo> Outputs;
 			Result.Result.Value.GetOutputs(Outputs);
 			
-			UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] Output Count %d"), Outputs.Num());
+			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Output Count %d"), Outputs.Num());
 			
 			for (auto Output : Outputs)
 			{
-				UE_LOG(LogUBF, Verbose, TEXT("[ExecuteBlueprint2Node] Looking up Output from subgraph. Binding Id: '%s'"), *Output.Id);
+				UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Looking up Output from subgraph. Binding Id: '%s'"), *Output.Id);
 					
 				FDynamicHandle Dynamic;
 				if (ExecContext.TryReadOutput(Output.Id, Dynamic))
 				{
-					UE_LOG(LogUBF, Verbose, TEXT("Writing Output: Id: '%s' Value: %s"), *Output.Id, *Dynamic.ToString())
+					UBF_LOG(Verbose, TEXT("Writing Output: Id: '%s' Value: %s"), *Output.Id, *Dynamic.ToString())
 					WriteOutput(Output.Id, Dynamic);
 				}
 			}
@@ -83,7 +83,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 		};
 
 		const FGraphHandle Graph = Result.Result.Value;
-		Graph.Execute(BlueprintId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetUserData()->InstancedBlueprints,
+		Graph.Execute(BlueprintId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetUserData()->LogData, GetContext().GetUserData()->InstancedBlueprints,
 			ActualInputs, OnCompleteFunc, ExecContext);
 	});
 }

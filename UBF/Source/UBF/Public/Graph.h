@@ -5,6 +5,7 @@
 #include "Dynamic.h"
 #include "Managed.h"
 
+class FUBFLogData;
 class ISubGraphResolver;
 class IGraphProvider;
 
@@ -125,6 +126,7 @@ namespace UBF
 			const FString& BlueprintId,
 			USceneComponent* Root,
 			TSharedPtr<IGraphProvider> GraphProvider,
+			const TSharedPtr<FUBFLogData>& LogData,
 			const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const TMap<FString, FDynamicHandle>& Inputs,
 			TFunction<void()>&& OnComplete,

@@ -12,22 +12,22 @@ namespace UBF
 {
 	void FSpawnMeshNode::ExecuteAsync() const
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] Executing Node"));
+		UBF_LOG(Verbose, TEXT("[SpawnMesh] Executing Node"));
 		
 		FString ResourceID;
 		if (!TryReadInputValue("Resource", ResourceID))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[SpawnMesh] failed ResourceInfo for ID %s"), *ResourceID);
+			UBF_LOG(Warning, TEXT("[SpawnMesh] failed ResourceInfo for ID %s"), *ResourceID);
 			HandleFailureFinish();
 			return;
 		}
 		
-		UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] found Resource with ID %s"), *ResourceID);
+		UBF_LOG(Verbose, TEXT("[SpawnMesh] found Resource with ID %s"), *ResourceID);
 
 		FSceneNode* ParentInput = nullptr;
 		if (!TryReadInput("Parent", ParentInput))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[SpawnMesh] Failed to Read 'Parent' Input"));
+			UBF_LOG(Warning, TEXT("[SpawnMesh] Failed to Read 'Parent' Input"));
 
 			// todo: disabling this temporarily for the demo
 			//HandleFailureFinish();
@@ -39,18 +39,18 @@ namespace UBF
 		FMeshConfigData MeshConfigData;
 		if (!TryReadInput("Config", MeshConfig))
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] no MeshConfig provided, using default mesh config"));
+			UBF_LOG(Verbose, TEXT("[SpawnMesh] no MeshConfig provided, using default mesh config"));
 			MeshConfigData = GetDefault<UUBFMeshConfigSettings>()->GetMeshConfigData();
 		}
 		else
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] found meshconfig override"));
+			UBF_LOG(Verbose, TEXT("[SpawnMesh] found meshconfig override"));
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
 		if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
 		{
-			UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
+			UBF_LOG(Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 			HandleFailureFinish();
 			return;
 		}
@@ -59,14 +59,14 @@ namespace UBF
 		{
 			if (!Result.Result.Key)
 			{
-				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
+				UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
 				HandleFailureFinish();
 				return;
 			}
 
 			if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
 			{
-				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
+				UBF_LOG(Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 				HandleFailureFinish();
 				return;
 			}
@@ -75,12 +75,12 @@ namespace UBF
 			
 			if (!Asset)
 			{
-				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
+				UBF_LOG(Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
 				HandleFailureFinish();
 				return;
 			}
 			
-			UE_LOG(LogUBF, Verbose, TEXT("[SpawnMesh] ParentComp: %s"), *ParentInput->ToString());
+			UBF_LOG(Verbose, TEXT("[SpawnMesh] ParentComp: %s"), *ParentInput->ToString());
 				
 			FActorSpawnParameters SpawnParameters;
 			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;

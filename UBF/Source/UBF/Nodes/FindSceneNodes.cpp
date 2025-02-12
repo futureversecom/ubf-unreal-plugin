@@ -6,12 +6,12 @@ namespace UBF
 {
 	bool FFindSceneNodes::ExecuteSync() const
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("[FindSceneNodes] Executing Node"));
+		UBF_LOG(Verbose, TEXT("[FindSceneNodes] Executing Node"));
 		
 		FString Filter;
 		if (!TryReadInputValue("Filter", Filter))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[FindSceneNodes] Failed to Read Filter Input"));
+			UBF_LOG(Warning, TEXT("[FindSceneNodes] Failed to Read Filter Input"));
 			TriggerNext();
 			return true;
 		}
@@ -19,14 +19,14 @@ namespace UBF
 		FSceneNode* RootInput;
 		if (!TryReadInput("Root", RootInput))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[FindSceneNodes] Failed to Read Root Input."));
+			UBF_LOG(Warning, TEXT("[FindSceneNodes] Failed to Read Root Input."));
 			TriggerNext();
 			return true;
 		}
 	
 		if (!RootInput || !RootInput->GetAttachmentComponent())
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[FindSceneNodes] Root is invalid"));
+			UBF_LOG(Warning, TEXT("[FindSceneNodes] Root is invalid"));
 			TriggerNext();
 			return true;
 		}
@@ -42,7 +42,7 @@ namespace UBF
 		
 		FindNodes(Filter, RootInput->GetAttachmentComponent(), OnNodeFound);
 		
-		UE_LOG(LogUBF, Verbose, TEXT("[FindSceneNodes] Found %d Nodes"), Count);
+		UBF_LOG(Verbose, TEXT("[FindSceneNodes] Found %d Nodes"), Count);
 		WriteOutput("Nodes", FoundNodes);
 		TriggerNext();
 		return true;
@@ -55,12 +55,12 @@ namespace UBF
 		
 		for (auto AttachedChild : Root->GetAttachChildren())
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[FindSceneNodes] Comparing USceneComponent %s to Filter: %s"),
+			UBF_LOG(Verbose, TEXT("[FindSceneNodes] Comparing USceneComponent %s to Filter: %s"),
 				*AttachedChild->GetName(), *Filter);
 			
 			if(AttachedChild.GetName().StartsWith(Filter))
 			{
-				UE_LOG(LogUBF, Verbose, TEXT("[FindSceneNodes] Adding USceneComponent %s to FoundNodes"),
+				UBF_LOG(Verbose, TEXT("[FindSceneNodes] Adding USceneComponent %s to FoundNodes"),
 				*AttachedChild->GetName());
 				OnNodeFound(AttachedChild);
 			}
