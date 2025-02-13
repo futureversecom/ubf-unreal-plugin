@@ -57,7 +57,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			return;
 		}
 		
-		auto OnCompleteFunc = [Result, this, BlueprintId]
+		auto OnCompleteFunc = [Result, this, BlueprintId](bool Success, FUBFExecutionReport ExecutionReport)
 		{
 			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Completed Executing Graph '%s'"), *BlueprintId);
 	
@@ -73,7 +73,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 				FDynamicHandle Dynamic;
 				if (ExecContext.TryReadOutput(Output.Id, Dynamic))
 				{
-					UBF_LOG(Verbose, TEXT("Writing Output: Id: '%s' Value: %s"), *Output.Id, *Dynamic.ToString())
+					UBF_LOG(Verbose, TEXT("Writing Output: Id: '%s' Value: %s"), *Output.Id, *Dynamic.ToString());
 					WriteOutput(Output.Id, Dynamic);
 				}
 			}

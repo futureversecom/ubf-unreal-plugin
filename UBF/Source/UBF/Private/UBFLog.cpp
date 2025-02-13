@@ -8,14 +8,26 @@ DEFINE_LOG_CATEGORY(LogUBF);
 
 namespace UBFLogging
 {
-	static TAutoConsoleVariable<bool> CVarUBFDebugLogging(
-	TEXT("UBF.Logging.DebugLogging"),
-	false,
-	TEXT("Enable verbose debug logging for UBF."));
 
-	bool DebugLoggingEnabled()
+	static TAutoConsoleVariable<bool> CVarUBFPrintLogsInstant(
+	TEXT("UBF.Logging.PrintLogsInstant"),
+	false,
+	TEXT("Enable printing ubf log message as they are logged. Regardless of this logs are can be retrieved from FUBFExecutionReport"));
+
+	static TAutoConsoleVariable<bool> CVarUBFPrintSummary(
+TEXT("UBF.Logging.PrintLogSummary"),
+true,
+TEXT("Enable printing ubf log summary on execution complete"));
+
+	
+	bool ShouldPrintLogsInstant()
 	{
-		return CVarUBFDebugLogging.GetValueOnAnyThread();
+		return CVarUBFPrintLogsInstant.GetValueOnAnyThread();
+	}
+
+	bool ShouldPrintLogSummary()
+	{
+		return CVarUBFPrintSummary.GetValueOnAnyThread();
 	}
 }
 

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Dynamic.h"
 #include "ExecutionContext.h"
+#include "DataTypes/SceneNode.h"
 
 namespace UBF
 {

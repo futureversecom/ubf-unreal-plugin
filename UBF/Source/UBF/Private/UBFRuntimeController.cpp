@@ -75,13 +75,13 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 
 		ClearBlueprint();
 
-		auto OnCompleteFunc = [OnComplete]
+		auto OnCompleteFunc = [OnComplete](bool Success, FUBFExecutionReport ExecutionReport)
 		{
-			OnComplete.ExecuteIfBound();
+			OnComplete.ExecuteIfBound(Success, ExecutionReport);
 		};
 
 		LastGraphHandle = Result.Result.Value;
-		LastGraphHandle.Execute(BlueprintId, RootComponent, CurrentGraphProvider, MakeShared<FUBFLogData>(), BlueprintInstances, Inputs, OnCompleteFunc, ExecutionContext);
+		LastGraphHandle.Execute(BlueprintId, RootComponent, CurrentGraphProvider, MakeShared<FUBFLogData>(BlueprintId), BlueprintInstances, Inputs, OnCompleteFunc, ExecutionContext);
 		UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute Post Graph.Execute"));
 	});
 }

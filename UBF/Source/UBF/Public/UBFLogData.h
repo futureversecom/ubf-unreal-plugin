@@ -2,10 +2,20 @@
 #include "UBFExecutionReport.h"
 
 
-class FUBFLogData
+class UBF_API FUBFLogData
 {
 public:
+	FUBFLogData() {}
+	FUBFLogData(const FString& RootBlueprintId) : RootBlueprintId(RootBlueprintId) {}
 	void Log(const FString& BlueprintId, EUBFLogLevel Level, const FString& Log);
+
+	FUBFExecutionReport CreateReport() const;
+	
+	bool WasSuccessful() const;
+	
+	FString CreateReportSummary() const;;
+	FString GetRootBlueprintId() const {return RootBlueprintId;}
 private:
-	TMap<FString, FBlueprintLogData> LogMap;
+	TArray<FLogData> Logs;
+	FString RootBlueprintId;
 };

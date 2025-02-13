@@ -2,59 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "BlueprintInstance.h"
+#include "ContextData.h"
 #include "Dynamic.h"
-#include "Graph.h"
-#include "GraphProvider.h"
 #include "UBFExecutionReport.h"
-#include "UBFLogData.h"
 #include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
 
+class IGraphProvider;
+
 namespace UBF
 {
-	/**
-	 * Holds Unreal specific UserData for graph execution
-	 */
-	class FContextData
-	{
-	public:
-		~FContextData()
-		{
-			PinnedWorld->Release();
-			delete Root;
-		};
-
-		FString BlueprintId;
-		FSceneNode* Root;
-		TSharedPtr<IGraphProvider> GraphProvider;
-		TSharedPtr<FUBFLogData> LogData;
-		TMap<FString, FBlueprintInstance> InstancedBlueprints;
-		UGCPin* PinnedWorld;
-		FGraphHandle Graph;
-		TFunction<void()> OnComplete;
-		
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
-			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
-			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), LogData(LogData), InstancedBlueprints(InstancedBlueprints) ,Graph(Graph), OnComplete(MoveTemp(OnComplete))
-		{
-			if (Root->GetWorld())
-			{
-				PinnedWorld = UGCPin::Pin(Root->GetWorld());
-			}
-			else
-			{
-				LogData->Log(BlueprintId, EUBFLogLevel::Error, TEXT("Root GetWorld is Invalid"));
-			}
-		}
-
-		void SetReadyToComplete() const;
-		void SetComplete() const;
-
-	private:
-		mutable bool bIsReadyToComplete = false;
-		mutable bool bIsComplete = false;
-	};
-
+	
 	// Implement macros as base so constructors can be overridden 
 	struct FExecutionHandleBase
 	{

@@ -4,6 +4,7 @@
 #include "BlueprintInstance.h"
 #include "Dynamic.h"
 #include "Managed.h"
+#include "UBFExecutionReport.h"
 
 class FUBFLogData;
 class ISubGraphResolver;
@@ -15,7 +16,7 @@ namespace UBF
 	class FOnComplete;
 
 	struct FRegistryHandle;
-	struct FExecutionContextHandle;
+//	struct FExecutionContextHandle;
 	
 	struct FBindingInfo
 	{
@@ -129,8 +130,8 @@ namespace UBF
 			const TSharedPtr<FUBFLogData>& LogData,
 			const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const TMap<FString, FDynamicHandle>& Inputs,
-			TFunction<void()>&& OnComplete,
-			FExecutionContextHandle& Handle) const;
+			TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
+			struct FExecutionContextHandle& Handle) const;
 		
 		static void OnComplete(FFI::Dynamic*);
 		

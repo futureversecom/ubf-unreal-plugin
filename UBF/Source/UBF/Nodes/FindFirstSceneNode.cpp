@@ -56,7 +56,7 @@ bool UBF::FFindFirstSceneNode::ExecuteSync() const
 }
 
 void UBF::FFindFirstSceneNode::FindNodes(const FString& Filter, const USceneComponent* Root,
-	const TFunction<void(TObjectPtr<USceneComponent>)>& OnNodeFound)
+	const TFunction<void(TObjectPtr<USceneComponent>)>& OnNodeFound) const
 {
 	if (Root == nullptr) return;
 	

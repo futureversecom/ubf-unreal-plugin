@@ -2,26 +2,11 @@
 
 #include "UBFLog.h"
 #include "GraphProvider.h"
+#include "UBFLogData.h"
 #include "UBFUtils.h"
 
 namespace UBF
 {
-	void FContextData::SetReadyToComplete() const
-	{
-		bIsReadyToComplete = true;
-
-		if (bIsReadyToComplete && bIsComplete)
-			OnComplete();
-	}
-
-	void FContextData::SetComplete() const
-	{
-		bIsComplete = true;
-
-		if (bIsReadyToComplete && bIsComplete)
-			OnComplete();
-	}
-
 	void FExecutionContextHandle::Log(EUBFLogLevel Level, const FString& Log) const
 	{
 		if (!GetUserData()) return;

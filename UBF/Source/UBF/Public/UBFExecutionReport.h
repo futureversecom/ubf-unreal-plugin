@@ -7,7 +7,7 @@
 #include "UBFExecutionReport.generated.h"
 
 UENUM(BlueprintType)
-enum class EUBFLogLevel
+enum class EUBFLogLevel : uint8
 {
 	VeryVerbose,
 	Verbose,
@@ -19,19 +19,17 @@ enum class EUBFLogLevel
 USTRUCT(BlueprintType)
 struct FLogData
 {
+	GENERATED_BODY()
 public:
+	
 	UPROPERTY(BlueprintReadWrite)
 	EUBFLogLevel Level;
 	UPROPERTY(BlueprintReadWrite)
 	FString Log;
-};
-
-USTRUCT(BlueprintType)
-struct FBlueprintLogData
-{
-public:
 	UPROPERTY(BlueprintReadWrite)
-	TArray<FLogData> LogDatas;
+	FString BlueprintId;
+
+	void PrintLog() const;
 };
 
 #define UBF_LOG(LogLevel, Format, ...) \
@@ -40,7 +38,7 @@ do { \
 FString FormattedMessage = FString::Printf(Format, ##__VA_ARGS__); \
 Log(EUBFLogLevel::LogLevel, FormattedMessage); \
 } \
-} while (0)
+} while (0); \
 
 /**
  * 
@@ -50,5 +48,10 @@ struct UBF_API FUBFExecutionReport
 {
 	GENERATED_BODY()
 public:
-	
+	UPROPERTY(BlueprintType)
+	TArray<FLogData> Logs;
+	UPROPERTY(BlueprintType)
+	bool bWasSuccessful = true;
+	UPROPERTY(BlueprintType)
+	FString Summary;
 };
