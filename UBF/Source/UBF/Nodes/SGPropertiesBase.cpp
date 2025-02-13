@@ -6,7 +6,7 @@
 
 bool UBF::FSGPropertiesBase::ExecuteSync() const
 {
-	UE_LOG(LogUBF, Verbose, TEXT("[SGPropertiesBase] Executing Node"));
+	UBF_LOG(Verbose, TEXT("[SGPropertiesBase] Executing Node"));
 	FShaderProperties* DecalProperties = new FShaderProperties();
 	DecalProperties->BaseShaderName = GetBaseShaderName();
 	AddProperties(DecalProperties->Properties);
@@ -62,7 +62,7 @@ void UBF::FSGPropertiesBase::AddTexture(TMap<FString, FShaderPropertyValue>& Pro
 	FString ResourceID;
 	if (!TryReadInputValue(ResourceName, ResourceID))
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("UBF::FSGPropertiesBase::AddTexture failed to get ResourceInfo from ResourceID %s"), *ResourceName);
+		UBF_LOG(Verbose, TEXT("UBF::FSGPropertiesBase::AddTexture failed to get ResourceInfo from ResourceID %s"), *ResourceName);
 		return;
 	}
 	FTextureHandle TextureHandle;

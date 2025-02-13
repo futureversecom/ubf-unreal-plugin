@@ -7,7 +7,7 @@ namespace UBF
 		FString Message;
 		if (TryReadInputValue(TEXT("Message"), Message))
 		{
-			UE_LOG(LogUBF, Log, TEXT("%s"), *(FString)(*Message));
+			UBF_LOG(Log, TEXT("%s"), *(FString)(*Message));
 		}
 
 		TriggerNext();

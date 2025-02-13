@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Dynamic.h"
 #include "ExecutionContext.h"
+#include "DataTypes/SceneNode.h"
 
 namespace UBF
 {
@@ -100,6 +101,11 @@ namespace UBF
 			check(IsInGameThread());
 			Context.CompleteNode(CompletionID);
 			delete this; // Should this delete? FRegistry makes it seem like rust should be in charge of deleting nodes
+		}
+
+		void Log(EUBFLogLevel Level, const FString& Log) const
+		{
+			GetContext().Log(Level, Log);
 		}
 		
 	public:

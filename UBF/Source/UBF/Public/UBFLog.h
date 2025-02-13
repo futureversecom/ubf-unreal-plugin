@@ -6,6 +6,7 @@ UBF_API DECLARE_LOG_CATEGORY_EXTERN(LogUBF, Log, All);
 
 namespace UBFLogging
 {
-	bool DebugLoggingEnabled();
+	bool ShouldPrintLogsInstant();
+	bool ShouldPrintLogSummary();
 }
 

@@ -10,7 +10,7 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	FString ResourceID;
 	if (!TryReadInputValue("Resource", ResourceID))
 	{
-		UE_LOG(LogUBF, Warning, TEXT("[CreateMeshConfig] failed to read MeshResource input"));
+		UBF_LOG(Warning, TEXT("[CreateMeshConfig] failed to read MeshResource input"));
 		
 		const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();
 		check(Settings);
@@ -21,7 +21,7 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	FString ConfigKey;
 	TryReadInputValue("ConfigOverrideKey", ConfigKey);
 
-	UE_LOG(LogUBF, Verbose, TEXT("[CreateMeshConfig] Finding MeshConfig for: %s"), *ConfigKey);
+	UBF_LOG(Verbose, TEXT("[CreateMeshConfig] Finding MeshConfig for: %s"), *ConfigKey);
 
 	// if config key is empty, it will use default config
 	const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();

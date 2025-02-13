@@ -2,24 +2,16 @@
 
 #include "UBFLog.h"
 #include "GraphProvider.h"
+#include "UBFLogData.h"
 #include "UBFUtils.h"
 
 namespace UBF
 {
-	void FContextData::SetReadyToComplete() const
+	void FExecutionContextHandle::Log(EUBFLogLevel Level, const FString& Log) const
 	{
-		bIsReadyToComplete = true;
+		if (!GetUserData()) return;
 
-		if (bIsReadyToComplete && bIsComplete)
-			OnComplete();
-	}
-
-	void FContextData::SetComplete() const
-	{
-		bIsComplete = true;
-
-		if (bIsReadyToComplete && bIsComplete)
-			OnComplete();
+		GetUserData()->LogData->Log(GetUserData()->BlueprintId, Level, Log);
 	}
 
 	void FExecutionContextHandle::PrintBlueprintDebug(const FString& ContextString) const
@@ -41,7 +33,7 @@ namespace UBF
 		);
 	}
 
-	bool FExecutionContextHandle::						TryReadInput(FString const& NodeId, const FString& PortKey,
+	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey,
 	                                           FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;
@@ -53,7 +45,7 @@ namespace UBF
 			PortKey.Len(),
 			&DynamicPtr))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("No Input Found (Node:%s Port:%s) on BlueprintId: %s"), *NodeId, *FString(PortKey), *GetBlueprintID());
+			UBF_LOG(Warning, TEXT("No Input Found (Node:%s Port:%s) on BlueprintId: %s"), *NodeId, *FString(PortKey), *GetBlueprintID());
 			PrintBlueprintDebug(FString::Printf(TEXT("No Input Found (Node:%s Port:%s)"), *NodeId, *FString(PortKey)));
 			return false;
 		}
@@ -129,7 +121,7 @@ namespace UBF
 		FFI::Dynamic* DynamicPtr;
 		if (!RustPtr)
 		{
-			UE_LOG(LogUBF, Warning, TEXT("FExecutionContextHandle::TryReadOutput RustPtr is invalid %s"), *BindingId);
+			UBF_LOG(Warning, TEXT("FExecutionContextHandle::TryReadOutput RustPtr is invalid %s"), *BindingId);
 			return false;
 		}
 		if (!CALL_RUST_FUNC(ctx_read_output)(
@@ -138,7 +130,7 @@ namespace UBF
 			BindingId.Len(),
 			&DynamicPtr))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("No Output Found (%s)"), *BindingId);
+			UBF_LOG(Warning, TEXT("No Output Found (%s)"), *BindingId);
 			return false;
 		}
 		Dynamic = FDynamicHandle(DynamicPtr);

@@ -2,57 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "BlueprintInstance.h"
+#include "ContextData.h"
 #include "Dynamic.h"
-#include "Graph.h"
-#include "GraphProvider.h"
+#include "UBFExecutionReport.h"
 #include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
 
+class IGraphProvider;
+
 namespace UBF
 {
-	/**
-	 * Holds Unreal specific UserData for graph execution
-	 */
-	class FContextData
-	{
-	public:
-		~FContextData()
-		{
-			UE_LOG(LogUBF, Verbose, TEXT("Deleting FContextData"));
-			PinnedWorld->Release();
-			delete Root;
-		};
-
-		FString BlueprintId;
-		FSceneNode* Root;
-		TSharedPtr<IGraphProvider> GraphProvider;
-		TMap<FString, FBlueprintInstance> InstancedBlueprints;
-		UGCPin* PinnedWorld;
-		FGraphHandle Graph;
-		TFunction<void()> OnComplete;
-		
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
-			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
-			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), InstancedBlueprints(InstancedBlueprints) ,Graph(Graph), OnComplete(MoveTemp(OnComplete))
-		{
-			if (Root->GetWorld())
-			{
-				PinnedWorld = UGCPin::Pin(Root->GetWorld());
-			}
-			else
-			{
-				UE_LOG(LogUBF, Error, TEXT("Root GetWorld is Invalid"));
-			}
-		}
-
-		void SetReadyToComplete() const;
-		void SetComplete() const;
-
-	private:
-		mutable bool bIsReadyToComplete = false;
-		mutable bool bIsComplete = false;
-	};
-
+	
 	// Implement macros as base so constructors can be overridden 
 	struct FExecutionHandleBase
 	{
@@ -128,6 +88,8 @@ namespace UBF
 			return ContextData->BlueprintId;
 		}
 
+		void Log(EUBFLogLevel Level, const FString& Log) const;
+		
 		void PrintBlueprintDebug(const FString& ContextString = FString()) const;
 
 		void CompleteNode(const FFI::CompletionID CompletionID) const
@@ -146,7 +108,7 @@ namespace UBF
 			FDynamicHandle Ptr;
 			if (!TryReadInput(NodeId, PortKey, Ptr))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
 			}
 		
@@ -155,7 +117,7 @@ namespace UBF
 				UObject* Input;
 				if (!Ptr.TryInterpretAs(Input))
 				{
-					UE_LOG(LogUBF, Warning, TEXT("Failed to read input as UObject (%s->%s)"), *NodeId, *FString(PortKey));
+					UBF_LOG(Warning, TEXT("Failed to read input as UObject (%s->%s)"), *NodeId, *FString(PortKey));
 					return false;
 				}
 				Out = Cast<T>(Input);
@@ -177,7 +139,7 @@ namespace UBF
 				return false;
 			}
 
-			UE_LOG(LogUBF, VeryVerbose, TEXT("Read dynamic input value %s"), *Ptr.ToString());
+			UBF_LOG(VeryVerbose, TEXT("Read dynamic input value %s"), *Ptr.ToString());
 
 			return Ptr.TryInterpretAs(Out);
 		}
@@ -189,7 +151,7 @@ namespace UBF
 			FDynamicHandle DynamicArray;
 			if (!TryReadInput(NodeId, PortKey, DynamicArray))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
 			}
 
@@ -203,7 +165,7 @@ namespace UBF
 			FDynamicHandle DynamicArray;
 			if (!TryReadInput(NodeId, PortKey, DynamicArray))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
 			}
 

@@ -7,7 +7,7 @@ namespace UBF
 		FSceneNode* SceneNode;
 		if (!TryReadInput("Transform Object", SceneNode))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[TransformScaleNode] No Transform Object input found"));
+			UBF_LOG(Warning, TEXT("[TransformScaleNode] No Transform Object input found"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -16,31 +16,31 @@ namespace UBF
 		bool bUseWorldSpace = false;
 		if (!TryReadInputValue("Use World Space", bUseWorldSpace))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[TransformScaleNode] Failed to Read bUseWorldSpace Input"));
+			UBF_LOG(Warning, TEXT("[TransformScaleNode] Failed to Read bUseWorldSpace Input"));
 		}
 
 		bool bIsAdditive = false;
 		if (!TryReadInputValue("Is Additive", bIsAdditive))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[TransformScaleNode] Failed to Read Is Additive Input"));
+			UBF_LOG(Warning, TEXT("[TransformScaleNode] Failed to Read Is Additive Input"));
 		}
 		
 		float Right = 0.0f;
 		if (!TryReadInputValue("Right", Right))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[TransformScaleNode] Failed to Read X Input"));
+			UBF_LOG(Warning, TEXT("[TransformScaleNode] Failed to Read X Input"));
 		}
 		
 		float Up = 0.0f;
 		if (!TryReadInputValue("Up", Up))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[TransformScaleNode] Failed to Read Y Input"));
+			UBF_LOG(Warning, TEXT("[TransformScaleNode] Failed to Read Y Input"));
 		}
 		
 		float Forward = 0.0f;
 		if (!TryReadInputValue("Forward", Forward))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[TransformScaleNode] Failed to Read Z Input"));
+			UBF_LOG(Warning, TEXT("[TransformScaleNode] Failed to Read Z Input"));
 		}
 		
 		// these values are in meters

@@ -11,12 +11,12 @@ namespace UBF
 {
 	void FApplyMaterialNode::ExecuteAsync() const
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Executing Node"));
+		UBF_LOG(Verbose, TEXT("[ApplyMaterial] Executing Node"));
 		
 		FMeshRenderer* Renderer;
 		if (!TryReadInput("Renderer", Renderer))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Failed to Read Renderer Input"));
+			UBF_LOG(Warning, TEXT("[ApplyMaterial] Failed to Read Renderer Input"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -25,7 +25,7 @@ namespace UBF
 		const FMaterialValue* Material;
 		if (!TryReadInput("Material", Material))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Failed to Read Material Input"));
+			UBF_LOG(Warning, TEXT("[ApplyMaterial] Failed to Read Material Input"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -34,12 +34,12 @@ namespace UBF
 		int ElementIndex = 0;
 		TryReadInputValue("Index", ElementIndex);
 
-		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying material to %d slot"), ElementIndex);
+		UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying material to %d slot"), ElementIndex);
 		
 		WorkingMeshRenderer = Renderer->GetMesh();
 		if (!IsValid(WorkingMeshRenderer))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] cannot find valid WorkingMeshRenderer"));
+			UBF_LOG(Warning, TEXT("[ApplyMaterial] cannot find valid WorkingMeshRenderer"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -47,7 +47,7 @@ namespace UBF
 		
 		if (!IsValid(Material->MaterialInterface))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Material does not have valid MaterialInterface"));
+			UBF_LOG(Warning, TEXT("[ApplyMaterial] Material does not have valid MaterialInterface"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -84,7 +84,7 @@ namespace UBF
 			CompleteAsyncExecution();
 			return;
 		}
-		UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Material %s to MeshComponent %s"),*WorkingMaterialInstance->GetName(), *WorkingMeshRenderer->GetName());
+		UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Material %s to MeshComponent %s"),*WorkingMaterialInstance->GetName(), *WorkingMeshRenderer->GetName());
 		
 		TriggerNext();
 		CompleteAsyncExecution();
@@ -98,12 +98,12 @@ namespace UBF
 		
 		if (Prop.Value.PropertyType == EShaderPropertyType::Int)
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Int Property: %s With Value: %d to Material"), *Prop.Key, Prop.Value.IntValue);
+			UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Int Property: %s With Value: %d to Material"), *Prop.Key, Prop.Value.IntValue);
 			
 			float TestValue;
 			if (!Mat->GetScalarParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Int Property: %s not found from Material"), *Prop.Key);
+				UBF_LOG(Warning, TEXT("[ApplyMaterial] Int Property: %s not found from Material"), *Prop.Key);
 			}
 			
 			Mat->SetScalarParameterValue(*Prop.Key, Prop.Value.IntValue);
@@ -111,36 +111,36 @@ namespace UBF
 		else if (Prop.Value.PropertyType == EShaderPropertyType::Boolean)
 		{
 			const auto Value = Prop.Value.BoolValue ? 1.0f : 0.0f;
-			UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Bool Property: %s With Value: %f to Material"), *Prop.Key, Value);
+			UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Bool Property: %s With Value: %f to Material"), *Prop.Key, Value);
 			
 			float TestValue;
 			if (!Mat->GetScalarParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Bool Property: %s not found from Material"), *Prop.Key);
+				UBF_LOG(Verbose, TEXT("[ApplyMaterial] Bool Property: %s not found from Material"), *Prop.Key);
 			}
 			
 			Mat->SetScalarParameterValue(*Prop.Key, Value);
 		}
 		else if (Prop.Value.PropertyType == EShaderPropertyType::Float)
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Float Property: %s With Value: %f to Material"), *Prop.Key, Prop.Value.FloatValue);
+			UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Float Property: %s With Value: %f to Material"), *Prop.Key, Prop.Value.FloatValue);
 
 			float TestValue;
 			if (!Mat->GetScalarParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Float Property: %s not found from Material"), *Prop.Key);
+				UBF_LOG(Warning, TEXT("[ApplyMaterial] Float Property: %s not found from Material"), *Prop.Key);
 			}
 			
 			Mat->SetScalarParameterValue(*Prop.Key, Prop.Value.FloatValue);
 		}
 		else if (Prop.Value.PropertyType == EShaderPropertyType::Color)
 		{
-			UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Color Property: %s With Value: %s to Material"), *Prop.Key, *Prop.Value.ColorValue.ToHex());
+			UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Color Property: %s With Value: %s to Material"), *Prop.Key, *Prop.Value.ColorValue.ToHex());
 			
 			FLinearColor TestValue;
 			if (!Mat->GetVectorParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Color Property: %s not found from Material"), *Prop.Key);
+				UBF_LOG(Warning, TEXT("[ApplyMaterial] Color Property: %s not found from Material"), *Prop.Key);
 			}
 			
 			Mat->SetVectorParameterValue(*Prop.Key, Prop.Value.ColorValue);
@@ -150,7 +150,7 @@ namespace UBF
 			UTexture* TestValue;
 			if (!Mat->GetTextureParameterValue(*Prop.Key,TestValue))
 			{
-				UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Texture Property: %s not found from Material"), *Prop.Key);
+				UBF_LOG(Verbose, TEXT("[ApplyMaterial] Texture Property: %s not found from Material"), *Prop.Key);
 				Promise->SetValue(false);
 				return Future;
 			}
@@ -160,7 +160,7 @@ namespace UBF
 			
 			if (ResourceId.IsEmpty())
 			{
-				UE_LOG(LogUBF, Verbose, TEXT("FApplyMaterialNode::EvaluateProperty empty resource id provided for texture param %s"), *Prop.Key);
+				UBF_LOG(Verbose, TEXT("FApplyMaterialNode::EvaluateProperty empty resource id provided for texture param %s"), *Prop.Key);
 				Promise->SetValue(true);
 				return Future;
 			}
@@ -170,7 +170,7 @@ namespace UBF
 			{
 				if (!TextureResult.Result.Key)
 				{
-					UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
+					UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
 					Promise->SetValue(false);
 					return;
 				}
@@ -178,14 +178,14 @@ namespace UBF
 				UTexture* Texture = TextureResult.Result.Value;
 				if (Texture == nullptr)
 				{
-					UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture was null"));
+					UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture was null"));
 					Promise->SetValue(false);
 					return;
 				}
 
 				if (!IsValid(Mat.Get()))
 				{
-					UE_LOG(LogUBF, Warning, TEXT("[ApplyMaterial] Applying Texture Property failed because Mat was no longer valid"));
+					UBF_LOG(Warning, TEXT("[ApplyMaterial] Applying Texture Property failed because Mat was no longer valid"));
 					Promise->SetValue(false);
 					return;
 				}
@@ -202,7 +202,7 @@ namespace UBF
 					}
 				}
 				
-				UE_LOG(LogUBF, Verbose, TEXT("[ApplyMaterial] Applying Texture Property: %s With Value: %s to Material"), *Prop.Key,
+				UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property: %s With Value: %s to Material"), *Prop.Key,
 					Texture ? *Texture->GetName() : TEXT("Null"));
 				Mat->SetTextureParameterValue(*Prop.Key, Texture);
 				Promise->SetValue(true);

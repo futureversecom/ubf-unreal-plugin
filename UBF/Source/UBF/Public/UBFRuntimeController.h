@@ -8,7 +8,7 @@
 #include "Components/ActorComponent.h"
 #include "UBFRuntimeController.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FOnComplete);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnComplete, bool, Success, FUBFExecutionReport, ExecutionReport);
 
 USTRUCT(BlueprintType)
 struct FBlueprintExecutionData
