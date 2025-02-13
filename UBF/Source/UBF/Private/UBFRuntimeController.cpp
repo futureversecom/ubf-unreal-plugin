@@ -7,10 +7,15 @@
 #include "GraphProvider.h"
 #include "UBFBindingObject.h"
 #include "UBFLog.h"
+#include "UBFLogData.h"
 
 void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
 {
-	if (!ensure(RootComponent)) return;
+	if (!ensure(RootComponent))
+	{
+		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
+		return;
+	}
 
 	UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint: %s Num Inputs: %d Num BlueprintInstances: %d"), *BlueprintId, ExecutionData.InputMap.Num(), ExecutionData.BlueprintInstances.Num());
 	
@@ -55,12 +60,17 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
                                        const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
                                        UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete)
 {
-	if (!ensure(RootComponent)) return;
+	if (!ensure(RootComponent))
+	{
+		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
+		return;
+	}
 	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute"));
 
 	if (GraphProvider == nullptr)
 	{
 		UE_LOG(LogUBF, Error, TEXT("Aborting execution: Invalid Graphprovider or SubGraphResolver provided!"));
+		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 		return;
 	}
 		
@@ -71,6 +81,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 		if (!Result.Result.Key)
 		{
 			UE_LOG(LogUBF, Error, TEXT("Aborting execution: graph '%s' is invalid"), *BlueprintId);
+			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 			return;
 		}
 

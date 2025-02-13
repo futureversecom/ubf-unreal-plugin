@@ -48,10 +48,17 @@ struct UBF_API FUBFExecutionReport
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintType)
+	static FUBFExecutionReport Failure()
+	{
+		FUBFExecutionReport Report = FUBFExecutionReport();
+		Report.bWasSuccessful = false;
+		Report.Summary = FString(TEXT("UBFExecution ended in failure"));
+		return Report;
+	}
+	UPROPERTY(BlueprintReadWrite)
 	TArray<FLogData> Logs;
-	UPROPERTY(BlueprintType)
+	UPROPERTY(BlueprintReadWrite)
 	bool bWasSuccessful = true;
-	UPROPERTY(BlueprintType)
+	UPROPERTY(BlueprintReadWrite)
 	FString Summary;
 };
