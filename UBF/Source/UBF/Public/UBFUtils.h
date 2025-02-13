@@ -84,7 +84,18 @@ namespace UBFUtils
 		UE_LOG(LogUBF, Warning, TEXT("Failed to create new dynamic for Type:%s Value: %s"), *Type, *Value);
 		return UBF::FDynamicHandle::Null();
 	}
+	
+	inline UUBFBindingObject* CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value)
+	{
+		UUBFBindingObject* BindingObject = NewObject<UUBFBindingObject>();
 
+		const UBF::FDynamicHandle Dynamic = CreateNewDynamicHandle(Type, Value);
+		const UBF::FBindingInfo BindingInfo(Id, Type, Dynamic);
+		BindingObject->Initialize(BindingInfo);
+
+		return BindingObject;
+	}
+	
 	inline TMap<FString, UUBFBindingObject*> AsBindingObjectMap(const TMap<FString, UBF::FDynamicHandle>& NewInputMap)
 	{
 		TMap<FString, UUBFBindingObject*> ConvertedMap;

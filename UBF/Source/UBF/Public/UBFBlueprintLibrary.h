@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UBFAPISubsystem.h"
+#include "UBFBindingObject.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UBFBlueprintLibrary.generated.h"
 
@@ -17,5 +17,5 @@ class UBF_API UUBFBlueprintLibrary : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContext"))
-	static void FindGraphsWithMatchingCategory(UObject* WorldContext, const FString& CategoryName, TArray<UUBFGraphReference*>& FoundGraphs);
+	static UUBFBindingObject* CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value);
 };

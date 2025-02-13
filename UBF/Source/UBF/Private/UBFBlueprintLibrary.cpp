@@ -2,21 +2,9 @@
 
 
 #include "UBFBlueprintLibrary.h"
+#include "UBFUtils.h"
 
-void UUBFBlueprintLibrary::FindGraphsWithMatchingCategory(UObject* WorldContext, const FString& CategoryName,
-	TArray<UUBFGraphReference*>& FoundGraphs)
+UUBFBindingObject* UUBFBlueprintLibrary::CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value)
 {
-	auto UbfSubsystem = UUBFAPISubsystem::Get(WorldContext);
-	if (!UbfSubsystem) return;
-	
-	TArray<UUBFGraphReference*> LoadedGraphs;
-	UbfSubsystem->GetLoadedGraphs(LoadedGraphs);
-
-	for (auto LoadedGraph : LoadedGraphs)
-	{
-		if (LoadedGraph->GetBlueprintId().Contains(CategoryName))
-		{
-			FoundGraphs.Add(LoadedGraph);
-		}
-	}
+	return UBFUtils::CreateNewInputBindingObject(Id, Type, Value);
 }
