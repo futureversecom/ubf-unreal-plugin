@@ -11,9 +11,9 @@ namespace UBF
 	void FGraphHandle::Execute(
 		const FString& BlueprintId,
 		USceneComponent* Root,
-		TSharedPtr<IGraphProvider> GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+		TSharedPtr<IGraphProvider> GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 		const TMap<FString, FDynamicHandle>& Inputs,
-		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
+		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
@@ -23,12 +23,9 @@ namespace UBF
 			return;
 		}
 		
-		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
-		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, InstancedBlueprints, *this, MoveTemp(OnComplete));
+		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, LogData, InstancedBlueprints, *this, MoveTemp(OnComplete));
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
-
-		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute"));
-
+		
 		FDynamicHandle DynamicMap = FDynamicHandle::Dictionary();
 
 		for (const auto& Tuple : Inputs)

@@ -12,7 +12,7 @@ namespace UBF
 		FSceneNode* Target;
 		if (!TryReadInput("Target", Target))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync No Target input found"));
+			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync No Target input found"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -20,7 +20,7 @@ namespace UBF
 
 		if (!Target)
 		{
-			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Target input was null"));
+			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Target input was null"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -30,14 +30,14 @@ namespace UBF
 		float Value;
 		if (!TryReadInputValue("ID", ID))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'ID' cannot set blendshape"));
+			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'ID' cannot set blendshape"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
 		}
 		if (!TryReadInputValue("Value", Value))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'Value' cannot set blendshape"));
+			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to read input 'Value' cannot set blendshape"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -47,7 +47,7 @@ namespace UBF
 		Target->GetAttachmentComponent()->GetOwner()->GetComponents(SkeletalMeshComponents);
 		if (SkeletalMeshComponents.Num() == 0)
 		{
-			UE_LOG(LogUBF, Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to find any USkeletalMeshComponent for Target input "));
+			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Failed to find any USkeletalMeshComponent for Target input "));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
