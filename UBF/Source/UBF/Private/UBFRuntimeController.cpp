@@ -3,6 +3,7 @@
 
 #include "UBFRuntimeController.h"
 
+#include <UBFLogData.h>
 #include "GraphProvider.h"
 #include "UBFBindingObject.h"
 #include "UBFLog.h"
