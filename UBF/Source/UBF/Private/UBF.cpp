@@ -4,6 +4,7 @@
 
 #include "UBFLog.h"
 #include "ubf_interpreter.h"
+#include "Interfaces/IPluginManager.h"
 
 static void UELogCallback(const char* Bytes)
 {
@@ -42,9 +43,17 @@ static void UELogCallback(const char* Bytes)
 
 void FUBFModule::StartupModule()
 {
-	const FString DLLPath = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("UBF/UBF"), TEXT("Binaries/Win64/ubf_interpreter.dll"));
+	const auto Plugin = IPluginManager::Get().FindPlugin(TEXT("UBF"));
+	if (!Plugin.IsValid())
+	{
+		UE_LOG(LogUBF, Error, TEXT("[UBF] Dll open failed"));
+		return;
+	}
+	
+	FString PluginBaseDir = Plugin->GetBaseDir();
+	const FString DLLPath = FPaths::Combine(PluginBaseDir, TEXT("Binaries"), TEXT("Win64"), TEXT("ubf_interpreter.dll"));
 	UE_LOG(LogUBF, Log, TEXT("[UBF] Loading Plugin from %s"), *DLLPath);
-
+	
 	UE_LOG(LogUBF, Log, TEXT("[UBF] Loading Plugin"));
 	DLLHandle = FPlatformProcess::GetDllHandle(*DLLPath);
 	if (DLLHandle == nullptr)

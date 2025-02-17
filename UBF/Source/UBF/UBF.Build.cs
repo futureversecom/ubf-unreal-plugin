@@ -11,9 +11,13 @@ public class UBF : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		if(Target.Platform == UnrealTargetPlatform.Win64){
-			RuntimeDependencies.Add("$(TargetOutputDir)/../../Plugins/UBF/UBF/Binaries/Win64/ubf_interpreter.lib");
-			RuntimeDependencies.Add("$(TargetOutputDir)/../../Plugins/UBF/UBF/Binaries/Win64/ubf_interpreter.dll");
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			string libPath = Path.Combine("$(PluginDir)", "Binaries", "Win64", "ubf_interpreter.lib");
+			string dllPath = Path.Combine("$(PluginDir)", "Binaries", "Win64", "ubf_interpreter.dll");
+
+			RuntimeDependencies.Add(libPath);
+			RuntimeDependencies.Add(dllPath);
 		}
 		
 		PublicIncludePaths.AddRange(
@@ -42,7 +46,8 @@ public class UBF : ModuleRules
 				"SlateCore",
 				"HTTP",
 				"Json",
-				"DeveloperSettings"
+				"DeveloperSettings", 
+				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
