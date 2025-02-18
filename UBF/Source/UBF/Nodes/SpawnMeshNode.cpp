@@ -106,18 +106,17 @@ namespace UBF
 			TArray<UMeshComponent*> MeshComponents;
 			SpawnedActor->GetComponents(MeshComponents);
 			FDynamicHandle MeshArray = FDynamicHandle::Array();
+			
+			// need to decide whether it is okay to pass mesh renderers as scene nodes
+			FDynamicHandle SceneNodeArray = FDynamicHandle::Array();
 			for (auto MeshComponent : MeshComponents)
 			{
 				MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
+				SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
 			}
 			WriteOutput("Renderers", MeshArray);
+			WriteOutput("Scene Nodes", SceneNodeArray);
 
-			USceneComponent* SceneComponent = SpawnedActor->GetRootComponent();
-
-			if (MeshComponents.Num() > 0)
-				SceneComponent = MeshComponents[0];
-			
-			WriteOutput("Root", FDynamicHandle::ForeignHandled(new FSceneNode(SceneComponent)));
 			TriggerNext();
 			CompleteAsyncExecution();
 		});
@@ -126,7 +125,11 @@ namespace UBF
 	void FSpawnMeshNode::HandleFailureFinish() const
 	{
 		WriteOutput("Renderers", FDynamicHandle::Array());
-		WriteOutput("Root", FDynamicHandle::ForeignHandled(new FSceneNode(GetRoot())));
+		
+		FDynamicHandle SceneNodeArray = FDynamicHandle::Array();
+		SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(GetRoot())));
+		WriteOutput("Scene Nodes", SceneNodeArray);
+		
 		TriggerNext();
 		CompleteAsyncExecution();
 	}
