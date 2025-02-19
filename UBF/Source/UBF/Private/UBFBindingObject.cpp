@@ -33,7 +33,7 @@ FString UUBFBindingObject::DynamicToString(const UBF::FDynamicHandle& DynamicHan
 		DynamicHandle.TryInterpretAs(FloatValue);
 		InputValue = FString::SanitizeFloat(FloatValue);
 	}
-	if (BindingInfo.Type == "boolean")
+	if (BindingInfo.Type == "boolean" || BindingInfo.Type == "bool")
 	{
 		bool BoolValue;
 		DynamicHandle.TryInterpretAs(BoolValue);
