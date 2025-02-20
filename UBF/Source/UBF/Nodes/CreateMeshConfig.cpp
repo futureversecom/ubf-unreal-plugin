@@ -27,6 +27,12 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();
 	check(Settings);
 	FMeshConfigData MeshConfigData = Settings->GetMeshConfigData(ConfigKey);
+
+	if (MeshConfigData.SkeletalMeshConfig.Skeleton)
+	{
+		Complete(MeshConfigData);
+		return;
+	}
 	
 	GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, MeshConfigData](const FLoadMeshResult& Result)
 	{
