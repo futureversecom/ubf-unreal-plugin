@@ -7,6 +7,7 @@
 #include "DataTypes/MeshConfig.h"
 #include "DataTypes/MeshRenderer.h"
 #include "DataTypes/SceneNode.h"
+#include "Util/BoneRemapperUtil.h"
 
 namespace UBF
 {
@@ -88,13 +89,17 @@ namespace UBF
 			const auto SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
 			SpawnedActor->Asset = Asset;
 			SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
+			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
 			
 			SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAllowSkeletalAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->FinishSpawning(FTransform::Identity);
-				
+
+			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
+			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
+			
 			// assuming that if the parent is a child transform, it's a bone transform
 			SpawnedActor->AttachToComponent(ParentInput->GetAttachmentComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, ParentInput->GetAttachmentSocket());
 			
