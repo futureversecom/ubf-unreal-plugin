@@ -8,6 +8,8 @@
 #include "UBFBindingObject.h"
 #include "UBFLog.h"
 #include "UBFLogData.h"
+#include "DataTypes/MeshConfig.h"
+#include "DataTypes/MeshRenderer.h"
 
 void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
 {
@@ -115,6 +117,43 @@ TArray<FString> UUBFRuntimeController::GetLastOutputNames()
 	}
 
 	return OutputNames;
+}
+
+bool UUBFRuntimeController::TryReadLastContextOutput(const FString& OutputId, FString& OutString) const
+{
+	bool bSuccess = false;
+	
+	UBF::FDynamicHandle DynamicOutput;
+	if (LastExecutionContext.TryReadOutput(OutputId, DynamicOutput))
+	{
+		bSuccess = true;
+		OutString = DynamicOutput.ToString();
+	}
+	
+	return bSuccess;
+}
+
+UObject* UUBFRuntimeController::TryReadLastContextUObjectOutput(const FString& OutputId) const
+{
+	UBF::FDynamicHandle DynamicOutput;
+	if (!LastExecutionContext.TryReadOutput(OutputId, DynamicOutput))
+	{
+		return nullptr;
+	}
+	
+	UBF::FSceneNode* SceneNode = nullptr;
+	if (DynamicOutput.TryInterpretAs(SceneNode) && SceneNode)
+	{
+		return SceneNode->GetAttachmentComponent();
+	}
+	
+	UBF::FMeshRenderer* MeshRenderer = nullptr;
+	if (DynamicOutput.TryInterpretAs(MeshRenderer) && MeshRenderer)
+	{
+		return MeshRenderer->GetMesh();
+	}
+
+	return nullptr;
 }
 
 void UUBFRuntimeController::BeginPlay()
