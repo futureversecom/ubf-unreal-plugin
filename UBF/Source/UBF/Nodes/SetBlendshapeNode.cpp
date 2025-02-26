@@ -42,6 +42,14 @@ namespace UBF
 			CompleteAsyncExecution();
 			return;
 		}
+
+		if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
+		{
+			UBF_LOG(Error, TEXT("[FSetBlendshapeNode] GetWorld() is invalid"));
+			TriggerNext();
+			CompleteAsyncExecution();
+			return;
+		}
 		
 		TArray<USkeletalMeshComponent*> SkeletalMeshComponents;
 		Target->GetAttachmentComponent()->GetOwner()->GetComponents(SkeletalMeshComponents);
