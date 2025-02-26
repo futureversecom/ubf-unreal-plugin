@@ -108,7 +108,7 @@ namespace UBF
 
 			// assume first mesh component is the leader mesh component
 			auto HasMultipleMeshes = MeshComponents.Num() > 1;
-			const USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
+			USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
 				? Cast<USkeletalMeshComponent>(MeshComponents[0])
 				: nullptr;
 	
@@ -127,7 +127,7 @@ namespace UBF
 					const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponent);
 					if (SkeletalMeshComponent)
 					{
-						SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent());
+						SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent);
 					}
 				}
 			}
