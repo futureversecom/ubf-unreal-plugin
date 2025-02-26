@@ -105,6 +105,13 @@ namespace UBF
 			
 			TArray<UMeshComponent*> MeshComponents;
 			SpawnedActor->GetComponents(MeshComponents);
+
+			// assume first mesh component is the leader mesh component
+			auto HasMultipleMeshes = MeshComponents.Num() > 1;
+			const USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
+				? Cast<USkeletalMeshComponent>(MeshComponents[0])
+				: nullptr;
+	
 			FDynamicHandle MeshArray = FDynamicHandle::Array();
 			
 			// need to decide whether it is okay to pass mesh renderers as scene nodes
@@ -113,6 +120,16 @@ namespace UBF
 			{
 				MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
 				SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
+
+				// need to decide whether this should be done in graph
+				if(HasMultipleMeshes)
+				{
+					const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponent);
+					if (SkeletalMeshComponent)
+					{
+						SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent());
+					}
+				}
 			}
 			WriteOutput("Renderers", MeshArray);
 			WriteOutput("Scene Nodes", SceneNodeArray);
