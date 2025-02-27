@@ -7,6 +7,7 @@
 #include "DataTypes/MeshConfig.h"
 #include "DataTypes/MeshRenderer.h"
 #include "DataTypes/SceneNode.h"
+#include "Util/BoneRemapperUtil.h"
 
 namespace UBF
 {
@@ -88,18 +89,29 @@ namespace UBF
 			const auto SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
 			SpawnedActor->Asset = Asset;
 			SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
+			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
 			
 			SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAllowSkeletalAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->FinishSpawning(FTransform::Identity);
-				
+
+			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
+			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
+			
 			// assuming that if the parent is a child transform, it's a bone transform
 			SpawnedActor->AttachToComponent(ParentInput->GetAttachmentComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, ParentInput->GetAttachmentSocket());
 			
 			TArray<UMeshComponent*> MeshComponents;
 			SpawnedActor->GetComponents(MeshComponents);
+
+			// temp fix: assume first mesh component is the leader mesh component
+			auto HasMultipleMeshes = MeshComponents.Num() > 1;
+			USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
+				? Cast<USkeletalMeshComponent>(MeshComponents[0])
+				: nullptr;
+	
 			FDynamicHandle MeshArray = FDynamicHandle::Array();
 			
 			// need to decide whether it is okay to pass mesh renderers as scene nodes
@@ -109,6 +121,21 @@ namespace UBF
 				MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
 				SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
 			}
+
+			// temp fix
+			if(HasMultipleMeshes)
+			{
+				// skip first one as setting itself as the leader will cause infinite loop
+				for (int i = 1; i < MeshComponents.Num(); ++i)
+				{
+					const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponents[i]);
+					if (SkeletalMeshComponent && LeaderSkeletalMeshComponent)
+					{
+						SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent);
+					}
+				}
+			}
+			
 			WriteOutput("Renderers", MeshArray);
 			WriteOutput("Scene Nodes", SceneNodeArray);
 

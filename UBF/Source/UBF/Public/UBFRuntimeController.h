@@ -43,6 +43,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<FString> GetLastOutputNames();
 
+	UFUNCTION(BlueprintCallable)
+	bool TryReadLastContextOutput(const FString& OutputId, FString& OutString) const;
+
+	// Tries to read last context output as UObject, returns nullptr if not read or if the type is not supported
+	UFUNCTION(BlueprintCallable)
+	UObject* TryReadLastContextUObjectOutput(const FString& OutputId) const;
+
 	void SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider);
 
 	virtual void BeginPlay() override;
