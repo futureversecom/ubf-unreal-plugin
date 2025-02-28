@@ -89,7 +89,11 @@ namespace UBF
 			const auto SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
 			SpawnedActor->Asset = Asset;
 			SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
-			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
+			
+			if (!SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
+			{
+				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
+			}
 			
 			SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
 			SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;

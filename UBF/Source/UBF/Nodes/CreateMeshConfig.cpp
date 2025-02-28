@@ -4,6 +4,7 @@
 #include "GraphProvider.h"
 #include "UBFMeshConfigSettings.h"
 #include "DataTypes/MeshConfig.h"
+#include "Util/BoneRemapperUtil.h"
 
 void UBF::FCreateMeshConfig::ExecuteAsync() const
 {
@@ -32,6 +33,11 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	{
 		Complete(MeshConfigData);
 		return;
+	}
+
+	if (!MeshConfigData.SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
+	{
+		MeshConfigData.SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);	
 	}
 	
 	GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, MeshConfigData](const FLoadMeshResult& Result)

@@ -198,6 +198,7 @@ namespace UBF
 					if (DynamicHandle.TryInterpretAs(TextureSettings) && TextureSettings)
 					{
 						Texture->SRGB = TextureSettings->bUseSRGB;
+						Texture->bFlipGreenChannel = !TextureSettings->bUseSRGB;
 						Texture->UpdateResource();
 					}
 				}
