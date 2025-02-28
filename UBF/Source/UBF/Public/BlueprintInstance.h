@@ -1,50 +1,49 @@
 #pragma once
 #include "Dynamic.h"
 
-struct UBF_API FBlueprintInstanceBinding
+namespace UBF
 {
-	FBlueprintInstanceBinding(){}
-	
-	FString Id;
-	FString Type;
-	FString Value;
-};
-
-struct UBF_API FBlueprintInstance
-{
-public:
-	FBlueprintInstance(){}
-	virtual ~FBlueprintInstance(){}
-	
-	FBlueprintInstance(const FString& NewBlueprintId, const TMap<FString, FBlueprintInstanceBinding>& NewBindings)
+	struct UBF_API FBlueprintInstance
 	{
-		BlueprintId = NewBlueprintId;
-		Bindings = NewBindings;
-	}
+	public:
+		FBlueprintInstance(){}
+		FBlueprintInstance(const FString& BlueprintId) : BlueprintId(BlueprintId), InstanceId(FGuid::NewGuid().ToString()){}
 
-	bool IsValid() const { return !BlueprintId.IsEmpty(); }
-	
-	FString GetId() const { return Id; }
-	
-	FString GetBlueprintId() const { return BlueprintId; }
-	void SetBlueprintId(const FString& NewBlueprintId) { BlueprintId = NewBlueprintId; }
-	
-	TMap<FString, UBF::FDynamicHandle> GetVariables() const;
-	
-	TMap<FString, FBlueprintInstanceBinding>& GetBindingsRef() { return Bindings; }
-	void AddBinding(const FString& BindingId, const FBlueprintInstanceBinding& Binding)
-	{
-		Bindings.Add(BindingId, Binding);
-	}
+		void AddInput(const FString& Key, const FDynamicHandle& Handle);
+		void AddInputs(const TMap<FString, FDynamicHandle>& NewInputs);
 
-	bool operator==(const FBlueprintInstance& Other) const
-	{
-		return Id == Other.GetId();
-	}
+		FString GetBlueprintId() const {return BlueprintId;}
+		FString GetInstanceId() const {return InstanceId;}
+		const TMap<FString, FDynamicHandle>& GetInputs() const {return Inputs;}
 
-private:
-	FString Id = FGuid::NewGuid().ToString();
-	FString BlueprintId;
-	TMap<FString, UBF::FDynamicHandle> Variables;
-	TMap<FString, FBlueprintInstanceBinding> Bindings;
-};
+		FString ToString() const
+		{
+			// Implement please ChatGPT
+			FString InputStrings;
+			for (const auto& InputPair : Inputs)
+			{
+				InputStrings += FString::Printf(TEXT("[%s: %s], "), *InputPair.Key, *InputPair.Value.ToString());
+			}
+
+			// Remove the trailing comma and space, if any
+			if (!InputStrings.IsEmpty())
+			{
+				InputStrings.LeftChopInline(2);
+			}
+
+			return FString::Printf(
+				TEXT("BlueprintId: %s, InstanceId: %s, Inputs: {%s}"),
+				*BlueprintId,
+				*InstanceId,
+				*InputStrings
+			);
+		}
+
+		bool IsValid() const {return !BlueprintId.IsEmpty();}
+	private:
+		FString BlueprintId;
+		FString InstanceId;
+		TMap<FString, FDynamicHandle> Inputs;
+	};
+
+}

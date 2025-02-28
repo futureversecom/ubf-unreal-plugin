@@ -36,7 +36,7 @@ void UBF::FCreateSceneNode::ExecuteAsync() const
 	}
 	else
 	{
-		UE_LOG(LogUBF, Warning, TEXT("[CreateSceneNode] New node's Parent wasn't provided. Attaching new node to ContextRoot"));
+		UE_LOG(LogUBF, Verbose, TEXT("[CreateSceneNode] New node's Parent wasn't provided. Attaching new node to ContextRoot"));
 		NewNode->AttachToComponent(GetContext().GetRoot()->GetAttachmentComponent(), FAttachmentTransformRules::KeepRelativeTransform, GetContext().GetRoot()->GetAttachmentSocket());
 	}
 #if WITH_EDITOR

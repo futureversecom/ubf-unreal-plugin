@@ -54,7 +54,7 @@ public:
 		return BindingInfo.Id.Equals(Other.Id) && BindingInfo.Type == Other.Type && bIsOverridden;
 	}
 
-	FString ToString()
+	FString ToString() const
 	{
 		return FString::Printf(TEXT("Id: %s, Type: %s, Value: %s"), 
 		*BindingInfo.Id, *BindingInfo.Type, *BindingValue);

@@ -5,18 +5,23 @@
 #include "CreateMeshConfig.h"
 #include "CreateSceneNode.h"
 #include "DebugLog.h"
+#include "ExecuteBlueprint2Node.h"
 #include "ExecuteBlueprintNode.h"
 #include "FindFirstSceneNode.h"
 #include "FindRenderer.h"
 #include "FindSceneNodes.h"
 #include "MaterialNode.h"
 #include "SetBlendshapeNode.h"
+#include "SetSceneNodeEnabledNode.h"
 #include "SetTextureSettingsNode.h"
 #include "SGDecalPropertiesNode.h"
 #include "SGFurCardPropertiesNode.h"
 #include "SGFurPropertiesNode.h"
+#include "SGHairPropertiesNode.h"
 #include "SGPBRPropertiesNode.h"
 #include "SpawnMeshNode.h"
+#include "TransformPositionNode.h"
+#include "TransformScaleNode.h"
 #include "UBF.h"
 #include "UBFLog.h"
 
@@ -81,15 +86,20 @@ namespace UBF
 		Registry.Register<FMaterialNode>("Material");
 		Registry.Register<FSGDecalPropertiesNode>("SGDecalProperties");
 		Registry.Register<FSGPBRPropertiesNode>("PBRProperties");
+		Registry.Register<FSGHairPropertiesNode>("MakeHairProperties");
 		Registry.Register<FSGFurPropertiesNode>("SGFurProperties");
 		Registry.Register<FSGFurCardPropertiesNode>("SGFurCardProperties");
 		Registry.Register<FSpawnMeshNode>("SpawnMesh");
 		Registry.Register<FSetTextureSettingsNode>("SetTextureSettings");
 		Registry.Register<FSetBlendshapeNode>("SetBlendshape");
 		Registry.Register<FBindMeshes>("BindMeshes");
-		Registry.Register<FExecuteBlueprintNode>("ExecuteBlueprint");
+		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint");
 		Registry.Register<FCreateMeshConfig>("CreateMeshConfig");
 		Registry.Register<FFindRenderer>("FindRenderer");
+		Registry.Register<FTransformPositionNode>("TransformPosition");
+		Registry.Register<FTransformScaleNode>("TransformScale");
+		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint2");
+		Registry.Register<FSetSceneNodeEnabledNode>("SetSceneNodeEnabled");
 		
 		return Registry;
 	}

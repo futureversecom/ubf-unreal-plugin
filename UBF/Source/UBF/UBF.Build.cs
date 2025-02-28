@@ -40,7 +40,6 @@ public class UBF : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"FunctionalTesting",
 				"HTTP",
 				"Json",
 				"DeveloperSettings"

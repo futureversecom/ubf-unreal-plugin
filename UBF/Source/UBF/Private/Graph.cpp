@@ -2,7 +2,6 @@
 
 #include "Dynamic.h"
 #include "Registry.h"
-#include "SubGraphResolver.h"
 #include "UBF.h"
 #include "UBFLog.h"
 #include "UBFUtils.h"
@@ -12,14 +11,20 @@ namespace UBF
 	void FGraphHandle::Execute(
 		const FString& BlueprintId,
 		USceneComponent* Root,
-		IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
+		TSharedPtr<IGraphProvider> GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void()>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
+		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
+		
+		if (!IsValid(Root))
+		{
+			UE_LOG(LogUBF, Verbose, TEXT("FGraphHandle::Execute Root is invalid, aborting execution"));
+			return;
+		}
+		
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute Creating UserData"));
-		check(Root);
-		SubGraphResolver == nullptr ? new FDefaultSubGraphResolver() : SubGraphResolver;
-		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, SubGraphResolver, *this, MoveTemp(OnComplete));
+		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, InstancedBlueprints, *this, MoveTemp(OnComplete));
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
 
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::Execute"));
@@ -32,6 +37,12 @@ namespace UBF
 			
 			if (!DynamicMap.TrySet(Tuple.Key, Tuple.Value))
 				UE_LOG(LogUBF, Warning, TEXT("Failed to set input with key %s into DynamicMap"), *Tuple.Key);
+		}
+		
+		if (GetGraphVersion() > SupportedGraphVersion)
+		{
+			UE_LOG(LogUBF, Warning, TEXT("Attemping to execute an unsupported Graph Version! It could produce unexpected result!"
+			" Current Graph Version: %s Supported Graph Version: %s"), *GetGraphVersion().ToString(), *SupportedGraphVersion.ToString());
 		}
 
 		FExecutionContextHandle TempHandle(CALL_RUST_FUNC(graph_execute)(

@@ -1,6 +1,7 @@
 #include "ExecutionContext.h"
 
 #include "UBFLog.h"
+#include "GraphProvider.h"
 #include "UBFUtils.h"
 
 namespace UBF
@@ -21,6 +22,14 @@ namespace UBF
 			OnComplete();
 	}
 
+	void FExecutionContextHandle::PrintBlueprintDebug(const FString& ContextString) const
+	{
+		if (ContextData == nullptr || ContextData->GraphProvider == nullptr)
+			return;
+
+		ContextData->GraphProvider->PrintBlueprintDebug(GetBlueprintID(), ContextString);
+	}
+
 	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const
 	{
 		return CALL_RUST_FUNC(ctx_trigger_node)(
@@ -31,77 +40,8 @@ namespace UBF
 			SourcePortKey.Len()
 		);
 	}
-	
-	template <class T>
-	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey, T*& Out) const
-	{
-		FDynamicHandle Ptr;
-		if (!TryReadInput(NodeId, PortKey, Ptr))
-		{
-			UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
-			return false;
-		}
-		
-		if constexpr (TIsDerivedFrom<T, UObject>::Value)
-		{
-			UObject* Input;
-			if (!Ptr.TryInterpretAs(Input))
-			{
-				UE_LOG(LogUBF, Warning, TEXT("Failed to read input as UObject (%s->%s)"), *NodeId, *FString(PortKey));
-				return false;
-			}
-			Out = Cast<T>(Input);
-			return true;
-		}
-		else
-		{
-			return Ptr.TryInterpretAs<T>(Out);
-		}
-	}
 
-	template <typename T>
-	bool FExecutionContextHandle::TryReadInputValue(FString const& NodeId, const FString& PortKey, T& Out) const
-	{
-		FDynamicHandle Ptr;
-		if (!TryReadInput(NodeId, PortKey, Ptr))
-		{
-			UE_LOG(LogUBF, Warning, TEXT("Failed to read input (%s->%s)"), *NodeId, *FString(PortKey));
-			return false;
-		}
-
-		UE_LOG(LogUBF, VeryVerbose, TEXT("Read dynamic input value %s"), *Ptr.ToString());
-
-		return Ptr.TryInterpretAs(Out);
-	}
-
-	template <class T>
-	bool FExecutionContextHandle::TryReadInputArray(FString const& NodeId, const FString& PortKey, TArray<T*>& Out) const
-	{
-		FDynamicHandle DynamicArray;
-		if (!TryReadInput(NodeId, PortKey, DynamicArray))
-		{
-			UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
-			return false;
-		}
-
-		return DynamicArray.TryInterpretAsArray<T*>(Out);
-	}
-
-	template <class T>
-	bool FExecutionContextHandle::TryReadInputValueArray(FString const& NodeId, const FString& PortKey,
-		TArray<T>& Out) const
-	{
-		FDynamicHandle DynamicArray;
-		if (!TryReadInput(NodeId, PortKey, DynamicArray))
-		{
-			UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
-			return false;
-		}
-
-		return DynamicArray.TryInterpretAsArray<T>(Out);
-	}
-
-	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey,
+	bool FExecutionContextHandle::						TryReadInput(FString const& NodeId, const FString& PortKey,
 	                                           FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;
@@ -113,7 +53,8 @@ namespace UBF
 			PortKey.Len(),
 			&DynamicPtr))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("No Input Found (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+			UE_LOG(LogUBF, Warning, TEXT("No Input Found (Node:%s Port:%s) on BlueprintId: %s"), *NodeId, *FString(PortKey), *GetBlueprintID());
+			PrintBlueprintDebug(FString::Printf(TEXT("No Input Found (Node:%s Port:%s)"), *NodeId, *FString(PortKey)));
 			return false;
 		}
 		Dynamic = FDynamicHandle(DynamicPtr);

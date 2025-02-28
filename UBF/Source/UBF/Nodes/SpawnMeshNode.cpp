@@ -48,14 +48,14 @@ namespace UBF
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
-		if (!GetWorld())
+		if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
 		{
 			UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 			HandleFailureFinish();
 			return;
 		}
 		
-		GetContext().GetGraphProvider()->GetMeshResource(GetGraphId(), ResourceID).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadDataArrayResult Result)
+		GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
 		{
 			if (!Result.Result.Key)
 			{
@@ -63,20 +63,15 @@ namespace UBF
 				HandleFailureFinish();
 				return;
 			}
-			
-			const auto MeshData = Result.Result.Value;
-			FglTFRuntimeConfig LoaderConfig = MeshConfigData.RuntimeConfig;
-			
-			UglTFRuntimeAsset* Asset = NewObject<UglTFRuntimeAsset>();
-			Asset->RuntimeContextObject = LoaderConfig.RuntimeContextObject;
-			Asset->RuntimeContextString = LoaderConfig.RuntimeContextString;
 
-			if (!Asset->LoadFromData(MeshData.GetData(), MeshData.Num(), LoaderConfig))
+			if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
 			{
-				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] Failed to Load Mesh from Data %s"), *ResourceID);
+				UE_LOG(LogUBF, Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 				HandleFailureFinish();
 				return;
 			}
+			
+			UglTFRuntimeAsset* Asset = Result.Result.Value;
 			
 			if (!Asset)
 			{

@@ -112,7 +112,7 @@ namespace UBF
 		
 		FString GetGraphId() const
 		{
-			return Context.GetGraphID();
+			return Context.GetBlueprintID();
 		}
 
 		const FExecutionContextHandle& GetContext() const

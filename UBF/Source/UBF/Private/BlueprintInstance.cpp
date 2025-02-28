@@ -1,13 +1,11 @@
 #include "BlueprintInstance.h"
 
-#include "UBFUtils.h"
-
-TMap<FString, UBF::FDynamicHandle> FBlueprintInstance::GetVariables() const
+void UBF::FBlueprintInstance::AddInput(const FString& Key, const FDynamicHandle& Handle)
 {
-	TMap<FString, UBF::FDynamicHandle> OutVariables;
-	for (auto BindingTuple : Bindings)
-	{
-		OutVariables.Add(BindingTuple.Key, UBFUtils::CreateNewDynamicHandle(BindingTuple.Value.Type, BindingTuple.Value.Value));
-	}
-	return OutVariables;
+	Inputs.Add(Key, Handle);
+}
+
+void UBF::FBlueprintInstance::AddInputs(const TMap<FString, FDynamicHandle>& NewInputs)
+{
+	Inputs.Append(NewInputs);
 }

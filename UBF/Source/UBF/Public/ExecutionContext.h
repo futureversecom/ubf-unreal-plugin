@@ -1,8 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BlueprintInstance.h"
 #include "Dynamic.h"
 #include "Graph.h"
+#include "GraphProvider.h"
 #include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
 
@@ -23,17 +25,15 @@ namespace UBF
 
 		FString BlueprintId;
 		FSceneNode* Root;
-		IGraphProvider* GraphProvider;
-		ISubGraphResolver* SubGraphResolver;
+		TSharedPtr<IGraphProvider> GraphProvider;
+		TMap<FString, FBlueprintInstance> InstancedBlueprints;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
 		TFunction<void()> OnComplete;
-
-
-
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, IGraphProvider* GraphProvider, ISubGraphResolver* SubGraphResolver,
+		
+		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
 			const FGraphHandle& Graph, TFunction<void()>&& OnComplete)
-			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), SubGraphResolver(SubGraphResolver), Graph(Graph), OnComplete(MoveTemp(OnComplete))
+			: BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), InstancedBlueprints(InstancedBlueprints) ,Graph(Graph), OnComplete(MoveTemp(OnComplete))
 		{
 			if (Root->GetWorld())
 			{
@@ -83,9 +83,20 @@ namespace UBF
 		FExecutionContextHandle() : FExecutionHandleBase(nullptr) {}
 
 		FSceneNode* GetRoot() const { return ContextData->Root; }
-		IGraphProvider* GetGraphProvider() const { return ContextData->GraphProvider; }
-		ISubGraphResolver* GetSubGraphResolver() const { return ContextData->SubGraphResolver; }
+		TSharedPtr<IGraphProvider> GetGraphProvider() const { return ContextData->GraphProvider; }
 		const FContextData* GetUserData() const { return ContextData; }
+
+		bool BlueprintInstanceExistsForId(const FString& InstanceId) const
+		{
+			if (ContextData == nullptr) return false;
+			return ContextData->InstancedBlueprints.Contains(InstanceId);
+		}
+
+		FBlueprintInstance GetInstanceForId(const FString& InstanceId) const
+		{
+			if (ContextData == nullptr) return FBlueprintInstance();
+			return ContextData->InstancedBlueprints[InstanceId];
+		}
 
 		// Gets world from UserData Root
 		UWorld* GetWorld() const
@@ -97,38 +108,107 @@ namespace UBF
 			
 			check(ContextData);
 			check(ContextData->Root);
-			return ContextData->Root->GetAttachmentComponent()->GetWorld();
+
+			if (USceneComponent* SceneComponent = ContextData->Root->GetAttachmentComponent())
+			{
+				if (!IsValid(SceneComponent))
+					return nullptr;
+
+				return SceneComponent->GetWorld();
+			}
+			
+			return nullptr;
 		}
 		
-		FString GetGraphID() const
+		FString GetBlueprintID() const
 		{
+			if (ContextData == nullptr)
+				return FString("NoBlueprintIdContextDataIsNull");
+			
 			return ContextData->BlueprintId;
 		}
+
+		void PrintBlueprintDebug(const FString& ContextString = FString()) const;
 
 		void CompleteNode(const FFI::CompletionID CompletionID) const
 		{
 			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, CompletionID);
 		}
 
-		bool TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const;
+		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey) const;
 		
-		bool TryReadInput(FString const& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
 
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInput(FString const& NodeId, const FString& PortKey, T*& Out) const;
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, T*& Out) const
+		{
+			FDynamicHandle Ptr;
+			if (!TryReadInput(NodeId, PortKey, Ptr))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
+		
+			if constexpr (TIsDerivedFrom<T, UObject>::Value)
+			{
+				UObject* Input;
+				if (!Ptr.TryInterpretAs(Input))
+				{
+					UE_LOG(LogUBF, Warning, TEXT("Failed to read input as UObject (%s->%s)"), *NodeId, *FString(PortKey));
+					return false;
+				}
+				Out = Cast<T>(Input);
+				return true;
+			}
+			else
+			{
+				return Ptr.TryInterpretAs<T>(Out);
+			}
+		}
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValue(FString const& NodeId, const FString& PortKey, T& Out) const;
+		bool TryReadInputValue(const FString& NodeId, const FString& PortKey, T& Out) const
+		{
+			FDynamicHandle Ptr;
+			if (!TryReadInput(NodeId, PortKey, Ptr))
+			{
+				return false;
+			}
 
+			UE_LOG(LogUBF, VeryVerbose, TEXT("Read dynamic input value %s"), *Ptr.ToString());
+
+			return Ptr.TryInterpretAs(Out);
+		}
+		
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInputArray(FString const& NodeId, const FString& PortKey, TArray<T*>& Out) const;
+		bool TryReadInputArray(const FString& NodeId, const FString& PortKey, TArray<T*>& Out) const
+		{
+			FDynamicHandle DynamicArray;
+			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
 
+			return DynamicArray.TryInterpretAsArray<T*>(Out);
+		}
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValueArray(FString const& NodeId, const FString& PortKey, TArray<T>& Out) const;
+		bool TryReadInputValueArray(const FString& NodeId, const FString& PortKey,
+		TArray<T>& Out) const
+		{
+			FDynamicHandle DynamicArray;
+			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
+				return false;
+			}
+
+			return DynamicArray.TryInterpretAsArray<T>(Out);
+		}
 		
 		bool TryReadOutput(const FString& BindingId, FDynamicHandle& Dynamic) const;
 		void WriteOutput(const FString& NodeId, const FString& PortKey, const FDynamicHandle& Dynamic) const;

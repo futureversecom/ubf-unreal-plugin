@@ -13,7 +13,7 @@ namespace UBF
 		TArray<FMeshRenderer*> Mesh;
 		if (!TryReadInputArray("Mesh", Mesh))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[BindMeshes] No Mesh input found"));
+			UE_LOG(LogUBF, Verbose, TEXT("[BindMeshes] No Mesh input found"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -22,7 +22,7 @@ namespace UBF
 		FMeshRenderer* Target;
 		if (!TryReadInput("Skeleton", Target))
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[BindMeshes] No Skeleton input found"));
+			UE_LOG(LogUBF, Verbose, TEXT("[BindMeshes] No Skeleton input found"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
@@ -30,7 +30,7 @@ namespace UBF
 
 		if (Mesh.Num() == 0 || !Target)
 		{
-			UE_LOG(LogUBF, Warning, TEXT("[BindMeshes] Skeleton or Mesh input was null"));
+			UE_LOG(LogUBF, Verbose, TEXT("[BindMeshes] Skeleton or Mesh input was null"));
 			TriggerNext();
 			CompleteAsyncExecution();
 			return;
