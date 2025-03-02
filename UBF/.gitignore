@@ -7,6 +7,7 @@
 *.o
 *.obj
 
+!Binaries/
 !Binaries/Win64/ubf_interpreter.dll
 !Binaries/Win64/ubf_interpreter.lib
 !Source/UBF/Lib/ubf_interpreter.dll
@@ -19,7 +20,8 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
+#*.dll
+*.pdb
 
 # Fortran module files
 *.mod
@@ -51,17 +53,7 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
-Plugins/*/Binaries/*
-Binaries/Win64/*
 
-
-!Binaries/
-!Binaries/Win64/
-!Binaries/Win64/ubf_interpreter.dll
-!Binaries/Win64/ubf_interpreter.lib
-!Source/UBF/Lib/ubf_interpreter.dll
-!Source/UBF/Lib/ubf_interpreter.lib
 
 # Builds
 Build/*
