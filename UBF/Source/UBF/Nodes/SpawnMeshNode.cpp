@@ -82,67 +82,77 @@ namespace UBF
 			}
 			
 			UBF_LOG(Verbose, TEXT("[SpawnMesh] ParentComp: %s"), *ParentInput->ToString());
+
+			AglTFRuntimeAssetActor* SpawnedActor;
+			
+			{
+				TRACE_CPUPROFILER_EVENT_SCOPE(FSpawnMeshNode::ExecuteAsync_SpawnGLTFActor);
 				
-			FActorSpawnParameters SpawnParameters;
-			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		
-			const auto SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
-			SpawnedActor->Asset = Asset;
-			SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
-			
-			if (!SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
-			{
-				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
-			}
-			
-			SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
-			SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;
-			SpawnedActor->bAllowSkeletalAnimations = MeshConfigData.bLoadAnimation;
-			SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
-			SpawnedActor->FinishSpawning(FTransform::Identity);
-
-			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
-			SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
-			
-			// assuming that if the parent is a child transform, it's a bone transform
-			SpawnedActor->AttachToComponent(ParentInput->GetAttachmentComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, ParentInput->GetAttachmentSocket());
-			
-			TArray<UMeshComponent*> MeshComponents;
-			SpawnedActor->GetComponents(MeshComponents);
-
-			// temp fix: assume first mesh component is the leader mesh component
-			auto HasMultipleMeshes = MeshComponents.Num() > 1;
-			USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
-				? Cast<USkeletalMeshComponent>(MeshComponents[0])
-				: nullptr;
-	
-			FDynamicHandle MeshArray = FDynamicHandle::Array();
-			
-			// need to decide whether it is okay to pass mesh renderers as scene nodes
-			FDynamicHandle SceneNodeArray = FDynamicHandle::Array();
-			for (auto MeshComponent : MeshComponents)
-			{
-				MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
-				SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
-			}
-
-			// temp fix
-			if(HasMultipleMeshes)
-			{
-				// skip first one as setting itself as the leader will cause infinite loop
-				for (int i = 1; i < MeshComponents.Num(); ++i)
+				FActorSpawnParameters SpawnParameters;
+				SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+						
+				SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
+				SpawnedActor->Asset = Asset;
+				SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
+							
+				if (!SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
 				{
-					const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponents[i]);
-					if (SkeletalMeshComponent && LeaderSkeletalMeshComponent)
+					SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
+				}
+							
+				SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
+				SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;
+				SpawnedActor->bAllowSkeletalAnimations = MeshConfigData.bLoadAnimation;
+				SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
+				SpawnedActor->FinishSpawning(FTransform::Identity);
+
+				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
+				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
+			}
+
+			{
+				TRACE_CPUPROFILER_EVENT_SCOPE(FSpawnMeshNode::ExecuteAsync_SetupActor);
+				
+				// assuming that if the parent is a child transform, it's a bone transform
+				SpawnedActor->AttachToComponent(ParentInput->GetAttachmentComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, ParentInput->GetAttachmentSocket());
+						
+				TArray<UMeshComponent*> MeshComponents;
+				SpawnedActor->GetComponents(MeshComponents);
+
+				// temp fix: assume first mesh component is the leader mesh component
+				auto HasMultipleMeshes = MeshComponents.Num() > 1;
+				USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
+					? Cast<USkeletalMeshComponent>(MeshComponents[0])
+					: nullptr;
+				
+				FDynamicHandle MeshArray = FDynamicHandle::Array();
+						
+				// need to decide whether it is okay to pass mesh renderers as scene nodes
+				FDynamicHandle SceneNodeArray = FDynamicHandle::Array();
+				for (auto MeshComponent : MeshComponents)
+				{
+					MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
+					SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
+				}
+
+				// temp fix
+				if(HasMultipleMeshes)
+				{
+					// skip first one as setting itself as the leader will cause infinite loop
+					for (int i = 1; i < MeshComponents.Num(); ++i)
 					{
-						SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent);
+						const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponents[i]);
+						if (SkeletalMeshComponent && LeaderSkeletalMeshComponent)
+						{
+							SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent);
+						}
 					}
 				}
+						
+				WriteOutput("Renderers", MeshArray);
+				WriteOutput("Scene Nodes", SceneNodeArray);
 			}
 			
-			WriteOutput("Renderers", MeshArray);
-			WriteOutput("Scene Nodes", SceneNodeArray);
-
 			TriggerNext();
 			CompleteAsyncExecution();
 		});
