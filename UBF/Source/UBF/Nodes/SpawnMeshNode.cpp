@@ -148,7 +148,7 @@ namespace UBF
 						}
 					}
 				}
-						
+				UBF_LOG(Verbose, TEXT("[SpawnMesh] Outputting %d Renderers"), MeshComponents.Num());
 				WriteOutput("Renderers", MeshArray);
 				WriteOutput("Scene Nodes", SceneNodeArray);
 			}
