@@ -205,12 +205,6 @@ namespace UBF
 							bIsDirty = true;
 						}
 						
-						if (Texture->bFlipGreenChannel != !TextureSettings->bUseSRGB)
-						{
-							Texture->bFlipGreenChannel = !TextureSettings->bUseSRGB;
-							bIsDirty = true;
-						}
-						
 						if (bIsDirty)
 							Texture->UpdateResource();
 					}
