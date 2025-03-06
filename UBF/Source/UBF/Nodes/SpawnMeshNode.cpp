@@ -106,6 +106,11 @@ namespace UBF
 				SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
 				SpawnedActor->FinishSpawning(FTransform::Identity);
 
+				if (!GetRoot()->GetAttachmentComponent()->IsVisible())
+				{
+					SpawnedActor->SetActorHiddenInGame(true);
+				}
+
 				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
 				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
 			}

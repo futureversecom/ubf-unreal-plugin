@@ -42,17 +42,9 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 
 void UUBFRuntimeController::ClearBlueprint()
 {
-	TArray<TObjectPtr<USceneComponent>> Children = RootComponent->GetAttachChildren();
-	for (const auto AttachChild : Children)
+	for (const auto AttachChild : GetSpawnedActors())
 	{
-		TArray<AActor*> AttachedActorsChildren;
-		AttachChild->GetOwner()->GetAttachedActors(AttachedActorsChildren, false, true);
-		for (const auto AttachedActorChild : AttachedActorsChildren)
-		{
-			AttachedActorChild->Destroy();
-		}
-				
-		AttachChild->GetOwner()->Destroy();
+		AttachChild->Destroy();
 	}
 
 	// TODO cancel any current blueprint executions
@@ -67,6 +59,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 		return;
 	}
+	
 	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute"));
 
 	if (GraphProvider == nullptr)
@@ -88,9 +81,12 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 		}
 
 		ClearBlueprint();
+		if (bStartWithUBFActorsHidden)
+			SetUBFActorsHidden(true);
 
-		auto OnCompleteFunc = [OnComplete](bool Success, FUBFExecutionReport ExecutionReport)
+		auto OnCompleteFunc = [OnComplete, this](bool Success, FUBFExecutionReport ExecutionReport)
 		{
+			this->OnComplete();
 			OnComplete.ExecuteIfBound(Success, ExecutionReport);
 		};
 
@@ -167,4 +163,37 @@ void UUBFRuntimeController::BeginPlay()
 void UUBFRuntimeController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+}
+
+void UUBFRuntimeController::SetUBFActorsHidden(bool bIsHidden)
+{
+	RootComponent->SetVisibility(!bIsHidden);
+
+	for (AActor* Actor : GetSpawnedActors())
+	{
+		Actor->SetActorHiddenInGame(bIsHidden);
+	}
+}
+
+void UUBFRuntimeController::OnComplete()
+{
+	if (!IsValid(this)) return;
+
+	if (bAutoUnHideUBFActorsOnComplete)
+		SetUBFActorsHidden(false);
+}
+
+TArray<AActor*> UUBFRuntimeController::GetSpawnedActors() const
+{
+	TArray<AActor*> ChildActors;
+	for (const auto AttachChild : RootComponent->GetAttachChildren())
+	{
+		if (AttachChild->GetOwner() != RootComponent->GetOwner())
+		{
+			ChildActors.Add(AttachChild->GetOwner());
+			AttachChild->GetOwner()->GetAttachedActors(ChildActors, false, true);
+		}
+	}
+
+	return ChildActors;
 }

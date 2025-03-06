@@ -55,7 +55,18 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetUBFActorsHidden(bool bIsHidden);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bStartWithUBFActorsHidden = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutoUnHideUBFActorsOnComplete = true;
+
 private:
+	void OnComplete();
+	TArray<AActor*> GetSpawnedActors() const;
+	
 	mutable TSharedPtr<IGraphProvider> CurrentGraphProvider;
 	mutable UBF::FExecutionContextHandle LastExecutionContext;
 	mutable UBF::FGraphHandle LastGraphHandle;
