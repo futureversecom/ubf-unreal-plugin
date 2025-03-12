@@ -18,7 +18,7 @@ namespace UBF
 			return;
 		}
 
-		if (!Target)
+		if (!Target || !IsValid(Target->GetAttachmentComponent()) || !IsValid(Target->GetAttachmentComponent()->GetOwner()))
 		{
 			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Target input was null"));
 			TriggerNext();
