@@ -35,11 +35,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ClearBlueprint();
 	
-	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-	                const TSharedPtr<IGraphProvider>&  GraphProvider,
-	                const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
-	                FOnComplete& OnComplete);
-
 	UFUNCTION(BlueprintCallable)
 	TArray<FString> GetLastOutputNames();
 
@@ -64,7 +59,12 @@ public:
 	bool bAutoUnHideUBFActorsOnComplete = true;
 
 private:
-	void OnComplete();
+	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
+				const TSharedPtr<IGraphProvider>&  GraphProvider,
+				const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
+				FOnComplete& OnComplete);
+	
+	void OnComplete(bool bWasSuccessful);
 	TArray<AActor*> GetSpawnedActors() const;
 	
 	mutable TSharedPtr<IGraphProvider> CurrentGraphProvider;

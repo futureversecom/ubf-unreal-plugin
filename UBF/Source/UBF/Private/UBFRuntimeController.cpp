@@ -7,8 +7,6 @@
 #include "GraphProvider.h"
 #include "UBFBindingObject.h"
 #include "UBFLog.h"
-#include "UBFLogData.h"
-#include "DataTypes/MeshConfig.h"
 #include "DataTypes/MeshRenderer.h"
 
 void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
@@ -42,12 +40,12 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 
 void UUBFRuntimeController::ClearBlueprint()
 {
+	LastExecutionContext.FlagCancelExecution();
+	
 	for (const auto AttachChild : GetSpawnedActors())
 	{
 		AttachChild->Destroy();
 	}
-
-	// TODO cancel any current blueprint executions
 }
 
 void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
@@ -73,9 +71,17 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 	
 	CurrentGraphProvider->GetGraph(BlueprintId).Next([this, BlueprintId, Inputs, &ExecutionContext, OnComplete, BlueprintInstances](const UBF::FLoadGraphResult& Result)
 	{
+		if (!IsValid(this) || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
+		{
+			this->OnComplete(false);
+			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
+			return;
+		}
+		
 		if (!Result.Result.Key)
 		{
 			UE_LOG(LogUBF, Error, TEXT("Aborting execution: graph '%s' is invalid"), *BlueprintId);
+			this->OnComplete(false);
 			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 			return;
 		}
@@ -86,7 +92,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 
 		auto OnCompleteFunc = [OnComplete, this](bool Success, FUBFExecutionReport ExecutionReport)
 		{
-			this->OnComplete();
+			this->OnComplete(Success);
 			OnComplete.ExecuteIfBound(Success, ExecutionReport);
 		};
 
@@ -162,6 +168,8 @@ void UUBFRuntimeController::BeginPlay()
 
 void UUBFRuntimeController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	ClearBlueprint();
+	
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -175,11 +183,11 @@ void UUBFRuntimeController::SetUBFActorsHidden(bool bIsHidden)
 	}
 }
 
-void UUBFRuntimeController::OnComplete()
+void UUBFRuntimeController::OnComplete(bool bWasSuccessful)
 {
 	if (!IsValid(this)) return;
 
-	if (bAutoUnHideUBFActorsOnComplete)
+	if (bWasSuccessful && bAutoUnHideUBFActorsOnComplete)
 		SetUBFActorsHidden(false);
 }
 

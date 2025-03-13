@@ -49,13 +49,6 @@ namespace UBF
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
-		if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
-		{
-			UBF_LOG(Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
-			HandleFailureFinish();
-			return;
-		}
-		
 		GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
 		{
 			if (!Result.Result.Key)
@@ -65,9 +58,8 @@ namespace UBF
 				return;
 			}
 
-			if (!GetWorld() || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
+			if (!CheckExecutionStillValid())
 			{
-				UBF_LOG(Error, TEXT("[SpawnMesh] GetWorld() is invalid %s"), *ResourceID);
 				HandleFailureFinish();
 				return;
 			}

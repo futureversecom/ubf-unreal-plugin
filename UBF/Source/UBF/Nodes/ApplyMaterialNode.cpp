@@ -168,6 +168,12 @@ namespace UBF
 			GetContext().GetGraphProvider()->GetTextureResource(TextureHandle.ResourceId).Next(
 				[this, Promise, Mat, Prop, ResourceId](const FLoadTextureResult& TextureResult)
 			{
+				if (!CheckExecutionStillValid())
+				{
+					Promise->SetValue(false);
+					return;
+				}
+					
 				if (!TextureResult.Result.Key)
 				{
 					UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));

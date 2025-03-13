@@ -51,7 +51,7 @@ namespace UBF
 				}
 			}
 			
-			OnComplete(ExecutionReport.bWasSuccessful, ExecutionReport);
+			OnComplete(ExecutionReport.bWasSuccessful && !bCancelExecution, ExecutionReport);
 		}
 	}
 }

@@ -79,6 +79,22 @@ namespace UBF
 			
 			return nullptr;
 		}
+
+		bool GetCancelExecution() const
+		{
+			if (ContextData == nullptr)
+				return false;
+
+			return ContextData->bCancelExecution;
+		}
+
+		void FlagCancelExecution()
+		{
+			if (ContextData == nullptr)
+				return;
+
+			const_cast<FContextData*>(ContextData)->bCancelExecution = true;
+		}
 		
 		FString GetBlueprintID() const
 		{
