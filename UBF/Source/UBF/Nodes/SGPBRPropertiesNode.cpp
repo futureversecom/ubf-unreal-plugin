@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #include "SGPBRPropertiesNode.h"
 
 void UBF::FSGPBRPropertiesNode::AddProperties(TMap<FString, FShaderPropertyValue>& Properties) const

@@ -1,4 +1,6 @@
-﻿#include "UBFEditor.h"
+﻿// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
+#include "UBFEditor.h"
 
 #include "ISettingsContainer.h"
 #include "ISettingsModule.h"

@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #include "FindSceneNodes.h"
 #include "UBFLog.h"
 #include "DataTypes/SceneNode.h"
