@@ -7,25 +7,25 @@
 #include "UBF.h"
 #include "UBFLog.h"
 #include "UBFUtils.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 
 namespace UBF
 {
 	void FGraphHandle::Execute(
 		const FString& BlueprintId,
-		USceneComponent* Root,
-		TSharedPtr<IGraphProvider> GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+		const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 		const TMap<FString, FDynamicHandle>& Inputs,
 		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
-		if (!IsValid(Root))
+		if (!ExecutionSetConfig->GetRoot() || !IsValid(ExecutionSetConfig->GetRoot()->GetAttachmentComponent()))
 		{
 			UE_LOG(LogUBF, Verbose, TEXT("FGraphHandle::Execute Root is invalid, aborting execution"));
 			return;
 		}
 		
-		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, LogData, InstancedBlueprints, *this, MoveTemp(OnComplete));
+		const FContextData* ContextData = new FContextData(BlueprintId, ExecutionSetConfig, *this, MoveTemp(OnComplete));
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
 		
 		FDynamicHandle DynamicMap = FDynamicHandle::Dictionary();

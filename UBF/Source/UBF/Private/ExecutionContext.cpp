@@ -13,15 +13,12 @@ namespace UBF
 	{
 		if (!GetUserData()) return;
 
-		GetUserData()->LogData->Log(GetUserData()->BlueprintId, Level, Log);
+		GetUserData()->ExecutionSetConfig->GetLogData()->Log(GetUserData()->BlueprintId, Level, Log);
 	}
 
 	void FExecutionContextHandle::PrintBlueprintDebug(const FString& ContextString) const
 	{
-		if (ContextData == nullptr || ContextData->GraphProvider == nullptr)
-			return;
-
-		ContextData->GraphProvider->PrintBlueprintDebug(GetBlueprintID(), ContextString);
+		
 	}
 
 	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const

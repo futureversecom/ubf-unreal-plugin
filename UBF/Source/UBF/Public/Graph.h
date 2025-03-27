@@ -14,6 +14,7 @@ class IGraphProvider;
 
 namespace UBF
 {
+	class IExecutionSetConfig;
 	class FCustomNode;
 	class FOnComplete;
 
@@ -127,10 +128,7 @@ namespace UBF
 		
 		void Execute(
 			const FString& BlueprintId,
-			USceneComponent* Root,
-			TSharedPtr<IGraphProvider> GraphProvider,
-			const TSharedPtr<FUBFLogData>& LogData,
-			const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+			const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 			const TMap<FString, FDynamicHandle>& Inputs,
 			TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
 			struct FExecutionContextHandle& Handle) const;

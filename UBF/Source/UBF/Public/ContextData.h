@@ -20,20 +20,15 @@ namespace UBF
 		~FContextData()
 		{
 			PinnedWorld->Release();
-			delete Root;
 		};
 
 		FString BlueprintId;
-		FSceneNode* Root;
-		TSharedPtr<IGraphProvider> GraphProvider;
-		TSharedPtr<FUBFLogData> LogData;
-		TMap<FString, FBlueprintInstance> InstancedBlueprints;
+		TSharedPtr<IExecutionSetConfig> ExecutionSetConfig;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
-		bool bCancelExecution = false;
 		TFunction<void(bool, FUBFExecutionReport)> OnComplete;
 		
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+		explicit FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 			const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnComplete);
 
 		void SetReadyToComplete() const;

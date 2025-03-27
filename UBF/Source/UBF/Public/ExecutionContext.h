@@ -9,6 +9,7 @@
 #include "UBFExecutionReport.h"
 #include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 
 class IGraphProvider;
 
@@ -44,21 +45,8 @@ namespace UBF
 
 		FExecutionContextHandle() : FExecutionHandleBase(nullptr) {}
 
-		FSceneNode* GetRoot() const { return ContextData->Root; }
-		TSharedPtr<IGraphProvider> GetGraphProvider() const { return ContextData->GraphProvider; }
+		FSceneNode* GetRoot() const { return ContextData->ExecutionSetConfig->GetRoot(); }
 		const FContextData* GetUserData() const { return ContextData; }
-
-		bool BlueprintInstanceExistsForId(const FString& InstanceId) const
-		{
-			if (ContextData == nullptr) return false;
-			return ContextData->InstancedBlueprints.Contains(InstanceId);
-		}
-
-		FBlueprintInstance GetInstanceForId(const FString& InstanceId) const
-		{
-			if (ContextData == nullptr) return FBlueprintInstance();
-			return ContextData->InstancedBlueprints[InstanceId];
-		}
 
 		// Gets world from UserData Root
 		UWorld* GetWorld() const
@@ -69,9 +57,10 @@ namespace UBF
 				DynamicContextData.TryInterpretAs(ContextData);
 			
 			check(ContextData);
-			check(ContextData->Root);
+			check(ContextData->ExecutionSetConfig.IsValid());
+			check(ContextData->ExecutionSetConfig->GetRoot());
 
-			if (USceneComponent* SceneComponent = ContextData->Root->GetAttachmentComponent())
+			if (USceneComponent* SceneComponent = ContextData->ExecutionSetConfig->GetRoot()->GetAttachmentComponent())
 			{
 				if (!IsValid(SceneComponent))
 					return nullptr;
@@ -87,15 +76,7 @@ namespace UBF
 			if (ContextData == nullptr)
 				return false;
 
-			return ContextData->bCancelExecution;
-		}
-
-		void FlagCancelExecution()
-		{
-			if (ContextData == nullptr)
-				return;
-
-			const_cast<FContextData*>(ContextData)->bCancelExecution = true;
+			return ContextData->ExecutionSetConfig->GetCancelExecution();
 		}
 		
 		FString GetBlueprintID() const
