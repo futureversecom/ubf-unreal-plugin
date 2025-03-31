@@ -88,6 +88,7 @@ namespace UBF
 		Registry.Register<FCreateSceneNode>("CreateSceneNode");
 		Registry.Register<FFindSceneNodes>("FindSceneNodes");
 		Registry.Register<FFindFirstSceneNode>("FindFirstSceneNode");
+		Registry.Register<FSetSceneNodeEnabledNode>("SetSceneNodeEnabled");
 		Registry.Register<FApplyMaterialNode>("ApplyMaterial");
 		Registry.Register<FMaterialNode>("Material");
 		Registry.Register<FSGDecalPropertiesNode>("SGDecalProperties");
