@@ -4,7 +4,7 @@ namespace UBF
 {
 	void FMakeHairMaterial::AddProperties(TMap<FString, FShaderPropertyValue>& Properties) const
 	{
-		AddRenderMode(Properties, TEXT("Render Mode"), TEXT("_RenderMode"));
+		AddInt(Properties, TEXT("Render Mode"), TEXT("_RenderMode"));
 		AddTexture(Properties, TEXT("Diffuse Texture"), TEXT("_DiffuseTex"));
 		AddColor(Properties, TEXT("Base Color"), TEXT("_Tint"));
 		AddBool(Properties, TEXT("Use Alpha"), TEXT("_UseAlpha"));

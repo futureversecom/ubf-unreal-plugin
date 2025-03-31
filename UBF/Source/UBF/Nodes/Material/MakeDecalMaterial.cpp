@@ -4,7 +4,7 @@ namespace UBF
 {
 	void FMakeDecalMaterial::AddProperties(TMap<FString, FShaderPropertyValue>& Properties) const
 	{
-		AddRenderMode(Properties, TEXT("Render Mode"), TEXT("_RenderMode"));
+		AddInt(Properties, TEXT("Render Mode"), TEXT("_RenderMode"));
 		AddColor(Properties, TEXT("Base Color"), TEXT("_Tint"));
 		AddBool(Properties, TEXT("Use Alpha"), TEXT("_UseAlpha"));
 		AddBool(Properties, TEXT("Use Alpha Tex"), TEXT("_UseAlphaTexture"));

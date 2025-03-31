@@ -103,7 +103,7 @@ void UBF::FMakeMaterialBase::AddRenderMode(TMap<FString, FShaderPropertyValue>& 
 		PropertyMap.Add(PropertyName, FShaderPropertyValue::MakeInt(0));
 		return;
 	}
-	
+	// todo: find out which property to use for this
 	const int RenderModeValue = Property.Equals(TEXT("UseDiffuse")) ? 0
 		: Property.Equals(TEXT("SolidColor")) ? 1
 		: 2;
