@@ -17,7 +17,7 @@ struct FBlueprintExecutionData
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TMap<FString, UUBFBindingObject*> InputMap;
-	TArray<UBF::FBlueprintInstance> BlueprintInstances;
+	TArray<UBF::FExecutionInstanceData> BlueprintInstances;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -61,7 +61,7 @@ public:
 private:
 	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
 				const TSharedPtr<IGraphProvider>&  GraphProvider,
-				const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
+				const TMap<FString, UBF::FExecutionInstanceData>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
 				FOnComplete& OnComplete);
 	
 	void OnComplete(bool bWasSuccessful);

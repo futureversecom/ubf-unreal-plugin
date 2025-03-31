@@ -26,7 +26,7 @@ public:
 	
 	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ArtifactId);
 
-	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& ArtifactId, const FglTFRuntimeConfig& Config);
+	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& ArtifactId, const FMeshImportSettings& ImportSettings);
 	virtual void PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString);
 
 	void RegisterCatalog(const FCatalogElement& CatalogElement);

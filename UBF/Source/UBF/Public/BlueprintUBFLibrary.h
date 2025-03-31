@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ExecutionSets/ExecutionSetHandle.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BlueprintUBFLibrary.generated.h"
 
@@ -10,7 +11,12 @@ namespace UBF
 {
 	class IExecutionSetData;
 
-	static void Execute(const FString& RootId, const TSharedPtr<IExecutionSetData>& ExecutionSetData);
+	// TODO List
+	// 4. Update UBFRuntimeController to use new interface
+	// 5. Update FutureverseControllerLayer to use new interface for parsing graphs
+	// 6. Update FutureverseControllerLayer to use new interface for render graphs
+
+	static FExecutionSetHandle Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData);
 }
 
 /**

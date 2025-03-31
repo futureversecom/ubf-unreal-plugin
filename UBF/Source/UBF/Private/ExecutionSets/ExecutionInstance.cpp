@@ -1,7 +1,14 @@
 #include "ExecutionSets/ExecutionInstance.h"
 
-void UBF::FExecutionInstance::Execute(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig, TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
-	FExecutionContextHandle& Handle) const
+#include "ExecutionSets/ExecutionSetResult.h"
+
+UBF::FExecutionInstance::FExecutionInstance(const FString& BlueprintId, const FGraphHandle& GraphHandle) : BlueprintId(BlueprintId), GraphHandle(GraphHandle)
+{
+	
+}
+
+void UBF::FExecutionInstance::Execute(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
+	TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
 {
 	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, Inputs, MoveTemp(OnComplete), Handle);
 }

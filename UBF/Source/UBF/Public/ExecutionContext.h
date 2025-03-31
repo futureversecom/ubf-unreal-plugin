@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlueprintInstance.h"
+#include "ExecutionInstanceData.h"
 #include "ContextData.h"
 #include "Dynamic.h"
 #include "UBFExecutionReport.h"

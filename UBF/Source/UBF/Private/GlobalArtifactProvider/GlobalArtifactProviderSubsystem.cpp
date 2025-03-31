@@ -151,15 +151,15 @@ TFuture<UBF::FLoadTextureResult> UGlobalArtifactProviderSubsystem::GetTextureRes
 	return Future;
 }
 
-TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(const FString& ArtifactId, const FglTFRuntimeConfig& Config)
+TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(const FString& ArtifactId, const FMeshImportSettings& ImportSettings)
 {
 	TSharedPtr<TPromise<UBF::FLoadMeshResult>> Promise = MakeShareable(new TPromise<UBF::FLoadMeshResult>());
 	TFuture<UBF::FLoadMeshResult> Future = Promise->GetFuture();
 	
-	if (LoadedMeshesMap.Contains(ArtifactId) && LoadedMeshesMap[ArtifactId].ContainsMesh(Config))
+	if (LoadedMeshesMap.Contains(ArtifactId) && LoadedMeshesMap[ArtifactId].ContainsMesh(ImportSettings))
 	{
 		UBF::FLoadMeshResult LoadResult;
-		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, LoadedMeshesMap[ArtifactId].GetMesh(Config));
+		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, LoadedMeshesMap[ArtifactId].GetMesh(ImportSettings));
 		Promise->SetValue(LoadResult);
 		return Future;
 	}
@@ -176,7 +176,7 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 
 	const auto ResourceManifestElement = Catalog[ArtifactId];
 	FDownloadRequestManager::GetInstance()->LoadDataFromURI(TEXT("Mesh"),ResourceManifestElement.Uri, ResourceManifestElement.Hash, ResourceCacheLoader)
-	.Next([this, Promise, Config, ArtifactId](const UBF::FLoadDataArrayResult& DataResult)
+	.Next([this, Promise, ImportSettings, ArtifactId](const UBF::FLoadDataArrayResult& DataResult)
 	{
 		const TArray<uint8> Data = DataResult.Result.Value;
 		UBF::FLoadMeshResult LoadResult;
@@ -191,19 +191,19 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 
 		UglTFRuntimeAsset* Asset;
 
-		if (LoadedMeshesMap.Contains(ArtifactId) && LoadedMeshesMap[ArtifactId].ContainsMesh(Config))
+		if (LoadedMeshesMap.Contains(ArtifactId) && LoadedMeshesMap[ArtifactId].ContainsMesh(ImportSettings))
 		{
-			Asset = LoadedMeshesMap[ArtifactId].GetMesh(Config);
+			Asset = LoadedMeshesMap[ArtifactId].GetMesh(ImportSettings);
 		}
 		else
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(UGlobalArtifactProviderSubsystem::GetMeshResource_ImportDataAsGLTFRuntimeAsset);
 
 			Asset = NewObject<UglTFRuntimeAsset>();
-			Asset->RuntimeContextObject = Config.RuntimeContextObject;
-			Asset->RuntimeContextString = Config.RuntimeContextString;
+			Asset->RuntimeContextObject = ImportSettings.ImportConfig.RuntimeContextObject;
+			Asset->RuntimeContextString = ImportSettings.ImportConfig.RuntimeContextString;
 					
-			if (!Asset->LoadFromData(Data.GetData(), Data.Num(), Config))
+			if (!Asset->LoadFromData(Data.GetData(), Data.Num(), ImportSettings.ImportConfig))
 			{
 				UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Failed to Load Mesh from Data %s"), *ArtifactId);
 				LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(false, nullptr);
@@ -211,7 +211,7 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 				return;
 			}
 			
-			LoadedMeshesMap.FindOrAdd(ArtifactId).AddOrReplaceMesh(Config, Asset);
+			LoadedMeshesMap.FindOrAdd(ArtifactId).AddOrReplaceMesh(ImportSettings, Asset);
 		}
 		
 		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, Asset);

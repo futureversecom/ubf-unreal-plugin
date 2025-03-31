@@ -22,6 +22,8 @@ namespace UBF
 	
 	struct UBF_API FLoadGraphResult final : TLoadResult<FGraphHandle> {};
 	
+	struct UBF_API FLoadExecutionInstanceResult final : TLoadResult<TSharedPtr<FExecutionInstance>> {};
+	
 	struct UBF_API FLoadGraphInstanceResult final : TLoadResult<FBlueprintJson> {};
 
 	struct UBF_API FLoadTextureResult final : TLoadResult<UTexture*> {};

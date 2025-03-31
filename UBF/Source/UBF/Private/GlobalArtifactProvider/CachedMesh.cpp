@@ -62,14 +62,14 @@ FString FMeshImportSettings::FglTFRuntimeConfigToString(const FglTFRuntimeConfig
 	return Result;
 }
 
-FCachedMeshEntry::FCachedMeshEntry(const FMeshImportSettings& ImportConfig, UglTFRuntimeAsset* Asset): ImportSettings(ImportConfig), Asset(Asset)
+FCachedMeshEntry::FCachedMeshEntry(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset): ImportSettings(ImportSettings), Asset(Asset)
 {
 	
 }
 
-bool FCachedMesh::ContainsMesh(const FglTFRuntimeConfig& Config)
+bool FCachedMesh::ContainsMesh(const FMeshImportSettings& ImportSettings)
 {
-	int Index = GetIndexForConfig(Config);
+	int Index = GetIndexForConfig(ImportSettings);
 	
 	if (!LoadedAssets.IsValidIndex(Index))
 		return false;
@@ -77,22 +77,22 @@ bool FCachedMesh::ContainsMesh(const FglTFRuntimeConfig& Config)
 	return LoadedAssets[Index].Asset.IsValid();
 }
 
-void FCachedMesh::AddOrReplaceMesh(const FglTFRuntimeConfig& Config, UglTFRuntimeAsset* Asset)
+void FCachedMesh::AddOrReplaceMesh(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset)
 {
-	int Index = GetIndexForConfig(Config);
+	int Index = GetIndexForConfig(ImportSettings);
 
 	if (!LoadedAssets.IsValidIndex(Index))
 	{
-		LoadedAssets.Add(FCachedMeshEntry(Config, Asset));
+		LoadedAssets.Add(FCachedMeshEntry(ImportSettings, Asset));
 		return;
 	}
 
 	LoadedAssets[Index].Asset = Asset;
 }
 
-UglTFRuntimeAsset* FCachedMesh::GetMesh(const FglTFRuntimeConfig& Config)
+UglTFRuntimeAsset* FCachedMesh::GetMesh(const FMeshImportSettings& ImportSettings)
 {
-	int Index = GetIndexForConfig(Config);
+	int Index = GetIndexForConfig(ImportSettings);
 
 	if (!LoadedAssets.IsValidIndex(Index))
 		return nullptr;
@@ -100,11 +100,11 @@ UglTFRuntimeAsset* FCachedMesh::GetMesh(const FglTFRuntimeConfig& Config)
 	return LoadedAssets[Index].Asset.Get();
 }
 
-int FCachedMesh::GetIndexForConfig(const FglTFRuntimeConfig& Config)
+int FCachedMesh::GetIndexForConfig(const FMeshImportSettings& ImportSettings)
 {
 	for (int i = 0; i < LoadedAssets.Num(); i++)
 	{
-		if (FCachedMeshEntry::AreImportConfigsEqual(LoadedAssets[i].ImportConfig, Config))
+		if (LoadedAssets[i].ImportSettings == ImportSettings)
 			return i;
 	}
 

@@ -5,11 +5,11 @@
 
 namespace UBF
 {
-	struct UBF_API FBlueprintInstance
+	struct UBF_API FExecutionInstanceData
 	{
 	public:
-		FBlueprintInstance(){}
-		FBlueprintInstance(const FString& BlueprintId) : BlueprintId(BlueprintId), InstanceId(FGuid::NewGuid().ToString()){}
+		FExecutionInstanceData(){}
+		FExecutionInstanceData(const FString& BlueprintId) : BlueprintId(BlueprintId), InstanceId(FGuid::NewGuid().ToString()){}
 
 		void AddInput(const FString& Key, const FDynamicHandle& Handle);
 		void AddInputs(const TMap<FString, FDynamicHandle>& NewInputs);

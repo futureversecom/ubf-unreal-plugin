@@ -26,9 +26,9 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 		Inputs.Add(InputPair.Key, InputPair.Value->GetDynamicFromValue());
 	}
 
-	TMap<FString, UBF::FBlueprintInstance> InstanceMap;
+	TMap<FString, UBF::FExecutionInstanceData> InstanceMap;
 
-	for (const UBF::FBlueprintInstance& BlueprintInstance : ExecutionData.BlueprintInstances)
+	for (const UBF::FExecutionInstanceData& BlueprintInstance : ExecutionData.BlueprintInstances)
 	{
 		UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint Adding BlueprintInstance: %s"), *BlueprintInstance.ToString());
 		InstanceMap.Add(BlueprintInstance.GetInstanceId(), BlueprintInstance);
@@ -48,7 +48,7 @@ void UUBFRuntimeController::ClearBlueprint()
 }
 
 void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-                                       const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances,
+                                       const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FExecutionInstanceData>& BlueprintInstances,
                                        UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete)
 {
 	if (!ensure(RootComponent))

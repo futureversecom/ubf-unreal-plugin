@@ -6,18 +6,37 @@
 #include "ExecutionSets/IExecutionSetConfig.h"
 #include "ExecutionSets/IExecutionSetData.h"
 #include "ExecutionSets/ExecutionInstance.h"
+#include "ExecutionSets/ExecutionSetResult.h"
 
-void UBF::Execute(const FString& RootId, const TSharedPtr<IExecutionSetData>& ExecutionSetData)
+FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData)
 {
 	check(ExecutionSetData.IsValid());
 	
 	TSharedPtr<IExecutionSetConfig> ExecutionSetConfig = ExecutionSetData->CreateExecutionSetConfig();
-
-	TSharedPtr<FExecutionInstance> ExecutionInstance = ExecutionSetConfig->GetExecutionInstance(RootId);
+	ExecutionSetConfig->SetRootId(RootId);
+	TSharedPtr<FExecutionSetResult> SetResult = MakeShared<FExecutionSetResult>();
 	
-	FExecutionContextHandle ExecutionContext;
+	ExecutionSetConfig->GetExecutionInstance(RootId).Next([ExecutionSetConfig, ExecutionSetData, SetResult](const FLoadExecutionInstanceResult& Result)
+	{
+		if (!Result.Result.Key)
+		{
+			return;
+		}
+		
+		TSharedPtr<FExecutionInstance> ExecutionInstance = Result.Result.Value;
+		
+		SetResult->SetGraphHandle(ExecutionInstance->GetGraphHandleRef());
+		
+		auto OnCompleteFunc = ExecutionSetData->GetOnComplete();
+		// TODO refactor how FUBFExecutionReport gets returned, we should do something to do with FExecutionSetResult
+		auto OnComplete = [SetResult, ExecutionSetConfig, OnCompleteFunc](bool bSuccess, FUBFExecutionReport ExecutionReport)
+		{
+			SetResult->SetResults(bSuccess, ExecutionReport);
+			OnCompleteFunc(bSuccess, SetResult);
+		};
+		
+		ExecutionInstance->Execute(ExecutionSetConfig, OnComplete,SetResult->GetMutableExecutionContext());
+	});
 
-	ExecutionInstance->Execute(ExecutionSetConfig, ExecutionSetData->GetOnComplete(),ExecutionContext);
-
-	ExecutionSetData->SetExecutionContext(ExecutionContext);
+	return FExecutionSetHandle(ExecutionSetConfig, SetResult);
 }

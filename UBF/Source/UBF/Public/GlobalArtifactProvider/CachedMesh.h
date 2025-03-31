@@ -36,7 +36,7 @@ struct FMeshImportSettings
 struct FCachedMeshEntry
 {
 	FCachedMeshEntry() {}
-	FCachedMeshEntry(const FMeshImportSettings& ImportConfig, UglTFRuntimeAsset* Asset);
+	FCachedMeshEntry(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset);
 
 	FMeshImportSettings ImportSettings;
 	TWeakObjectPtr<UglTFRuntimeAsset> Asset;
@@ -57,12 +57,12 @@ struct FCachedMesh
 {
 	FCachedMesh() {}
 
-	bool ContainsMesh(const FglTFRuntimeConfig& Config);
-	void AddOrReplaceMesh(const FglTFRuntimeConfig& Config, UglTFRuntimeAsset* Asset);
-	UglTFRuntimeAsset* GetMesh(const FglTFRuntimeConfig& Config);
+	bool ContainsMesh(const FMeshImportSettings& ImportSettings);
+	void AddOrReplaceMesh(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset);
+	UglTFRuntimeAsset* GetMesh(const FMeshImportSettings& ImportSettings);
 
 private:
-	int GetIndexForConfig(const FglTFRuntimeConfig& Config);
+	int GetIndexForConfig(const FMeshImportSettings& ImportSettings);
 
 	
 	TArray<FCachedMeshEntry> LoadedAssets;
