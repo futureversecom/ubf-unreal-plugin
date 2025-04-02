@@ -5,6 +5,32 @@
 
 namespace UBFUtils
 {
+	inline bool HexToColor(const FString& HexString, FColor& OutColor)
+	{
+		FString CleanHexString = HexString.Replace(TEXT("#"), TEXT("")).TrimStartAndEnd();
+
+		if (CleanHexString.Len() == 6 || CleanHexString.Len() == 8)
+		{
+			// Extract RGB(A) values from the hex string
+			FString RHex = CleanHexString.Mid(0, 2);
+			FString GHex = CleanHexString.Mid(2, 2);
+			FString BHex = CleanHexString.Mid(4, 2);
+			FString AHex = CleanHexString.Len() == 8 ? CleanHexString.Mid(6, 2) : TEXT("FF");
+
+			// Convert hex strings to integers
+			int32 Red = FParse::HexNumber(*RHex);
+			int32 Green = FParse::HexNumber(*GHex);
+			int32 Blue = FParse::HexNumber(*BHex);
+			int32 Alpha = FParse::HexNumber(*AHex);
+
+			OutColor = FColor(Red, Green, Blue, Alpha);
+			return true;
+		}
+
+		// Return black if the string is invalid
+		return false;
+	}
+	
 	/* Converts Bytes to string that come from rust interpreter, prevents issues caused by builtin version */
 	inline FString FromBytesToString(const uint8* In, int32 Count)
 	{

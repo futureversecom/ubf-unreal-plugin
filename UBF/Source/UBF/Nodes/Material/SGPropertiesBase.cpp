@@ -3,7 +3,7 @@
 #include "SGPropertiesBase.h"
 
 #include "GraphProvider.h"
-#include "UBFLog.h"
+#include "UBFUtils.h"
 #include "UBFValues.h"
 
 bool UBF::FSGPropertiesBase::ExecuteSync() const
@@ -25,7 +25,7 @@ void UBF::FSGPropertiesBase::AddColor(TMap<FString, FShaderPropertyValue>& Prope
 	if (!TryReadInputValue(ResourceName, Property)) return;
 
 	FColor Color;
-	if (HexToColor(Property, Color))
+	if (UBFUtils::HexToColor(Property, Color))
 	{
 		PropertyMap.Add(PropertyName, FShaderPropertyValue::MakeColor(Color));
 	}
