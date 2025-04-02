@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #include "ExecuteBlueprint2Node.h"
 
 #include "GraphProvider.h"
@@ -49,6 +51,13 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 
 	GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, BlueprintId, ActualInputs](const FLoadGraphResult& Result)
 	{
+		if (!CheckExecutionStillValid())
+		{
+			TriggerNext();
+			CompleteAsyncExecution();
+			return;
+		}
+		
 		if (!Result.Result.Key)
 		{
 			UBF_LOG(Error, TEXT("[ExecuteBlueprint2Node] Aborting execution: graph '%s' is invalid"), *BlueprintId);

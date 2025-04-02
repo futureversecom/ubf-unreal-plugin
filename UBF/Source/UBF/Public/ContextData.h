@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #pragma once
 
 #include "BlueprintInstance.h"
@@ -28,6 +30,7 @@ namespace UBF
 		TMap<FString, FBlueprintInstance> InstancedBlueprints;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
+		bool bCancelExecution = false;
 		TFunction<void(bool, FUBFExecutionReport)> OnComplete;
 		
 		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,

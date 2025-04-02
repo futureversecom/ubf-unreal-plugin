@@ -1,9 +1,12 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #include "CreateMeshConfig.h"
 
 #include "glTFRuntimeAsset.h"
 #include "GraphProvider.h"
 #include "UBFMeshConfigSettings.h"
 #include "DataTypes/MeshConfig.h"
+#include "Util/BoneRemapperUtil.h"
 
 void UBF::FCreateMeshConfig::ExecuteAsync() const
 {
@@ -27,6 +30,17 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>();
 	check(Settings);
 	FMeshConfigData MeshConfigData = Settings->GetMeshConfigData(ConfigKey);
+
+	if (MeshConfigData.SkeletalMeshConfig.Skeleton)
+	{
+		Complete(MeshConfigData);
+		return;
+	}
+
+	if (!MeshConfigData.SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
+	{
+		MeshConfigData.SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);	
+	}
 	
 	GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, MeshConfigData](const FLoadMeshResult& Result)
 	{

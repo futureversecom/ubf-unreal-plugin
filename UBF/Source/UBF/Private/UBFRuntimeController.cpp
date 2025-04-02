@@ -1,5 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
 
 #include "UBFRuntimeController.h"
 
@@ -7,7 +6,7 @@
 #include "GraphProvider.h"
 #include "UBFBindingObject.h"
 #include "UBFLog.h"
-#include "UBFLogData.h"
+#include "DataTypes/MeshRenderer.h"
 
 void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
 {
@@ -40,20 +39,12 @@ void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBluepri
 
 void UUBFRuntimeController::ClearBlueprint()
 {
-	TArray<TObjectPtr<USceneComponent>> Children = RootComponent->GetAttachChildren();
-	for (const auto AttachChild : Children)
+	LastExecutionContext.FlagCancelExecution();
+	
+	for (const auto AttachChild : GetSpawnedActors())
 	{
-		TArray<AActor*> AttachedActorsChildren;
-		AttachChild->GetOwner()->GetAttachedActors(AttachedActorsChildren, false, true);
-		for (const auto AttachedActorChild : AttachedActorsChildren)
-		{
-			AttachedActorChild->Destroy();
-		}
-				
-		AttachChild->GetOwner()->Destroy();
+		AttachChild->Destroy();
 	}
-
-	// TODO cancel any current blueprint executions
 }
 
 void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
@@ -65,6 +56,7 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 		return;
 	}
+	
 	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute"));
 
 	if (GraphProvider == nullptr)
@@ -78,17 +70,28 @@ void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FS
 	
 	CurrentGraphProvider->GetGraph(BlueprintId).Next([this, BlueprintId, Inputs, &ExecutionContext, OnComplete, BlueprintInstances](const UBF::FLoadGraphResult& Result)
 	{
+		if (!IsValid(this) || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
+		{
+			this->OnComplete(false);
+			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
+			return;
+		}
+		
 		if (!Result.Result.Key)
 		{
 			UE_LOG(LogUBF, Error, TEXT("Aborting execution: graph '%s' is invalid"), *BlueprintId);
+			this->OnComplete(false);
 			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 			return;
 		}
 
 		ClearBlueprint();
+		if (bStartWithUBFActorsHidden)
+			SetUBFActorsHidden(true);
 
-		auto OnCompleteFunc = [OnComplete](bool Success, FUBFExecutionReport ExecutionReport)
+		auto OnCompleteFunc = [OnComplete, this](bool Success, FUBFExecutionReport ExecutionReport)
 		{
+			this->OnComplete(Success);
 			OnComplete.ExecuteIfBound(Success, ExecutionReport);
 		};
 
@@ -117,6 +120,43 @@ TArray<FString> UUBFRuntimeController::GetLastOutputNames()
 	return OutputNames;
 }
 
+bool UUBFRuntimeController::TryReadLastContextOutput(const FString& OutputId, FString& OutString) const
+{
+	bool bSuccess = false;
+	
+	UBF::FDynamicHandle DynamicOutput;
+	if (LastExecutionContext.TryReadOutput(OutputId, DynamicOutput))
+	{
+		bSuccess = true;
+		OutString = DynamicOutput.ToString();
+	}
+	
+	return bSuccess;
+}
+
+UObject* UUBFRuntimeController::TryReadLastContextUObjectOutput(const FString& OutputId) const
+{
+	UBF::FDynamicHandle DynamicOutput;
+	if (!LastExecutionContext.TryReadOutput(OutputId, DynamicOutput))
+	{
+		return nullptr;
+	}
+	
+	UBF::FSceneNode* SceneNode = nullptr;
+	if (DynamicOutput.TryInterpretAs(SceneNode) && SceneNode)
+	{
+		return SceneNode->GetAttachmentComponent();
+	}
+	
+	UBF::FMeshRenderer* MeshRenderer = nullptr;
+	if (DynamicOutput.TryInterpretAs(MeshRenderer) && MeshRenderer)
+	{
+		return MeshRenderer->GetMesh();
+	}
+
+	return nullptr;
+}
+
 void UUBFRuntimeController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -127,5 +167,40 @@ void UUBFRuntimeController::BeginPlay()
 
 void UUBFRuntimeController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	ClearBlueprint();
+	
 	Super::EndPlay(EndPlayReason);
+}
+
+void UUBFRuntimeController::SetUBFActorsHidden(bool bIsHidden)
+{
+	RootComponent->SetVisibility(!bIsHidden);
+
+	for (AActor* Actor : GetSpawnedActors())
+	{
+		Actor->SetActorHiddenInGame(bIsHidden);
+	}
+}
+
+void UUBFRuntimeController::OnComplete(bool bWasSuccessful)
+{
+	if (!IsValid(this)) return;
+
+	if (bWasSuccessful && bAutoUnHideUBFActorsOnComplete)
+		SetUBFActorsHidden(false);
+}
+
+TArray<AActor*> UUBFRuntimeController::GetSpawnedActors() const
+{
+	TArray<AActor*> ChildActors;
+	for (const auto AttachChild : RootComponent->GetAttachChildren())
+	{
+		if (AttachChild->GetOwner() != RootComponent->GetOwner())
+		{
+			ChildActors.Add(AttachChild->GetOwner());
+			AttachChild->GetOwner()->GetAttachedActors(ChildActors, false, true);
+		}
+	}
+
+	return ChildActors;
 }

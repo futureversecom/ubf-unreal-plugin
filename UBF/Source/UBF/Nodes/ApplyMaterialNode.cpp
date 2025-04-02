@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #include "ApplyMaterialNode.h"
 
 #include "GraphProvider.h"
@@ -168,6 +170,12 @@ namespace UBF
 			GetContext().GetGraphProvider()->GetTextureResource(TextureHandle.ResourceId).Next(
 				[this, Promise, Mat, Prop, ResourceId](const FLoadTextureResult& TextureResult)
 			{
+				if (!CheckExecutionStillValid())
+				{
+					Promise->SetValue(false);
+					return;
+				}
+					
 				if (!TextureResult.Result.Key)
 				{
 					UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
@@ -197,8 +205,16 @@ namespace UBF
 									
 					if (DynamicHandle.TryInterpretAs(TextureSettings) && TextureSettings)
 					{
-						Texture->SRGB = TextureSettings->bUseSRGB;
-						Texture->UpdateResource();
+						bool bIsDirty = false;
+						
+						if (Texture->SRGB != TextureSettings->bUseSRGB)
+						{
+							Texture->SRGB = TextureSettings->bUseSRGB;
+							bIsDirty = true;
+						}
+						
+						if (bIsDirty)
+							Texture->UpdateResource();
 					}
 				}
 				

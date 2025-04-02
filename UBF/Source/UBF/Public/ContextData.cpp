@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #include "ContextData.h"
 
 #include "UBFLogData.h"
@@ -51,7 +53,7 @@ namespace UBF
 				}
 			}
 			
-			OnComplete(ExecutionReport.bWasSuccessful, ExecutionReport);
+			OnComplete(ExecutionReport.bWasSuccessful && !bCancelExecution, ExecutionReport);
 		}
 	}
 }

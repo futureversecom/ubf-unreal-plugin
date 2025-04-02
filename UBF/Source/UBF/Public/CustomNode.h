@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,7 +24,7 @@ namespace UBF
 	protected:
 		// Use when DynamicValue is a pointer
 		template <typename T>
-		bool TryReadInput(const FString& PortKey, T*& Out) const
+		bool TryReadInput(const FString& PortKey, T*& Out) const 
 		{
 			return Context.TryReadInput<T>(NodeId, PortKey, Out);
 		}
@@ -107,6 +109,20 @@ namespace UBF
 		{
 			GetContext().Log(Level, Log);
 		}
+
+		bool CheckExecutionStillValid() const
+		{
+			if (!IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
+				return false;
+
+			if (!GetRoot() || !IsValid(GetRoot()->GetAttachmentComponent()))
+				return false;
+
+			if (GetContext().GetCancelExecution())
+				return false;
+
+			return true;
+		}
 		
 	public:
 		virtual ~FCustomNode() = default;
@@ -147,7 +163,7 @@ namespace UBF
 			// have to be run on the game thread
 			check(IsInGameThread());
 			
-			if (ExecuteSync())
+			if (!CheckExecutionStillValid() || ExecuteSync())
 			{
 				Context.CompleteNode(CompletionID);
 				delete this;

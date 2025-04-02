@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
 
 
 #include "SetBlendshapeNode.h"
@@ -18,7 +18,7 @@ namespace UBF
 			return;
 		}
 
-		if (!Target)
+		if (!Target || !IsValid(Target->GetAttachmentComponent()) || !IsValid(Target->GetAttachmentComponent()->GetOwner()))
 		{
 			UBF_LOG(Warning, TEXT("FSetBlendshapeNode::ExecuteAsync Target input was null"));
 			TriggerNext();

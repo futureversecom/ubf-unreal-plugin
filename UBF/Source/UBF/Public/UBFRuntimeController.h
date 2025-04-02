@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
 
 #pragma once
 
@@ -35,20 +35,38 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ClearBlueprint();
 	
-	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-	                const TSharedPtr<IGraphProvider>&  GraphProvider,
-	                const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
-	                FOnComplete& OnComplete);
-
 	UFUNCTION(BlueprintCallable)
 	TArray<FString> GetLastOutputNames();
+
+	UFUNCTION(BlueprintCallable)
+	bool TryReadLastContextOutput(const FString& OutputId, FString& OutString) const;
+
+	// Tries to read last context output as UObject, returns nullptr if not read or if the type is not supported
+	UFUNCTION(BlueprintCallable)
+	UObject* TryReadLastContextUObjectOutput(const FString& OutputId) const;
 
 	void SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider);
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetUBFActorsHidden(bool bIsHidden);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bStartWithUBFActorsHidden = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutoUnHideUBFActorsOnComplete = true;
+
 private:
+	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
+				const TSharedPtr<IGraphProvider>&  GraphProvider,
+				const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
+				FOnComplete& OnComplete);
+	
+	void OnComplete(bool bWasSuccessful);
+	TArray<AActor*> GetSpawnedActors() const;
+	
 	mutable TSharedPtr<IGraphProvider> CurrentGraphProvider;
 	mutable UBF::FExecutionContextHandle LastExecutionContext;
 	mutable UBF::FGraphHandle LastGraphHandle;

@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
 #pragma once
 #include "UBFBindingObject.h"
 
@@ -56,7 +58,7 @@ namespace UBFUtils
 		{
 			return UBF::FDynamicHandle::Float(FCString::Atof(*Value));
 		}
-		if (Type == "boolean")
+		if (Type == "boolean" || Type == "bool")
 		{
 			return UBF::FDynamicHandle::Bool(Value == "true");
 		}
