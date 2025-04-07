@@ -38,10 +38,11 @@ namespace UBF
 				UE_LOG(LogUBF, Warning, TEXT("Failed to set input with key %s into DynamicMap"), *Tuple.Key);
 		}
 		
-		if (GetGraphVersion() > SupportedGraphVersion)
+		if (!(GetGraphVersion() >= MinSupportedGraphVersion && GetGraphVersion() <= MaxSupportedGraphVersion))
 		{
 			UE_LOG(LogUBF, Warning, TEXT("Attemping to execute an unsupported Graph Version! It could produce unexpected result!"
-			" Current Graph Version: %s Supported Graph Version: %s"), *GetGraphVersion().ToString(), *SupportedGraphVersion.ToString());
+			" Current Graph Version: %s MinSupportedVersion: %s Max Supported Graph Version: %s"),
+			*GetGraphVersion().ToString(), *MinSupportedGraphVersion.ToString(), *MaxSupportedGraphVersion.ToString());
 		}
 
 		FExecutionContextHandle TempHandle(CALL_RUST_FUNC(graph_execute)(

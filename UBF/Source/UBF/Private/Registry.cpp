@@ -2,7 +2,7 @@
 
 #include "Registry.h"
 
-#include "ApplyMaterialNode.h"
+#include "Material/ApplyMaterialNode.h"
 #include "BindMeshes.h"
 #include "CreateMeshConfig.h"
 #include "CreateSceneNode.h"
@@ -11,20 +11,25 @@
 #include "FindFirstSceneNode.h"
 #include "FindRenderer.h"
 #include "FindSceneNodes.h"
-#include "MaterialNode.h"
+#include "Material/MaterialNode.h"
 #include "SetBlendshapeNode.h"
 #include "SetSceneNodeEnabledNode.h"
 #include "SetTextureSettingsNode.h"
-#include "SGDecalPropertiesNode.h"
-#include "SGFurCardPropertiesNode.h"
-#include "SGFurPropertiesNode.h"
-#include "SGHairPropertiesNode.h"
-#include "SGPBRPropertiesNode.h"
+#include "Material/SGDecalPropertiesNode.h"
+#include "Material/SGFurCardPropertiesNode.h"
+#include "Material/SGFurPropertiesNode.h"
+#include "Material/SGHairPropertiesNode.h"
+#include "Material/SGPBRPropertiesNode.h"
 #include "SpawnMeshNode.h"
 #include "TransformPositionNode.h"
 #include "TransformScaleNode.h"
 #include "UBF.h"
 #include "UBFLog.h"
+#include "Material/MakeDecalMaterial.h"
+#include "Material/MakeFurMaterial.h"
+#include "Material/MakeHairMaterial.h"
+#include "Material/MakePBRMaterial.h"
+#include "Material/MakeSkinMaterial.h"
 
 namespace UBF
 {
@@ -83,6 +88,7 @@ namespace UBF
 		Registry.Register<FCreateSceneNode>("CreateSceneNode");
 		Registry.Register<FFindSceneNodes>("FindSceneNodes");
 		Registry.Register<FFindFirstSceneNode>("FindFirstSceneNode");
+		Registry.Register<FSetSceneNodeEnabledNode>("SetSceneNodeEnabled");
 		Registry.Register<FApplyMaterialNode>("ApplyMaterial");
 		Registry.Register<FMaterialNode>("Material");
 		Registry.Register<FSGDecalPropertiesNode>("SGDecalProperties");
@@ -100,7 +106,11 @@ namespace UBF
 		Registry.Register<FTransformPositionNode>("TransformPosition");
 		Registry.Register<FTransformScaleNode>("TransformScale");
 		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint2");
-		Registry.Register<FSetSceneNodeEnabledNode>("SetSceneNodeEnabled");
+		Registry.Register<FMakePBRMaterial>("MakePBRMaterial");
+		Registry.Register<FMakeDecalMaterial>("MakeDecalMaterial");
+		Registry.Register<FMakeFurMaterial>("MakeFurMaterial");
+		Registry.Register<FMakeHairMaterial>("MakeHairMaterial");
+		Registry.Register<FMakeSkinMaterial>("MakeSkinMaterial");
 		
 		return Registry;
 	}

@@ -91,6 +91,10 @@ namespace UBF
 				|| (Major == OtherVersion.Get<0>() && Minor == OtherVersion.Get<1>() && Patch == OtherVersion.Get<2>());
 		}
 		
+		bool operator<(const FGraphVersion& Other) const { return Other > *this; }
+		bool operator<=(const FGraphVersion& Other) const { return !(Other < *this); }
+		bool operator>=(const FGraphVersion& Other) const { return !(*this < Other); }
+		
 	private:
 		static TTuple<int32,int32,int32> FromString(const FString& VersionString)
 		{
@@ -146,5 +150,6 @@ namespace UBF
 		mutable FGraphVersion CachedVersion;
 	};
 
-	static FGraphVersion SupportedGraphVersion = FGraphVersion(TEXT("0.1.0"));
+	static FGraphVersion MinSupportedGraphVersion = FGraphVersion(TEXT("0.0.0"));
+	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("0.1.0"));
 }
