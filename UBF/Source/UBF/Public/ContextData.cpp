@@ -10,7 +10,7 @@ namespace UBF
 	FContextData::FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig, const FGraphHandle& Graph,
 		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete): BlueprintId(BlueprintId), Graph(Graph), OnComplete(MoveTemp(OnComplete))
 	{
-		if (ExecutionSetConfig->GetRoot()->GetWorld())
+		if (ExecutionSetConfig->GetRoot().IsValid() && IsValid(ExecutionSetConfig->GetRoot()->GetWorld()))
 		{
 			PinnedWorld = UGCPin::Pin(ExecutionSetConfig->GetRoot()->GetWorld());
 		}
@@ -52,7 +52,7 @@ namespace UBF
 				}
 			}
 			
-			OnComplete(ExecutionReport.bWasSuccessful && !bCancelExecution, ExecutionReport);
+			OnComplete(ExecutionReport.bWasSuccessful && !ExecutionSetConfig->GetCancelExecution(), ExecutionReport);
 		}
 	}
 }

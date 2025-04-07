@@ -12,3 +12,12 @@ void UBF::FExecutionInstance::Execute(const TSharedPtr<IExecutionSetConfig>& Exe
 {
 	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, Inputs, MoveTemp(OnComplete), Handle);
 }
+
+void UBF::FExecutionInstance::ExecuteWithInputs(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
+	TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, const TMap<FString, FDynamicHandle>& NewInputs,
+	FExecutionContextHandle& Handle) const
+{
+	TMap<FString, FDynamicHandle> CombinedInputs = Inputs;
+	CombinedInputs.Append(NewInputs);
+	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, CombinedInputs, MoveTemp(OnComplete), Handle);
+}

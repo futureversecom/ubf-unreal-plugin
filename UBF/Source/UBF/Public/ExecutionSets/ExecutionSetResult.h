@@ -3,7 +3,7 @@
 
 namespace UBF
 {
-	class FExecutionSetResult
+	class UBF_API FExecutionSetResult
     {
     public:
     	FExecutionContextHandle& GetMutableExecutionContext() {return ExecutionContextHandle;};
@@ -11,6 +11,8 @@ namespace UBF
 		void SetResults(bool bSuccess, const FUBFExecutionReport& ExecutionReport);
 		
 		bool TryReadOutput(const FString& OutputId, FDynamicHandle& OutValue) const;
+		bool TryReadOutputString(const FString& OutputId, FString& OutValue) const;
+		
 		TArray<FString> GetOutputNames() const;
 		TMap<FString, FDynamicHandle> GetAllOutputs() const;
 		FUBFExecutionReport GetExecutionReport() const {return ExecutionReport;};

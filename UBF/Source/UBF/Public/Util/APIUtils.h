@@ -5,7 +5,6 @@
 #include "Graph.h"
 #include "GraphProvider.h"
 #include "HttpModule.h"
-#include "ICacheLoader.h"
 #include "UBFUtils.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"

@@ -11,12 +11,7 @@ namespace UBF
 {
 	class IExecutionSetData;
 
-	// TODO List
-	// 4. Update UBFRuntimeController to use new interface
-	// 5. Update FutureverseControllerLayer to use new interface for parsing graphs
-	// 6. Update FutureverseControllerLayer to use new interface for render graphs
-
-	static FExecutionSetHandle Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData);
+	UBF_API FExecutionSetHandle Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData);
 }
 
 /**

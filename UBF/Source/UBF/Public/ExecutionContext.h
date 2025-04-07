@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ExecutionInstanceData.h"
 #include "ContextData.h"
 #include "Dynamic.h"
 #include "UBFExecutionReport.h"
@@ -45,40 +44,15 @@ namespace UBF
 
 		FExecutionContextHandle() : FExecutionHandleBase(nullptr) {}
 
-		FSceneNode* GetRoot() const { return ContextData->ExecutionSetConfig->GetRoot(); }
+		FSceneNode* GetRoot() const;
 		const FContextData* GetUserData() const { return ContextData; }
+		const TSharedPtr<IExecutionSetConfig>& GetSetConfig() const { return ContextData->ExecutionSetConfig; }
 
 		// Gets world from UserData Root
-		UWorld* GetWorld() const
-		{
-			check(this);
-			
-			if (ContextData == nullptr)
-				DynamicContextData.TryInterpretAs(ContextData);
-			
-			check(ContextData);
-			check(ContextData->ExecutionSetConfig.IsValid());
-			check(ContextData->ExecutionSetConfig->GetRoot());
+		UWorld* GetWorld() const;
 
-			if (USceneComponent* SceneComponent = ContextData->ExecutionSetConfig->GetRoot()->GetAttachmentComponent())
-			{
-				if (!IsValid(SceneComponent))
-					return nullptr;
+		bool GetCancelExecution() const;
 
-				return SceneComponent->GetWorld();
-			}
-			
-			return nullptr;
-		}
-
-		bool GetCancelExecution() const
-		{
-			if (ContextData == nullptr)
-				return false;
-
-			return ContextData->ExecutionSetConfig->GetCancelExecution();
-		}
-		
 		FString GetBlueprintID() const
 		{
 			if (ContextData == nullptr)

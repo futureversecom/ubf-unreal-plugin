@@ -8,7 +8,7 @@
 #include "ExecutionSets/ExecutionInstance.h"
 #include "ExecutionSets/ExecutionSetResult.h"
 
-FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData)
+UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData)
 {
 	check(ExecutionSetData.IsValid());
 	

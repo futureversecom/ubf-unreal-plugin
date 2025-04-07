@@ -2,44 +2,42 @@
 
 #include "UBFRuntimeController.h"
 
-#include <UBFLogData.h>
-#include "GraphProvider.h"
-#include "UBFBindingObject.h"
-#include "UBFLog.h"
-#include "DataTypes/MeshRenderer.h"
+#include "UBFLogData.h"
 
-void UUBFRuntimeController::ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
+#include "BlueprintUBFLibrary.h"
+#include "UBFUtils.h"
+#include "DataTypes/MeshRenderer.h"
+#include "ExecutionSets/ExecutionSetData.h"
+#include "ExecutionSets/ExecutionSetResult.h"
+
+void UUBFRuntimeController::ExecuteBlueprint(FString RootID, const FBlueprintExecutionData& ExecutionData,  const FOnComplete& OnComplete)
 {
 	if (!ensure(RootComponent))
 	{
 		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
 		return;
 	}
-
-	UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint: %s Num Inputs: %d Num BlueprintInstances: %d"), *BlueprintId, ExecutionData.InputMap.Num(), ExecutionData.BlueprintInstances.Num());
 	
-	TMap<FString, UBF::FDynamicHandle> Inputs;
+	ClearBlueprint();
+	if (bStartWithUBFActorsHidden)
+		SetUBFActorsHidden(true);
 
-	for (const auto& InputPair : ExecutionData.InputMap)
+	auto OnCompleteFunc = [OnComplete, this](bool Success, TSharedPtr<UBF::FExecutionSetResult> ExecutionSetResult)
 	{
-		UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint Adding Input: %s"), *InputPair.Value->ToString());
-		Inputs.Add(InputPair.Key, InputPair.Value->GetDynamicFromValue());
-	}
+		this->OnComplete(Success);
+		OnComplete.ExecuteIfBound(Success, ExecutionSetResult->GetExecutionReport());
+	};
 
-	TMap<FString, UBF::FExecutionInstanceData> InstanceMap;
+	TSharedPtr<UBF::FExecutionSetData> ExecutionSetData = MakeShared<UBF::FExecutionSetData>(MakeShared<UBF::FSceneNode>(RootComponent), ExecutionData.BlueprintInstances, MoveTemp(OnCompleteFunc));
 
-	for (const UBF::FExecutionInstanceData& BlueprintInstance : ExecutionData.BlueprintInstances)
-	{
-		UE_LOG(LogUBF, Verbose, TEXT("UUBFRuntimeController::ExecuteBlueprint Adding BlueprintInstance: %s"), *BlueprintInstance.ToString());
-		InstanceMap.Add(BlueprintInstance.GetInstanceId(), BlueprintInstance);
-	}
+	ExecutionSetData->AddInputsForId(RootID, UBFUtils::AsDynamicMap(ExecutionData.InputMap));
 	
-	TryExecute(BlueprintId, Inputs, CurrentGraphProvider, InstanceMap, LastExecutionContext, OnComplete);
+	LastSetHandle = UBF::Execute(RootID, ExecutionSetData);
 }
 
 void UUBFRuntimeController::ClearBlueprint()
 {
-	LastExecutionContext.FlagCancelExecution();
+	LastSetHandle.FlagShouldCancel();
 	
 	for (const auto AttachChild : GetSpawnedActors())
 	{
@@ -47,97 +45,26 @@ void UUBFRuntimeController::ClearBlueprint()
 	}
 }
 
-void UUBFRuntimeController::TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-                                       const TSharedPtr<IGraphProvider>& GraphProvider,  const TMap<FString, UBF::FExecutionInstanceData>& BlueprintInstances,
-                                       UBF::FExecutionContextHandle& ExecutionContext, const FOnComplete& OnComplete)
-{
-	if (!ensure(RootComponent))
-	{
-		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
-		return;
-	}
-	
-	UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute"));
-
-	if (GraphProvider == nullptr)
-	{
-		UE_LOG(LogUBF, Error, TEXT("Aborting execution: Invalid Graphprovider or SubGraphResolver provided!"));
-		OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
-		return;
-	}
-		
-	CurrentGraphProvider = GraphProvider;
-	
-	CurrentGraphProvider->GetGraph(BlueprintId).Next([this, BlueprintId, Inputs, &ExecutionContext, OnComplete, BlueprintInstances](const UBF::FLoadGraphResult& Result)
-	{
-		if (!IsValid(this) || !IsValid(GetWorld()) || GetWorld()->bIsTearingDown)
-		{
-			this->OnComplete(false);
-			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
-			return;
-		}
-		
-		if (!Result.Result.Key)
-		{
-			UE_LOG(LogUBF, Error, TEXT("Aborting execution: graph '%s' is invalid"), *BlueprintId);
-			this->OnComplete(false);
-			OnComplete.ExecuteIfBound(false, FUBFExecutionReport::Failure());
-			return;
-		}
-
-		ClearBlueprint();
-		if (bStartWithUBFActorsHidden)
-			SetUBFActorsHidden(true);
-
-		auto OnCompleteFunc = [OnComplete, this](bool Success, FUBFExecutionReport ExecutionReport)
-		{
-			this->OnComplete(Success);
-			OnComplete.ExecuteIfBound(Success, ExecutionReport);
-		};
-
-		LastGraphHandle = Result.Result.Value;
-		LastGraphHandle.Execute(BlueprintId, RootComponent, CurrentGraphProvider, MakeShared<FUBFLogData>(BlueprintId), BlueprintInstances, Inputs, OnCompleteFunc, ExecutionContext);
-		UE_LOG(LogUBF, VeryVerbose, TEXT("UUBFRuntimeController::TryExecute Post Graph.Execute"));
-	});
-}
-
-void UUBFRuntimeController::SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider)
-{
-	CurrentGraphProvider = GraphProvider;
-}
-
 TArray<FString> UUBFRuntimeController::GetLastOutputNames()
 {
-	TArray<UBF::FBindingInfo> Outputs;
-	LastGraphHandle.GetOutputs(Outputs);
-	TArray<FString> OutputNames;
-
-	for (auto Output : Outputs)
-	{
-		OutputNames.Add(Output.Id);
-	}
-
-	return OutputNames;
+	if (!LastSetHandle.IsValid()) return TArray<FString>();
+	
+	return LastSetHandle.GetResult()->GetOutputNames();
 }
 
 bool UUBFRuntimeController::TryReadLastContextOutput(const FString& OutputId, FString& OutString) const
 {
-	bool bSuccess = false;
+	if (!LastSetHandle.IsValid()) return false;
 	
-	UBF::FDynamicHandle DynamicOutput;
-	if (LastExecutionContext.TryReadOutput(OutputId, DynamicOutput))
-	{
-		bSuccess = true;
-		OutString = DynamicOutput.ToString();
-	}
-	
-	return bSuccess;
+	return LastSetHandle.GetResult()->TryReadOutputString(OutputId, OutString);
 }
 
 UObject* UUBFRuntimeController::TryReadLastContextUObjectOutput(const FString& OutputId) const
 {
+	if (!LastSetHandle.IsValid()) return nullptr;
+	
 	UBF::FDynamicHandle DynamicOutput;
-	if (!LastExecutionContext.TryReadOutput(OutputId, DynamicOutput))
+	if (!LastSetHandle.GetResult()->TryReadOutput(OutputId, DynamicOutput))
 	{
 		return nullptr;
 	}

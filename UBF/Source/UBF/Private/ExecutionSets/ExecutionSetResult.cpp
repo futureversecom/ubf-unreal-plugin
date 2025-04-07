@@ -19,6 +19,14 @@ namespace UBF
 		return ExecutionContextHandle.TryReadOutput(OutputId, OutValue);
 	}
 
+	bool FExecutionSetResult::TryReadOutputString(const FString& OutputId, FString& OutValue) const
+	{
+		FDynamicHandle DynamicHandle;
+		if (!TryReadOutput(OutputId, DynamicHandle)) return false;
+
+		return DynamicHandle.TryInterpretAs(OutValue);
+	}
+
 	TArray<FString> FExecutionSetResult::GetOutputNames() const
 	{
 		TArray<FBindingInfo> Outputs;

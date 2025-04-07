@@ -7,7 +7,7 @@ namespace UBF
 	class IExecutionSetConfig;
 	class FExecutionSetResult;
 	
-	class IExecutionSetData
+	class UBF_API IExecutionSetData
 	{
 	public:
 		virtual ~IExecutionSetData() = default;

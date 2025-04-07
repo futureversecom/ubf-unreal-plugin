@@ -6,64 +6,66 @@
 
 class UglTFRuntimeAsset;
 
-struct FMeshImportSettings
+namespace UBF
 {
-	FMeshImportSettings() {}
-	FMeshImportSettings(const FglTFRuntimeConfig& Config) : ImportConfig(Config) {}
+	struct UBF_API FMeshImportSettings
+	{
+		FMeshImportSettings() {}
+		FMeshImportSettings(const FglTFRuntimeConfig& Config) : ImportConfig(Config) {}
 	
-	FglTFRuntimeConfig ImportConfig;
+		FglTFRuntimeConfig ImportConfig;
 
-	// Custom comparison function for FglTFRuntimeBasisMatrix
-	static bool AreBasisMatricesEqual(const FglTFRuntimeBasisMatrix& A, const FglTFRuntimeBasisMatrix& B);
+		// Custom comparison function for FglTFRuntimeBasisMatrix
+		static bool AreBasisMatricesEqual(const FglTFRuntimeBasisMatrix& A, const FglTFRuntimeBasisMatrix& B);
 
-	// Custom comparison function for FglTFRuntimeConfig
-	static bool AreImportConfigsEqual(const FglTFRuntimeConfig& A, const FglTFRuntimeConfig& B);
+		// Custom comparison function for FglTFRuntimeConfig
+		static bool AreImportConfigsEqual(const FglTFRuntimeConfig& A, const FglTFRuntimeConfig& B);
 
-	static FString FglTFRuntimeConfigToString(const FglTFRuntimeConfig& Config);
+		static FString FglTFRuntimeConfigToString(const FglTFRuntimeConfig& Config);
 
-	// Equality operator comparing only ImportConfig
-	bool operator==(const FMeshImportSettings& Other) const
+		// Equality operator comparing only ImportConfig
+		bool operator==(const FMeshImportSettings& Other) const
+		{
+			return AreImportConfigsEqual(ImportConfig, Other.ImportConfig);
+		}
+
+		bool operator!=(const FMeshImportSettings& Other) const
+		{
+			return !(*this == Other);
+		}
+	};
+
+	struct UBF_API FCachedMeshEntry
 	{
-		return AreImportConfigsEqual(ImportConfig, Other.ImportConfig);
-	}
+		FCachedMeshEntry() {}
+		FCachedMeshEntry(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset);
 
-	bool operator!=(const FMeshImportSettings& Other) const
+		FMeshImportSettings ImportSettings;
+		TWeakObjectPtr<UglTFRuntimeAsset> Asset;
+
+		// Equality operator comparing only ImportConfig
+		bool operator==(const FCachedMeshEntry& Other) const
+		{
+			return ImportSettings == Other.ImportSettings;
+		}
+
+		bool operator!=(const FCachedMeshEntry& Other) const
+		{
+			return !(*this == Other);
+		}
+	};
+
+	struct UBF_API FCachedMesh
 	{
-		return !(*this == Other);
-	}
-};
+		FCachedMesh() {}
 
-struct FCachedMeshEntry
-{
-	FCachedMeshEntry() {}
-	FCachedMeshEntry(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset);
+		bool ContainsMesh(const FMeshImportSettings& ImportSettings);
+		void AddOrReplaceMesh(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset);
+		UglTFRuntimeAsset* GetMesh(const FMeshImportSettings& ImportSettings);
 
-	FMeshImportSettings ImportSettings;
-	TWeakObjectPtr<UglTFRuntimeAsset> Asset;
-
-	// Equality operator comparing only ImportConfig
-	bool operator==(const FCachedMeshEntry& Other) const
-	{
-		return ImportSettings == Other.ImportSettings;
-	}
-
-	bool operator!=(const FCachedMeshEntry& Other) const
-	{
-		return !(*this == Other);
-	}
-};
-
-struct FCachedMesh
-{
-	FCachedMesh() {}
-
-	bool ContainsMesh(const FMeshImportSettings& ImportSettings);
-	void AddOrReplaceMesh(const FMeshImportSettings& ImportSettings, UglTFRuntimeAsset* Asset);
-	UglTFRuntimeAsset* GetMesh(const FMeshImportSettings& ImportSettings);
-
-private:
-	int GetIndexForConfig(const FMeshImportSettings& ImportSettings);
-
+	private:
+		int GetIndexForConfig(const FMeshImportSettings& ImportSettings);
 	
-	TArray<FCachedMeshEntry> LoadedAssets;
-};
+		TArray<FCachedMeshEntry> LoadedAssets;
+	};
+}

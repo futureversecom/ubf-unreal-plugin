@@ -12,6 +12,7 @@ namespace UBF
 		
 		USceneComponent* GetAttachmentComponent() const {return SceneComponent.Get();}
 		FName GetAttachmentSocket() const {return Socket;}
+		UWorld* GetWorld() const {return SceneComponent.IsValid() ? SceneComponent->GetWorld() : nullptr;}
 	
 		FString ToString() const;
 

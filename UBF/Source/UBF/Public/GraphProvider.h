@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BlueprintJson.h"
 #include "Graph.h"
-#include "Registry.h"
+#include "ExecutionSets/ExecutionInstance.h"
 #include "UObject/Interface.h"
 
 struct FglTFRuntimeConfig;

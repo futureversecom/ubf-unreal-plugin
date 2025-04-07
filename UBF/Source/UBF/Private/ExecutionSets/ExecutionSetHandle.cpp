@@ -2,21 +2,24 @@
 
 #include "ExecutionSets/ExecutionSetResult.h"
 
-bool FExecutionSetHandle::IsComplete() const
+namespace UBF
 {
-	if (SetResult.IsValid())
-		return SetResult.Pin()->IsComplete();
+	bool FExecutionSetHandle::IsComplete() const
+	{
+		if (SetResult.IsValid())
+			return SetResult->IsComplete();
 
-	return true;
-}
+		return true;
+	}
 
-bool FExecutionSetHandle::IsValid() const
-{
-	return ExecutionSetConfig.IsValid();
-}
+	bool FExecutionSetHandle::IsValid() const
+	{
+		return ExecutionSetConfig.IsValid();
+	}
 
-void FExecutionSetHandle::FlagShouldCancel() const
-{
-	if (ExecutionSetConfig.IsValid())
-		ExecutionSetConfig.Pin()->FlagCancelExecution();
+	void FExecutionSetHandle::FlagShouldCancel() const
+	{
+		if (ExecutionSetConfig.IsValid())
+			ExecutionSetConfig.Pin()->FlagCancelExecution();
+	}
 }

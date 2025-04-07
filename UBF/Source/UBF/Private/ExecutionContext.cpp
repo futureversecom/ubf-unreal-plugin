@@ -3,12 +3,47 @@
 #include "ExecutionContext.h"
 
 #include "UBFLog.h"
-#include "GraphProvider.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 #include "UBFLogData.h"
 #include "UBFUtils.h"
 
 namespace UBF
 {
+	FSceneNode* FExecutionContextHandle::GetRoot() const
+	{
+		return ContextData->ExecutionSetConfig->GetRoot().Get();
+	}
+
+	UWorld* FExecutionContextHandle::GetWorld() const
+	{
+		check(this);
+			
+		if (ContextData == nullptr)
+			DynamicContextData.TryInterpretAs(ContextData);
+			
+		check(ContextData);
+		check(ContextData->ExecutionSetConfig.IsValid());
+		check(ContextData->ExecutionSetConfig->GetRoot().IsValid());
+
+		if (USceneComponent* SceneComponent = ContextData->ExecutionSetConfig->GetRoot()->GetAttachmentComponent())
+		{
+			if (!IsValid(SceneComponent))
+				return nullptr;
+
+			return SceneComponent->GetWorld();
+		}
+			
+		return nullptr;
+	}
+
+	bool FExecutionContextHandle::GetCancelExecution() const
+	{
+		if (ContextData == nullptr)
+			return false;
+
+		return ContextData->ExecutionSetConfig->GetCancelExecution();
+	}
+
 	void FExecutionContextHandle::Log(EUBFLogLevel Level, const FString& Log) const
 	{
 		if (!GetUserData()) return;

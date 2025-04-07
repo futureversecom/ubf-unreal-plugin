@@ -3,35 +3,38 @@
 
 #pragma once
 
-struct FCatalogElement
+namespace UBF
 {
-	FCatalogElement(){}
-
-	// Equal operator
-	bool operator==(const FCatalogElement& Other) const
+	struct UBF_API FCatalogElement
 	{
-		return Id == Other.Id &&
-			   Type == Other.Type &&
-			   Uri == Other.Uri &&
-			   Hash == Other.Hash;
-	}
+		FCatalogElement(){}
 
-	bool EqualWithoutHash(const FCatalogElement& Other) const
-	{
-		return Id == Other.Id &&
-			   Type == Other.Type &&
-			   Uri == Other.Uri;
-	}
+		// Equal operator
+		bool operator==(const FCatalogElement& Other) const
+		{
+			return Id == Other.Id &&
+				   Type == Other.Type &&
+				   Uri == Other.Uri &&
+				   Hash == Other.Hash;
+		}
 
-	// ToString method
-	FString ToString() const
-	{
-		return FString::Printf(TEXT("Id: %s, Type: %s, Uri: %s, Hash: %s"),
-							   *Id, *Type, *Uri, *Hash);
-	}
+		bool EqualWithoutHash(const FCatalogElement& Other) const
+		{
+			return Id == Other.Id &&
+				   Type == Other.Type &&
+				   Uri == Other.Uri;
+		}
+
+		// ToString method
+		FString ToString() const
+		{
+			return FString::Printf(TEXT("Id: %s, Type: %s, Uri: %s, Hash: %s"),
+								   *Id, *Type, *Uri, *Hash);
+		}
 	
-	FString Id;
-	FString Type;
-	FString Uri;
-	FString Hash;
-};
+		FString Id;
+		FString Type;
+		FString Uri;
+		FString Hash;
+	};
+}

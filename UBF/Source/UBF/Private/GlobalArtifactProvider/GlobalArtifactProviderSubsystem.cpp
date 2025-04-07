@@ -5,6 +5,7 @@
 
 #include "glTFRuntimeAsset.h"
 #include "ImageUtils.h"
+#include "Registry.h"
 #include "GlobalArtifactProvider/DownloadRequestManager.h"
 #include "GlobalArtifactProvider/CacheLoading/TempCacheLoader.h"
 #include "GlobalArtifactProvider/CacheLoading/MemoryCacheLoader.h"
@@ -151,7 +152,7 @@ TFuture<UBF::FLoadTextureResult> UGlobalArtifactProviderSubsystem::GetTextureRes
 	return Future;
 }
 
-TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(const FString& ArtifactId, const FMeshImportSettings& ImportSettings)
+TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(const FString& ArtifactId, const UBF::FMeshImportSettings& ImportSettings)
 {
 	TSharedPtr<TPromise<UBF::FLoadMeshResult>> Promise = MakeShareable(new TPromise<UBF::FLoadMeshResult>());
 	TFuture<UBF::FLoadMeshResult> Future = Promise->GetFuture();
@@ -246,7 +247,7 @@ void UGlobalArtifactProviderSubsystem::PrintBlueprintDebug(const FString& Artifa
 	});
 }
 
-void UGlobalArtifactProviderSubsystem::RegisterCatalog(const FCatalogElement& CatalogElement)
+void UGlobalArtifactProviderSubsystem::RegisterCatalog(const UBF::FCatalogElement& CatalogElement)
 {
 	if (Catalog.Contains(CatalogElement.Id))
 	{
@@ -263,7 +264,7 @@ void UGlobalArtifactProviderSubsystem::RegisterCatalog(const FCatalogElement& Ca
 	Catalog.Add(CatalogElement.Id, CatalogElement);
 }
 
-void UGlobalArtifactProviderSubsystem::RegisterCatalogs(const TMap<FString, FCatalogElement>& CatalogMap)
+void UGlobalArtifactProviderSubsystem::RegisterCatalogs(const TMap<FString, UBF::FCatalogElement>& CatalogMap)
 {
 	for (const auto& CatalogElement : CatalogMap)
 	{

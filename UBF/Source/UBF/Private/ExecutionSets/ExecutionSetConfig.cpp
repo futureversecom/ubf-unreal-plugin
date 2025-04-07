@@ -7,7 +7,7 @@
 
 namespace UBF
 {
-	FExecutionSetConfig::FExecutionSetConfig(const TArray<FExecutionInstanceData>& ExecutionInstanceDatas, FSceneNode* RootNode) : RootNode(RootNode)
+	FExecutionSetConfig::FExecutionSetConfig(const TArray<FExecutionInstanceData>& ExecutionInstanceDatas, const TSharedPtr<FSceneNode>& RootNode) : RootNode(RootNode)
 	{
 		for (const auto& ExecutionInstanceData : ExecutionInstanceDatas)
 		{
@@ -64,12 +64,12 @@ namespace UBF
 
 			if (!LoadGraphResult.Result.Key)
 			{
-				LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(false, nullptr);
+				LoadResult.Result = TPair<bool, TSharedPtr<FExecutionInstance>>(false, nullptr);
 				Promise->SetValue(LoadResult);
 				return;
 			}
 			
-			LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(true,  MakeShared<FExecutionInstance>(Id, LoadGraphResult.Result.Value));
+			LoadResult.Result = TPair<bool, TSharedPtr<FExecutionInstance>>(true, MakeShared<FExecutionInstance>(Id, LoadGraphResult.Result.Value));
 			Promise->SetValue(LoadResult);
 		});
 
@@ -86,7 +86,7 @@ namespace UBF
 		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetTextureResource(ArtifactId);
 	}
 
-	FSceneNode* FExecutionSetConfig::GetRoot()
+	TSharedPtr<FSceneNode> FExecutionSetConfig::GetRoot()
 	{
 		return RootNode;
 	}

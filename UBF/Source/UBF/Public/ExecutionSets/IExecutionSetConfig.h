@@ -1,13 +1,13 @@
 #pragma once
 #include "GraphProvider.h"
-
-struct FMeshImportSettings;
+#include "DataTypes/SceneNode.h"
 
 namespace UBF
 {
 	class FExecutionInstance;
+	struct FMeshImportSettings;
 	
-	class IExecutionSetConfig
+	class UBF_API IExecutionSetConfig
 	{
 	public:
 		virtual ~IExecutionSetConfig() = default;
@@ -16,7 +16,7 @@ namespace UBF
 		virtual TFuture<FLoadMeshResult> GetMesh(const FString& ArtifactId, const FMeshImportSettings& MeshImportSettings) = 0;
 		virtual TFuture<FLoadTextureResult> GetTexture(const FString& ArtifactId) = 0;
 		
-		virtual FSceneNode* GetRoot() = 0;
+		virtual TSharedPtr<FSceneNode> GetRoot() = 0;
 		virtual TSharedPtr<FUBFLogData> GetLogData() = 0;
 		virtual bool GetCancelExecution() = 0;
 		virtual void FlagCancelExecution() = 0;

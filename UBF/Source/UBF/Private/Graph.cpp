@@ -19,7 +19,7 @@ namespace UBF
 	{
 		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
-		if (!ExecutionSetConfig->GetRoot() || !IsValid(ExecutionSetConfig->GetRoot()->GetAttachmentComponent()))
+		if (!ExecutionSetConfig->GetRoot().IsValid() || !IsValid(ExecutionSetConfig->GetRoot()->GetAttachmentComponent()))
 		{
 			UE_LOG(LogUBF, Verbose, TEXT("FGraphHandle::Execute Root is invalid, aborting execution"));
 			return;
