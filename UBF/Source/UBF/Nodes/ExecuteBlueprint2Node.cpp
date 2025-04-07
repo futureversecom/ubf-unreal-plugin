@@ -8,6 +8,8 @@
 
 void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 {
+	UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Executing: '%s'"), *GetContext().GetBlueprintID());
+	
 	FString BlueprintId;
 	if (!TryReadInputValue("Blueprint", BlueprintId))
 	{

@@ -8,7 +8,7 @@
 namespace UBF
 {
 	FContextData::FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig, const FGraphHandle& Graph,
-		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete): BlueprintId(BlueprintId), Graph(Graph), OnComplete(MoveTemp(OnComplete))
+		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete): BlueprintId(BlueprintId), ExecutionSetConfig(ExecutionSetConfig), Graph(Graph), OnComplete(MoveTemp(OnComplete))
 	{
 		if (ExecutionSetConfig->GetRoot().IsValid() && IsValid(ExecutionSetConfig->GetRoot()->GetWorld()))
 		{

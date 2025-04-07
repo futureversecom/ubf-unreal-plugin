@@ -7,8 +7,13 @@ UBF::FExecutionInstance::FExecutionInstance(const FString& BlueprintId, const FG
 	
 }
 
+void UBF::FExecutionInstance::SetInputs(const TMap<FString, FDynamicHandle>& InInputs)
+{
+	Inputs = InInputs;
+}
+
 void UBF::FExecutionInstance::Execute(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
-	TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
+                                      TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
 {
 	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, Inputs, MoveTemp(OnComplete), Handle);
 }

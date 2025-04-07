@@ -38,8 +38,7 @@ namespace UBF
 		// Check Existing FExecutionInstance
 		if (ExecutionInstanceDataMap.Contains(Id))
 		{
-			FExecutionInstanceData InstanceData = ExecutionInstanceDataMap[Id];
-			// Return blank instance from graph provider
+			const FExecutionInstanceData& InstanceData = ExecutionInstanceDataMap[Id];
 			UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetGraph(InstanceData.GetBlueprintId()).Next([Promise, InstanceData, Id](const FLoadGraphResult& LoadGraphResult)
 			{
 				FLoadExecutionInstanceResult LoadResult;
@@ -50,8 +49,11 @@ namespace UBF
 					Promise->SetValue(LoadResult);
 					return;
 				}
+
+				TSharedPtr<FExecutionInstance> ExecutionInstance = MakeShared<FExecutionInstance>(Id, LoadGraphResult.Result.Value);
+				ExecutionInstance->SetInputs(InstanceData.GetInputs());
 			
-				LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(true,  MakeShared<FExecutionInstance>(Id, LoadGraphResult.Result.Value));
+				LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(true,ExecutionInstance);
 				Promise->SetValue(LoadResult);
 			});
 			return Future;

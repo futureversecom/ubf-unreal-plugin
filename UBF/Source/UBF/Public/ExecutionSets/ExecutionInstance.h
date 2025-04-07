@@ -8,6 +8,8 @@ namespace UBF
 	{
 	public:
 		FExecutionInstance(const FString& BlueprintId, const FGraphHandle& GraphHandle);
+
+		void SetInputs(const TMap<FString, FDynamicHandle>& InInputs);
 		
 		void Execute(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 			TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
