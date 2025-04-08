@@ -56,15 +56,31 @@ namespace UBF
 		
 	}
 
-	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const
+	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey, FFI::ScopeID ScopeID) const
 	{
-		return CALL_RUST_FUNC(ctx_trigger_node)(
+		uint32_t ChildScope = 0;
+		
+		uint8_t Result = CALL_RUST_FUNC(ctx_trigger_node)(
 			RustPtr,
 			TCHAR_TO_UTF16(*SourceNodeId),
 			SourceNodeId.Len(),
 			TCHAR_TO_UTF16(*SourcePortKey),
-			SourcePortKey.Len()
+			SourcePortKey.Len(),
+			ScopeID,
+			&ChildScope
 		);
+
+		if (Result == 1 /* pending */)
+		{
+			// TODO add to pending scopes?
+		}
+
+		if (Result == 2 /* error */)
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey,

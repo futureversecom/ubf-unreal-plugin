@@ -19,7 +19,7 @@ namespace UBF
 	{
 		FString NodeId;
 		FExecutionContextHandle Context;
-		FFI::CompletionID CompletionID = -1;
+		FFI::ScopeID ScopeID = -1;
 		
 	protected:
 		// Use when DynamicValue is a pointer
@@ -57,7 +57,7 @@ namespace UBF
 		
 		void TriggerNext() const
 		{
-			Context.TryTriggerNode(NodeId, FString("Exec"));
+			Context.TryTriggerNode(NodeId, FString("Exec"), ScopeID);
 		}
 
 		bool TryGetResourceId(const FString& PinName, FString& Id) const
@@ -101,7 +101,7 @@ namespace UBF
 		{
 			// maybe its fine to complete in other threads? we just need to make sure execute sync nodes run in GT
 			check(IsInGameThread());
-			Context.CompleteNode(CompletionID);
+			Context.CompleteNode(ScopeID);
 			delete this; // Should this delete? FRegistry makes it seem like rust should be in charge of deleting nodes
 		}
 
@@ -165,7 +165,7 @@ namespace UBF
 			
 			if (!CheckExecutionStillValid() || ExecuteSync())
 			{
-				Context.CompleteNode(CompletionID);
+				Context.CompleteNode(ScopeID);
 				delete this;
 				return;
 			}
@@ -173,11 +173,11 @@ namespace UBF
 			ExecuteAsync();
 		}
 
-		void Bind(FString OurNodeId, const FFI::CompletionID OurCompletionID, const FExecutionContextHandle& OurContext)
+		void Bind(FString OurNodeId, const FFI::ScopeID OurScopeID, const FExecutionContextHandle& OurContext)
 		{
 			NodeId = OurNodeId;
 			Context = OurContext;
-			CompletionID = OurCompletionID;
+			ScopeID = OurScopeID;
 		}
 	};
 }

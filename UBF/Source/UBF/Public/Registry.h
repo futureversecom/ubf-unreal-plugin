@@ -11,7 +11,7 @@ namespace UBF
 	{
 	public:
 		typedef FCustomNode* (*CreateInstanceFn)(const FString& NodeId,
-		                                         const FFI::CompletionID CompletionID,
+		                                         const FFI::ScopeID ScopeID,
 		                                         FExecutionContextHandle Context);
 		friend struct FGraphHandle;
 

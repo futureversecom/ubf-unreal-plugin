@@ -65,12 +65,12 @@ namespace UBF
 		
 		void PrintBlueprintDebug(const FString& ContextString = FString()) const;
 
-		void CompleteNode(const FFI::CompletionID CompletionID) const
+		void CompleteNode(const FFI::ScopeID ScopeID) const
 		{
-			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, CompletionID);
+			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, ScopeID);
 		}
 
-		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey) const;
+		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey, FFI::ScopeID ScopeID) const;
 		
 		bool TryReadInput(const FString& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
 

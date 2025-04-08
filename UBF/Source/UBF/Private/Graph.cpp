@@ -49,14 +49,14 @@ namespace UBF
 			RustPtr,
 			DynamicMap.GetRustPtr(),
 			DynamicUserData.GetRustPtr(),
-			&FGraphHandle::OnComplete
+			&FGraphHandle::OnNodeComplete
 		));
 
 		Handle = TempHandle;
 		ContextData->SetReadyToComplete();
 	}
 	
-	void FGraphHandle::OnComplete(FFI::Dynamic* RawUserData)
+	void FGraphHandle::OnNodeComplete(FFI::Dynamic* RawUserData, FFI::ScopeID ScopeID)
 	{
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnComplete"));
 		const FDynamicHandle UserData(RawUserData);
@@ -65,7 +65,8 @@ namespace UBF
 		
 		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
 		{
-			ContextUserData->SetComplete();
+			if (ScopeID == 0)
+				ContextUserData->SetComplete();
 		}
 		else
 		{

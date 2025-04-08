@@ -136,7 +136,7 @@ namespace UBF
 			TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
 			struct FExecutionContextHandle& Handle) const;
 		
-		static void OnComplete(FFI::Dynamic*);
+		static void OnNodeComplete(FFI::Dynamic*, FFI::ScopeID);
 		
 		static bool Load(const FRegistryHandle& Registry, const FString &Json, FGraphHandle& Graph);
 
