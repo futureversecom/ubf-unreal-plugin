@@ -31,15 +31,12 @@ public:
 
 	void RegisterCatalog(const UBF::FCatalogElement& CatalogElement);
 	void RegisterCatalogs(const TMap<FString, UBF::FCatalogElement>& CatalogMap);
-	void RegisterBlueprintJson(const FBlueprintJson& BlueprintJson);
-
 private:
 
 	TMap<FString, TWeakObjectPtr<UTexture2D>> LoadedTexturesMap;
 	TMap<FString, UBF::FCachedMesh> LoadedMeshesMap;
 	
 	TMap<FString, UBF::FCatalogElement> Catalog;
-	TMap<FString, FBlueprintJson> BlueprintJsons;
 
 	TSharedPtr<ICacheLoader> GraphCacheLoader;
 	TSharedPtr<ICacheLoader> ResourceCacheLoader;

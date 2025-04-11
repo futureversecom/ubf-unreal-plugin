@@ -36,24 +36,6 @@ TFuture<UBF::FLoadGraphResult> UGlobalArtifactProviderSubsystem::GetGraph(const 
 	LoadResult.Result = TPair<bool, UBF::FGraphHandle>(false, UBF::FGraphHandle());
 	
 	// get graph from catalog using graph instance's blueprint id
-	if (BlueprintJsons.Contains(ArtifactId))
-	{
-		UBF::FGraphHandle Graph;
-		if (UBF::FGraphHandle::Load(UBF::FRegistryHandle::Default(), BlueprintJsons[ArtifactId].GetGraphJson(), Graph))
-		{
-			UE_LOG(LogUBF, Verbose, TEXT("Successfully loaded Graph %s"), *ArtifactId);
-		
-			LoadResult.Result = TPair<bool,UBF::FGraphHandle>(true, Graph);
-			Promise->SetValue(LoadResult);	
-		}
-		else
-		{
-			UE_LOG(LogUBF, Error, TEXT("Unable to load Graph BlueprintId %s"), *ArtifactId);
-			Promise->SetValue(LoadResult);
-		}
-		return Future;
-	}
-	
 	if (!Catalog.Contains(ArtifactId))
 	{
 		UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetGraph Failed to get graph because no graph catalog element found for ArtifactId: %s"), *ArtifactId);
@@ -224,13 +206,6 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 
 void UGlobalArtifactProviderSubsystem::PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString)
 {
-	// get graph from catalog using graph instance's blueprint id
-	if (BlueprintJsons.Contains(ArtifactId))
-	{
-		UE_LOG(LogUBF, Log, TEXT("Context: %s GraphId: %s Graph: \\n\\n%s"), *ContextString, *ArtifactId, *BlueprintJsons[ArtifactId].GetGraphJson());
-		return;
-	}
-	
 	if (!Catalog.Contains(ArtifactId))
 	{
 		return;
@@ -269,17 +244,5 @@ void UGlobalArtifactProviderSubsystem::RegisterCatalogs(const TMap<FString, UBF:
 	for (const auto& CatalogElement : CatalogMap)
 	{
 		RegisterCatalog(CatalogElement.Value);
-	}
-}
-
-void UGlobalArtifactProviderSubsystem::RegisterBlueprintJson(const FBlueprintJson& BlueprintJson)
-{
-	if (BlueprintJsons.Contains(BlueprintJson.GetId()))
-	{
-		BlueprintJsons[BlueprintJson.GetId()] = BlueprintJson;
-	}
-	else
-	{
-		BlueprintJsons.Add(BlueprintJson.GetId(), BlueprintJson);
 	}
 }
