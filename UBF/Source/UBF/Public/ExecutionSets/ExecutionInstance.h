@@ -1,6 +1,6 @@
 #pragma once
+
 #include "Graph.h"
-#include "IExecutionSetConfig.h"
 
 namespace UBF
 {

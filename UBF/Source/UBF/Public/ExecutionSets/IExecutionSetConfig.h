@@ -4,7 +4,6 @@
 
 namespace UBF
 {
-	class FExecutionInstance;
 	struct FMeshImportSettings;
 	
 	class UBF_API IExecutionSetConfig

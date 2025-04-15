@@ -1,11 +1,10 @@
 #pragma once
 
+#include "ExecutionInstanceData.h"
 #include "IExecutionSetConfig.h"
 
 namespace UBF
 {
-	struct FExecutionInstanceData;
-	
 	class UBF_API FExecutionSetConfig : public IExecutionSetConfig
 	{
 	public:
