@@ -14,7 +14,7 @@ namespace UBF
 
 	bool FExecutionSetHandle::IsValid() const
 	{
-		return ExecutionSetConfig.IsValid();
+		return ExecutionSetConfig.IsValid() || SetResult.IsValid();
 	}
 
 	void FExecutionSetHandle::FlagShouldCancel() const

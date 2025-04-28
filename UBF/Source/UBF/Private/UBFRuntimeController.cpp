@@ -25,6 +25,13 @@ void UUBFRuntimeController::ExecuteBlueprint(FString RootID, const FBlueprintExe
 	auto OnCompleteFunc = [OnComplete, this](bool Success, TSharedPtr<UBF::FExecutionSetResult> ExecutionSetResult)
 	{
 		this->OnComplete(Success);
+
+		/* fixes race condition from UBF::Execute finishing instantly */
+		if (!LastSetHandle.GetResult().IsValid())
+		{
+			LastSetHandle = UBF::FExecutionSetHandle(nullptr, ExecutionSetResult);
+		}
+		
 		OnComplete.ExecuteIfBound(Success, ExecutionSetResult->GetExecutionReport());
 	};
 
