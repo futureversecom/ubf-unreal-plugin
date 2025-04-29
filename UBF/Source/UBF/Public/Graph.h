@@ -18,7 +18,6 @@ namespace UBF
 	class FOnComplete;
 
 	struct FRegistryHandle;
-//	struct FExecutionContextHandle;
 	
 	struct FBindingInfo
 	{
@@ -151,5 +150,5 @@ namespace UBF
 	};
 
 	static FGraphVersion MinSupportedGraphVersion = FGraphVersion(TEXT("0.0.0"));
-	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("0.1.0"));
+	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("0.2.0"));
 }
