@@ -20,6 +20,9 @@ UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<co
 	{
 		if (!Result.Result.Key)
 		{
+			auto OnCompleteFunc = ExecutionSetData->GetOnComplete();
+			SetResult->SetResults(false, FUBFExecutionReport::Failure());
+			OnCompleteFunc(false, SetResult);
 			return;
 		}
 		

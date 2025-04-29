@@ -5,6 +5,7 @@ namespace UBF
 	void FExecutionSetResult::SetGraphHandle(const FGraphHandle& InGraphHandle)
 	{
 		RootGraphHandle = InGraphHandle;
+		bIsGraphSet = true;
 	}
 
 	void FExecutionSetResult::SetResults(bool bSuccess, const FUBFExecutionReport& InExecutionReport)
@@ -29,9 +30,12 @@ namespace UBF
 
 	TArray<FString> FExecutionSetResult::GetOutputNames() const
 	{
+		// Reading invalid graph's outputs causes crash
+		TArray<FString> OutputNames;
+		if (!bIsGraphSet) return OutputNames;
+		
 		TArray<FBindingInfo> Outputs;
 		RootGraphHandle.GetOutputs(Outputs);
-		TArray<FString> OutputNames;
 
 		for (auto Output : Outputs)
 		{

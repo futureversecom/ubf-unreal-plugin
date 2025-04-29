@@ -25,5 +25,6 @@ namespace UBF
 		FUBFExecutionReport ExecutionReport;
 		bool bWasSuccessful = false;
 		bool bIsComplete = false;
+		bool bIsGraphSet = false;
     };
 }
