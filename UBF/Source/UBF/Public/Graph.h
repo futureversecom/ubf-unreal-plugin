@@ -133,9 +133,13 @@ namespace UBF
 			const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 			const TMap<FString, FDynamicHandle>& Inputs,
 			TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete,
 			struct FExecutionContextHandle& Handle) const;
 		
-		static void OnNodeComplete(FFI::Dynamic*, FFI::ScopeID);
+		static void OnGraphComplete(FFI::Dynamic*);
+		static void OnNodeStart(const uint8_t*, int32_t, FFI::ScopeID, FFI::Dynamic*);
+		static void OnNodeComplete(const uint8_t*, int32_t, FFI::ScopeID, FFI::Dynamic*);
 		
 		static bool Load(const FRegistryHandle& Registry, const FString &Json, FGraphHandle& Graph);
 

@@ -13,16 +13,19 @@ void UBF::FExecutionInstance::SetInputs(const TMap<FString, FDynamicHandle>& InI
 }
 
 void UBF::FExecutionInstance::Execute(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
-                                      TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
+	TFunction<void(bool, FUBFExecutionReport)>&& OnGraphComplete, TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+	TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete,
+    FExecutionContextHandle& Handle) const
 {
-	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, Inputs, MoveTemp(OnComplete), Handle);
+	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, Inputs, MoveTemp(OnGraphComplete), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete), Handle);
 }
 
 void UBF::FExecutionInstance::ExecuteWithInputs(const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
-	TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, const TMap<FString, FDynamicHandle>& NewInputs,
+	TFunction<void(bool, FUBFExecutionReport)>&& OnGraphComplete, TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+	TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete, const TMap<FString, FDynamicHandle>& NewInputs,
 	FExecutionContextHandle& Handle) const
 {
 	TMap<FString, FDynamicHandle> CombinedInputs = Inputs;
 	CombinedInputs.Append(NewInputs);
-	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, CombinedInputs, MoveTemp(OnComplete), Handle);
+	GraphHandle.Execute(BlueprintId, ExecutionSetConfig, CombinedInputs, MoveTemp(OnGraphComplete), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete), Handle);
 }

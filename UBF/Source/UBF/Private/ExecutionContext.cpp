@@ -83,7 +83,7 @@ namespace UBF
 		return true;
 	}
 
-	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey,
+	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey, FFI::ScopeID ScopeID,
 	                                           FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;
@@ -93,6 +93,7 @@ namespace UBF
 			NodeId.Len(),
 			TCHAR_TO_UTF16(*PortKey),
 			PortKey.Len(),
+			ScopeID,
 			&DynamicPtr))
 		{
 			UBF_LOG(Warning, TEXT("No Input Found (Node:%s Port:%s) on BlueprintId: %s"), *NodeId, *FString(PortKey), *GetBlueprintID());

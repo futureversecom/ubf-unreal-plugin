@@ -7,8 +7,11 @@
 
 namespace UBF
 {
-	FContextData::FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig, const FGraphHandle& Graph,
-		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete): BlueprintId(BlueprintId), ExecutionSetConfig(ExecutionSetConfig), Graph(Graph), OnComplete(MoveTemp(OnComplete))
+	FContextData::FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
+		const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnGraphComplete,
+		TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart, TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete)
+		: BlueprintId(BlueprintId), ExecutionSetConfig(ExecutionSetConfig), Graph(Graph),
+		OnGraphComplete(MoveTemp(OnGraphComplete)), OnNodeStart(MoveTemp(OnNodeStart)), OnNodeComplete(MoveTemp(OnNodeComplete))
 	{
 		if (ExecutionSetConfig->GetRoot().IsValid() && IsValid(ExecutionSetConfig->GetRoot()->GetWorld()))
 		{
@@ -20,14 +23,14 @@ namespace UBF
 		}
 	}
 
-	void FContextData::SetReadyToComplete() const
+	void FContextData::SetGraphReadyToComplete() const
 	{
 		bIsReadyToComplete = true;
 
 		TryCompleteInternal();
 	}
 
-	void FContextData::SetComplete() const
+	void FContextData::SetGraphComplete() const
 	{
 		bIsComplete = true;
 
@@ -52,7 +55,7 @@ namespace UBF
 				}
 			}
 			
-			OnComplete(ExecutionReport.bWasSuccessful && !ExecutionSetConfig->GetCancelExecution(), ExecutionReport);
+			OnGraphComplete(ExecutionReport.bWasSuccessful && !ExecutionSetConfig->GetCancelExecution(), ExecutionReport);
 		}
 	}
 }

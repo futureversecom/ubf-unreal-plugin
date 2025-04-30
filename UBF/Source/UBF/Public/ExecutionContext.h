@@ -72,14 +72,14 @@ namespace UBF
 
 		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey, FFI::ScopeID ScopeID) const;
 		
-		bool TryReadInput(const FString& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, FDynamicHandle& Dynamic) const;
 
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInput(const FString& NodeId, const FString& PortKey, T*& Out) const
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, T*& Out) const
 		{
 			FDynamicHandle Ptr;
-			if (!TryReadInput(NodeId, PortKey, Ptr))
+			if (!TryReadInput(NodeId, PortKey, ScopeID,Ptr))
 			{
 				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
@@ -104,10 +104,10 @@ namespace UBF
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValue(const FString& NodeId, const FString& PortKey, T& Out) const
+		bool TryReadInputValue(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, T& Out) const
 		{
 			FDynamicHandle Ptr;
-			if (!TryReadInput(NodeId, PortKey, Ptr))
+			if (!TryReadInput(NodeId, PortKey, ScopeID, Ptr))
 			{
 				return false;
 			}
@@ -119,10 +119,10 @@ namespace UBF
 		
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInputArray(const FString& NodeId, const FString& PortKey, TArray<T*>& Out) const
+		bool TryReadInputArray(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, TArray<T*>& Out) const
 		{
 			FDynamicHandle DynamicArray;
-			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			if (!TryReadInput(NodeId, PortKey, ScopeID, DynamicArray))
 			{
 				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
@@ -132,11 +132,11 @@ namespace UBF
 		}
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValueArray(const FString& NodeId, const FString& PortKey,
+		bool TryReadInputValueArray(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID,
 		TArray<T>& Out) const
 		{
 			FDynamicHandle DynamicArray;
-			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			if (!TryReadInput(NodeId, PortKey, ScopeID, DynamicArray))
 			{
 				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;

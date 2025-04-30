@@ -25,13 +25,17 @@ namespace UBF
 		TSharedPtr<IExecutionSetConfig> ExecutionSetConfig;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
-		TFunction<void(bool, FUBFExecutionReport)> OnComplete;
+		TFunction<void(bool, FUBFExecutionReport)> OnGraphComplete;
+		TFunction<void(FString, FFI::ScopeID)> OnNodeStart;
+		TFunction<void(FString, FFI::ScopeID)> OnNodeComplete;
 		
 		explicit FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
-			const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnComplete);
+			const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnGraphComplete,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete);
 
-		void SetReadyToComplete() const;
-		void SetComplete() const;
+		void SetGraphReadyToComplete() const;
+		void SetGraphComplete() const;
 
 	private:
 		void TryCompleteInternal() const;

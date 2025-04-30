@@ -15,7 +15,10 @@ namespace UBF
 		const FString& BlueprintId,
 		const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 		const TMap<FString, FDynamicHandle>& Inputs,
-		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
+		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
+		TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+		TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete,
+		FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
@@ -25,7 +28,9 @@ namespace UBF
 			return;
 		}
 		
-		const FContextData* ContextData = new FContextData(BlueprintId, ExecutionSetConfig, *this, MoveTemp(OnComplete));
+		const FContextData* ContextData = new FContextData(BlueprintId, ExecutionSetConfig, *this,
+			MoveTemp(OnComplete), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete));
+		
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
 		
 		FDynamicHandle DynamicMap = FDynamicHandle::Dictionary();
@@ -49,29 +54,70 @@ namespace UBF
 			RustPtr,
 			DynamicMap.GetRustPtr(),
 			DynamicUserData.GetRustPtr(),
-			&FGraphHandle::OnNodeComplete
+			TCHAR_TO_UTF16(*BlueprintId),
+			BlueprintId.Len(),
+			&FGraphHandle::OnGraphComplete,
+			&FGraphHandle::OnNodeComplete,
+			&FGraphHandle::OnNodeStart
 		));
 
 		Handle = TempHandle;
-		ContextData->SetReadyToComplete();
+		ContextData->SetGraphReadyToComplete();
 	}
 	
-	void FGraphHandle::OnNodeComplete(FFI::Dynamic* RawUserData, FFI::ScopeID ScopeID)
+	void FGraphHandle::OnGraphComplete(FFI::Dynamic* RawUserData)
 	{
-		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnComplete"));
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnGrpahComplete"));
 		const FDynamicHandle UserData(RawUserData);
 		
 		const FContextData* ContextUserData;
 		
 		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
 		{
-			if (ScopeID == 0)
-				ContextUserData->SetComplete();
+			ContextUserData->SetGraphComplete();
 		}
 		else
 		{
 			UE_LOG(LogUBF, Error,
 				TEXT("Failed to get user data from graph execution context. OnComplete callback will not be called."));
+		}
+	}
+
+	void FGraphHandle::OnNodeComplete(const uint8_t* NodeIdPtr, int32_t NodeIdLen, FFI::ScopeID ScopeID, FFI::Dynamic* RawUserData)
+	{
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnNodeComplete"));
+		const FDynamicHandle UserData(RawUserData);
+		
+		const FContextData* ContextUserData;
+		
+		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
+		{
+			const FString NodeId = UBFUtils::FromBytesToString(NodeIdPtr, NodeIdLen); 
+			ContextUserData->OnNodeComplete(NodeId, ScopeID);
+		}
+		else
+		{
+			UE_LOG(LogUBF, Error,
+				TEXT("Failed to get user data from graph execution context. OnNodeComplete callback will not be called."));
+		}
+	}
+
+	void FGraphHandle::OnNodeStart(const uint8_t* NodeIdPtr, int32_t NodeIdLen, FFI::ScopeID ScopeID, FFI::Dynamic* RawUserData)
+	{
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnNodeStart"));
+		const FDynamicHandle UserData(RawUserData);
+		
+		const FContextData* ContextUserData;
+		
+		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
+		{
+			const FString NodeId = UBFUtils::FromBytesToString(NodeIdPtr, NodeIdLen); 
+			ContextUserData->OnNodeStart(NodeId, ScopeID);
+		}
+		else
+		{
+			UE_LOG(LogUBF, Error,
+				TEXT("Failed to get user data from graph execution context. OnNodeStart callback will not be called."));
 		}
 	}
 

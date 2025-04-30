@@ -26,33 +26,33 @@ namespace UBF
 		template <typename T>
 		bool TryReadInput(const FString& PortKey, T*& Out) const 
 		{
-			return Context.TryReadInput<T>(NodeId, PortKey, Out);
+			return Context.TryReadInput<T>(NodeId, PortKey, ScopeID, Out);
 		}
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
 		bool TryReadInputValue(const FString& PortKey, T& Out) const
 		{
-			return Context.TryReadInputValue(NodeId, PortKey, Out);
+			return Context.TryReadInputValue(NodeId, PortKey, ScopeID, Out);
 		}
 
 		// Use when DynamicValue is a pointer
 		template <typename T>
 		bool TryReadInputArray(const FString& PortKey, TArray<T*>& Out) const
 		{
-			return Context.TryReadInputArray<T>(NodeId, PortKey, Out);
+			return Context.TryReadInputArray<T>(NodeId, PortKey, ScopeID, Out);
 		}
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
 		bool TryReadInputValueArray(const FString& PortKey, TArray<T>& Out) const
 		{
-			return Context.TryReadInputValueArray(NodeId, PortKey, Out);
+			return Context.TryReadInputValueArray(NodeId, PortKey, ScopeID, Out);
 		}
 
 		bool TryReadInput(const FString& PortKey, FDynamicHandle& Dynamic) const
 		{
-			return Context.TryReadInput(NodeId, PortKey, Dynamic);
+			return Context.TryReadInput(NodeId, PortKey, ScopeID, Dynamic);
 		}
 		
 		void TriggerNext() const
@@ -62,7 +62,7 @@ namespace UBF
 
 		bool TryGetResourceId(const FString& PinName, FString& Id) const
 		{
-			return Context.TryReadInputValue(NodeId, PinName, Id);
+			return Context.TryReadInputValue(NodeId, PinName, ScopeID, Id);
 		}
 
 		void WriteOutput(const FString& Key, const FDynamicHandle& Dynamic) const

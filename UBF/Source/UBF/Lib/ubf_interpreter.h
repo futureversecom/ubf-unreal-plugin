@@ -32,6 +32,8 @@ struct NodeRegistry;
 
 using ScopeID = uint32_t;
 
+constexpr static const ScopeID ROOT_SCOPE = 0;
+
 extern "C" {
 
 GraphInstance *graph_load(NodeRegistry *registry, const uint16_t *json, int32_t json_len);
@@ -56,7 +58,14 @@ void graph_iter_outputs(GraphInstance *graph, intptr_t context, bool (*iterator)
 ArcExecutionContext *graph_execute(GraphInstance *graph,
                                    Dynamic *inputs,
                                    Dynamic *context_data,
-                                   void (*on_node_complete)(Dynamic*, ScopeID));
+                                   const uint16_t *graph_label,
+                                   int32_t graph_label_len,
+                                   void (*on_graph_complete)(Dynamic*),
+                                   void (*on_node_complete)(const uint8_t*,
+                                                            int32_t,
+                                                            ScopeID,
+                                                            Dynamic*),
+                                   void (*on_node_start)(const uint8_t*, int32_t, ScopeID, Dynamic*));
 
 /// Free graph
 void graph_release(GraphInstance *graph);
@@ -89,6 +98,7 @@ bool ctx_read_input(ArcExecutionContext *execution_context,
                     int32_t node_id_len,
                     const uint16_t *port_key,
                     int32_t port_key_len,
+                    uint32_t scope,
                     Dynamic **out);
 
 Dynamic *ctx_get_context_data(ArcExecutionContext *execution_context);

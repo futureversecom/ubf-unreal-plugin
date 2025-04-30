@@ -38,7 +38,10 @@ UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<co
 			OnCompleteFunc(bSuccess, SetResult);
 		};
 		
-		ExecutionInstance->Execute(ExecutionSetConfig, OnComplete,SetResult->GetMutableExecutionContext());
+		auto OnNodeStart = [](FString, FFI::ScopeID){};
+		auto OnNodeComplete = [](FString, FFI::ScopeID){};
+		
+		ExecutionInstance->Execute(ExecutionSetConfig, OnComplete, OnNodeStart, OnNodeComplete,SetResult->GetMutableExecutionContext());
 	});
 
 	return FExecutionSetHandle(ExecutionSetConfig, SetResult);

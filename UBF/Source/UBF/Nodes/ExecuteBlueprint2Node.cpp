@@ -84,6 +84,10 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			CompleteAsyncExecution();
 		};
 
-		Result.Result.Value->ExecuteWithInputs(GetContext().GetUserData()->ExecutionSetConfig, MoveTemp(OnCompleteFunc), ActualInputs, ExecContext);
+		auto OnNodeStart = [](FString, FFI::ScopeID){};
+		auto OnNodeComplete = [](FString, FFI::ScopeID){};
+		
+		Result.Result.Value->ExecuteWithInputs(GetContext().GetUserData()->ExecutionSetConfig,
+			MoveTemp(OnCompleteFunc), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete), ActualInputs, ExecContext);
 	});
 }
