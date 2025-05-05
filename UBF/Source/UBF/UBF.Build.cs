@@ -17,6 +17,16 @@ public class UBF : ModuleRules
 
 			RuntimeDependencies.Add(dllPath);
 		}
+
+		else if (Target.Platform == UnrealTargetPlatform.Mac)
+        {
+            string dylibPath = Path.Combine("$(PluginDir)", "Binaries", "Mac", "libubf_interpreter.dylib");
+
+            RuntimeDependencies.Add(dylibPath);
+
+            // Ensure the library is included in the build
+            PublicAdditionalLibraries.Add(dylibPath);
+        }
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
