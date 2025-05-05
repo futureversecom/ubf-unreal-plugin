@@ -13,10 +13,8 @@ public class UBF : ModuleRules
 		
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			string libPath = Path.Combine("$(PluginDir)", "Binaries", "Win64", "ubf_interpreter.lib");
 			string dllPath = Path.Combine("$(PluginDir)", "Binaries", "Win64", "ubf_interpreter.dll");
 
-			RuntimeDependencies.Add(libPath);
 			RuntimeDependencies.Add(dllPath);
 		}
 		
