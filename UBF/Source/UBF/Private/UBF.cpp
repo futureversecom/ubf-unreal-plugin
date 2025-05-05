@@ -48,22 +48,32 @@ void FUBFModule::StartupModule()
 	const auto Plugin = IPluginManager::Get().FindPlugin(TEXT("UBF"));
 	if (!Plugin.IsValid())
 	{
-		UE_LOG(LogUBF, Error, TEXT("[UBF] Dll open failed"));
+		UE_LOG(LogUBF, Error, TEXT("[UBF] Plugin not found"));
 		return;
 	}
-	
+
 	FString PluginBaseDir = Plugin->GetBaseDir();
-	const FString DLLPath = FPaths::Combine(PluginBaseDir, TEXT("Binaries"), TEXT("Win64"), TEXT("ubf_interpreter.dll"));
+	FString DLLPath;
+
+#if PLATFORM_WINDOWS
+	DLLPath = FPaths::Combine(PluginBaseDir, TEXT("Binaries"), TEXT("Win64"), TEXT("ubf_interpreter.dll"));
+#elif PLATFORM_MAC
+	DLLPath = FPaths::Combine(PluginBaseDir, TEXT("Binaries"), TEXT("Mac"), TEXT("libubf_interpreter.dylib"));
+#else
+	UE_LOG(LogUBF, Error, TEXT("[UBF] Unsupported platform"));
+	return;
+#endif
+
 	UE_LOG(LogUBF, Log, TEXT("[UBF] Loading Plugin from %s"), *DLLPath);
-	
-	UE_LOG(LogUBF, Log, TEXT("[UBF] Loading Plugin"));
+
 	DLLHandle = FPlatformProcess::GetDllHandle(*DLLPath);
 	if (DLLHandle == nullptr)
 	{
-		UE_LOG(LogUBF, Error, TEXT("[UBF] Dll open failed"));
+		UE_LOG(LogUBF, Error, TEXT("[UBF] Failed to load library"));
 	}
-	else {
-		UE_LOG(LogUBF, Log, TEXT("[UBF] DLL loaded"));
+	else
+	{
+		UE_LOG(LogUBF, Log, TEXT("[UBF] Library loaded"));
 		CALL_RUST_FUNC(init_ue_logger)(UELogCallback);
 	}
 }
