@@ -54,8 +54,10 @@ Build/*
 
 # Don't ignore compiled binaries
 !Binaries/
+!Binaries/Win64/
 !Binaries/Win64/ubf_interpreter.dll
 !Binaries/Win64/ubf_interpreter.lib
+!Binaries/Mac/
 !Binaries/Mac/libubf_interpreter.dylib
 !Source/UBF/Lib/ubf_interpreter.dll
 !Source/UBF/Lib/ubf_interpreter.lib
