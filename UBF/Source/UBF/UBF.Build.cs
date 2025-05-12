@@ -16,7 +16,25 @@ public class UBF : ModuleRules
 			string dllPath = Path.Combine("$(PluginDir)", "Binaries", "Win64", "ubf_interpreter.dll");
 
 			RuntimeDependencies.Add(dllPath);
+			
+			// Add any import libraries or static libraries
+			PublicAdditionalLibraries.AddRange(
+				new string[]
+				{
+					Path.Combine(ModuleDirectory, "Lib/ubf_interpreter.lib")
+				}
+			);
 		}
+
+		else if (Target.Platform == UnrealTargetPlatform.Mac)
+        {
+            string dylibPath = Path.Combine("$(PluginDir)", "Binaries", "Mac", "libubf_interpreter.dylib");
+
+            RuntimeDependencies.Add(dylibPath);
+
+            // Ensure the library is included in the build
+            PublicAdditionalLibraries.Add(dylibPath);
+        }
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
@@ -57,14 +75,5 @@ public class UBF : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-
-
-		// Add any import libraries or static libraries
-		PublicAdditionalLibraries.AddRange(
-			new string[]
-			{
-                Path.Combine(ModuleDirectory, "Lib/ubf_interpreter.lib")
-			}
-		);
     }
 }
