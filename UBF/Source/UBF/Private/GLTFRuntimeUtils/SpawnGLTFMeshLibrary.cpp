@@ -1,0 +1,120 @@
+// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
+
+
+#include "GLTFRuntimeUtils/SpawnGLTFMeshLibrary.h"
+
+#include "glTFRuntimeAssetActor.h"
+#include "Util/BoneRemapperUtil.h"
+
+AActor* USpawnGLTFMeshLibrary::SpawnMesh(UObject* WorldContext, UglTFRuntimeAsset* Asset,
+                                         const FMeshConfigData& MeshConfig)
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(USpawnGLTFMeshLibrary::SpawnMesh);
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World) return nullptr;
+				
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+						
+	AglTFRuntimeAssetActor* SpawnedActor = World->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
+	SpawnedActor->Asset = Asset;
+	SpawnedActor->SkeletalMeshConfig = MeshConfig.SkeletalMeshConfig;
+							
+	if (!SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
+	{
+		SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
+	}
+							
+	SpawnedActor->bAllowNodeAnimations = MeshConfig.bLoadAnimation;
+	SpawnedActor->bAllowPoseAnimations = MeshConfig.bLoadAnimation;
+	SpawnedActor->bAllowSkeletalAnimations = MeshConfig.bLoadAnimation;
+	SpawnedActor->bAutoPlayAnimations = MeshConfig.bLoadAnimation;
+	SpawnedActor->FinishSpawning(FTransform::Identity);
+	
+	SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
+	SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
+
+	return SpawnedActor;
+}
+
+UStreamableRenderAsset* USpawnGLTFMeshLibrary::LoadMeshLOD(const TArray<FglTFRuntimeMeshLOD>& LODs, const FMeshConfigData& MeshConfig)
+{
+	bool bIsSkeletal = true;
+	for (const auto& LOD : LODs)
+	{
+		if (LOD.Skeleton.IsEmpty())
+		{
+			bIsSkeletal = false;
+			break;
+		}
+	}
+
+	if (bIsSkeletal)
+	{
+		FglTFRuntimeSkeletalMeshConfig SkeletalMeshConfig = MeshConfig.SkeletalMeshConfig;
+		if (!SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
+		{
+			SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
+		}
+		
+		USkeletalMesh* Mesh = NewObject<UglTFRuntimeAsset>()->LoadSkeletalMeshFromRuntimeLODs(LODs, 0, SkeletalMeshConfig);
+
+		SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
+		SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
+		return Mesh;
+	}
+	else
+	{
+		UStaticMesh* Mesh = NewObject<UglTFRuntimeAsset>()->LoadStaticMeshFromRuntimeLODs(LODs, FglTFRuntimeStaticMeshConfig());
+		return Mesh;
+	}
+}
+
+bool USpawnGLTFMeshLibrary::LoadAssetAsLOD(UglTFRuntimeAsset* Asset, const FString& MeshName, FglTFRuntimeMeshLOD& OutLOD)
+{
+	int32 MeshIndex = 0;
+				
+	for (auto Node : Asset->GetNodes())
+	{
+		if (Node.Name.Equals(MeshName))
+		{
+			MeshIndex = Node.MeshIndex;
+		}
+	}
+	FglTFRuntimeMaterialsConfig MaterialsConfig;
+	return  Asset->LoadMeshAsRuntimeLOD(MeshIndex, OutLOD, MaterialsConfig);
+}
+
+AActor* USpawnGLTFMeshLibrary::SpawnLODMesh(UObject* WorldContext,  UStreamableRenderAsset* LODMesh)
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(USpawnGLTFMeshLibrary::SpawnLODMesh);
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World) return nullptr;
+
+	// Spawn Actor
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AActor* Actor = World->SpawnActor<AActor>(SpawnParameters);
+	// Add root node
+	Actor->AddComponentByClass(USceneComponent::StaticClass(), false, FTransform(), false);
+	
+	// Determine if LODs is staticmesh or skeletal mesh
+
+	
+	if (USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(LODMesh))
+	{
+		USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Actor->AddComponentByClass(USkeletalMeshComponent::StaticClass(), false, FTransform(), false));
+		
+		SkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
+	}
+	else if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(LODMesh))
+	{
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Actor->AddComponentByClass(UStaticMeshComponent::StaticClass(), false, FTransform(), false));
+		
+		StaticMeshComponent->SetStaticMesh(StaticMesh);
+	}
+
+	return Actor;
+}

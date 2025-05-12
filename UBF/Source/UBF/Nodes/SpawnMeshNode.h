@@ -10,6 +10,8 @@ namespace UBF
 	protected:
 		virtual void ExecuteAsync() const override;
 
+		void HandleSpawnedActor(AActor* Actor, const FSceneNode* ParentInput) const;
+
 		void HandleFailureFinish() const;
 	};
 }

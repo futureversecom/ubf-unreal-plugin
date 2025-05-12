@@ -27,6 +27,8 @@ namespace UBF
 
 	struct UBF_API FLoadMeshResult final : TLoadResult<UglTFRuntimeAsset*> {};
 	
+	struct UBF_API FLoadMeshLODResult final : TLoadResult<UStreamableRenderAsset*> {};
+	
 	struct UBF_API FLoadStringResult final : TLoadResult<FString> {};
 	
 	struct UBF_API FLoadDataArrayResult final : TLoadResult<TArray<uint8>> {};

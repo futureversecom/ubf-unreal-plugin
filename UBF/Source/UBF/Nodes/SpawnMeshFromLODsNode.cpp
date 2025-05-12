@@ -1,12 +1,9 @@
 #include "SpawnMeshFromLODsNode.h"
 
-#include "glTFRuntimeAssetActor.h"
 #include "glTFRuntimeFunctionLibrary.h"
 #include "UBFMeshConfigSettings.h"
 #include "DataTypes/MeshConfig.h"
-#include "DataTypes/MeshRenderer.h"
 #include "GlobalArtifactProvider/CachedMesh.h"
-#include "Util/BoneRemapperUtil.h"
 
 namespace UBF
 {
@@ -104,6 +101,10 @@ namespace UBF
 				}
 				FglTFRuntimeMaterialsConfig MaterialsConfig;
 				bool bSuccess = Asset->LoadMeshAsRuntimeLOD(MeshIndex, MeshLOD, MaterialsConfig);
+
+				UglTFRuntimeAsset* LODObjectMesh = NewObject<UglTFRuntimeAsset>();
+
+				LODObjectMesh->LoadSkeletalMeshFromRuntimeLODs()
 					
 				// do next one and report whether it was successful or not
 			

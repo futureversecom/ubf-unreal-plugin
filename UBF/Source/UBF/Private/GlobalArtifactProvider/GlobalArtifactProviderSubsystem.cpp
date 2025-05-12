@@ -9,7 +9,9 @@
 #include "GlobalArtifactProvider/DownloadRequestManager.h"
 #include "GlobalArtifactProvider/CacheLoading/TempCacheLoader.h"
 #include "GlobalArtifactProvider/CacheLoading/MemoryCacheLoader.h"
+#include "GLTFRuntimeUtils/SpawnGLTFMeshLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Util/FutureUtils.h"
 
 UGlobalArtifactProviderSubsystem::UGlobalArtifactProviderSubsystem()
 {
@@ -199,6 +201,53 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 		
 		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, Asset);
 		Promise->SetValue(LoadResult);
+	});
+
+	return Future;
+}
+
+TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODResource(
+	const TArray<FMeshResource>& MeshResources, const FMeshConfigData& MeshConfigData)
+{
+	// TODO cache end results
+	
+	TSharedPtr<TPromise<UBF::FLoadMeshLODResult>> Promise = MakeShareable(new TPromise<UBF::FLoadMeshLODResult>());
+	TFuture<UBF::FLoadMeshLODResult> Future = Promise->GetFuture();
+	
+	// Load all mesh resources
+	TArray<TFuture<UBF::FLoadMeshResult>> MeshFutures;
+	for (const FMeshResource& MeshResource : MeshResources)
+	{
+		MeshFutures.Add(GetMeshResource(MeshResource.ArtifactID, UBF::FMeshImportSettings(MeshConfigData.RuntimeConfig)));
+	}
+
+	WaitAll(MeshFutures).Next([this, Promise, MeshConfigData, MeshResources](const TArray<UBF::FLoadMeshResult>& Results)
+	{
+		TArray<FglTFRuntimeMeshLOD> LODs;
+		LODs.SetNum(Results.Num());
+
+		for (int i = 0; i < Results.Num(); i++)
+		{
+			if (!Results[i].Result.Key)
+			{
+				UBF::FLoadMeshLODResult LoadMeshLODResult;
+				LoadMeshLODResult.Result.Key = false;
+						
+				Promise->SetValue(LoadMeshLODResult);
+				return;
+			}
+
+			FglTFRuntimeMeshLOD& Ref = LODs.AddDefaulted_GetRef();
+			USpawnGLTFMeshLibrary::LoadAssetAsLOD(Results[i].Result.Value, MeshResources[i].MeshName, Ref);
+		}
+
+		UStreamableRenderAsset* Asset = USpawnGLTFMeshLibrary::LoadMeshLOD(LODs, MeshConfigData);
+		UBF::FLoadMeshLODResult LoadMeshLODResult;
+		LoadMeshLODResult.Result.Value = Asset;
+		LoadMeshLODResult.Result.Key = true;
+		
+		Promise->SetValue(LoadMeshLODResult);
+		// Handle Asset
 	});
 
 	return Future;

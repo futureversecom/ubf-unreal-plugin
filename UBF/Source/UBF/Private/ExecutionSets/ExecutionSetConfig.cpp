@@ -83,6 +83,12 @@ namespace UBF
 		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetMeshResource(ArtifactId, MeshImportSettings);
 	}
 
+	TFuture<FLoadMeshLODResult> FExecutionSetConfig::GetMeshLOD(const TArray<FMeshResource>& ArtifactId,
+		const FMeshConfigData& MeshConfigData)
+	{
+		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetMeshLODResource(ArtifactId, MeshImportSettings);
+	}
+
 	TFuture<FLoadTextureResult> FExecutionSetConfig::GetTexture(const FString& ArtifactId)
 	{
 		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetTextureResource(ArtifactId);

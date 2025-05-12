@@ -6,6 +6,8 @@
 #include "CachedMesh.h"
 #include "CatalogElement.h"
 #include "GraphProvider.h"
+#include "DataTypes/MeshConfig.h"
+#include "DataTypes/MeshResource.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GlobalArtifactProviderSubsystem.generated.h"
 
@@ -27,6 +29,8 @@ public:
 	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ArtifactId);
 
 	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& ArtifactId, const UBF::FMeshImportSettings& ImportSettings);
+	virtual TFuture<UBF::FLoadMeshLODResult> GetMeshLODResource(const TArray<FMeshResource>& MeshResources, const FMeshConfigData& MeshConfigData);
+	
 	virtual void PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString);
 
 	void RegisterCatalog(const UBF::FCatalogElement& CatalogElement);

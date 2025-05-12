@@ -4,13 +4,12 @@
 
 #include "glTFRuntimeAssetActor.h"
 #include "GraphProvider.h"
-#include "UBFLog.h"
 #include "UBFMeshConfigSettings.h"
 #include "DataTypes/MeshConfig.h"
 #include "DataTypes/MeshRenderer.h"
 #include "DataTypes/SceneNode.h"
 #include "GlobalArtifactProvider/CachedMesh.h"
-#include "Util/BoneRemapperUtil.h"
+#include "GLTFRuntimeUtils/SpawnGLTFMeshLibrary.h"
 
 namespace UBF
 {
@@ -19,11 +18,24 @@ namespace UBF
 		UBF_LOG(Verbose, TEXT("[SpawnMesh] Executing Node"));
 		
 		FString ResourceID;
+		TArray<FMeshResource> Meshes;
+		bool bUsesMeshes = false;
+		
 		if (!TryReadInputValue("Resource", ResourceID))
 		{
-			UBF_LOG(Warning, TEXT("[SpawnMesh] failed ResourceInfo for ID %s"), *ResourceID);
-			HandleFailureFinish();
-			return;
+			TArray<FString> RawMeshes;
+			if (!TryReadInputValueArray("Meshes", RawMeshes))
+			{
+				UBF_LOG(Warning, TEXT("[SpawnMesh] failed to get Resource or Meshes input"));
+				HandleFailureFinish();
+				return;
+			}
+
+			for (auto ID : RawMeshes)
+			{
+				Meshes.Add(FMeshResource(ID));
+			}
+			bUsesMeshes = true;
 		}
 		
 		UBF_LOG(Verbose, TEXT("[SpawnMesh] found Resource with ID %s"), *ResourceID);
@@ -32,10 +44,7 @@ namespace UBF
 		if (!TryReadInput("Parent", ParentInput))
 		{
 			UBF_LOG(Warning, TEXT("[SpawnMesh] Failed to Read 'Parent' Input"));
-
-			// todo: disabling this temporarily for the demo
-			//HandleFailureFinish();
-			//return;
+			
 			ParentInput = GetRoot();
 		}
 
@@ -52,110 +61,137 @@ namespace UBF
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
-		GetContext().GetSetConfig()->GetMesh(ResourceID, FMeshImportSettings(MeshConfigData.RuntimeConfig)).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
+		if (bUsesMeshes)
 		{
-			if (!Result.Result.Key)
+			GetContext().GetSetConfig()->GetMeshLOD(Meshes, MeshConfigData).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshLODResult Result)
 			{
-				UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
-				HandleFailureFinish();
-				return;
-			}
+				if (!Result.Result.Key)
+				{
+					UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
+					HandleFailureFinish();
+					return;
+				}
 
-			if (!CheckExecutionStillValid())
-			{
-				HandleFailureFinish();
-				return;
-			}
+				if (!CheckExecutionStillValid())
+				{
+					HandleFailureFinish();
+					return;
+				}
 			
-			UglTFRuntimeAsset* Asset = Result.Result.Value;
+				UStreamableRenderAsset* Mesh = Result.Result.Value;
 			
-			if (!Asset)
-			{
-				UBF_LOG(Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
-				HandleFailureFinish();
-				return;
-			}
+				if (!Mesh)
+				{
+					UBF_LOG(Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
+					HandleFailureFinish();
+					return;
+				}
 			
-			UBF_LOG(Verbose, TEXT("[SpawnMesh] ParentComp: %s"), *ParentInput->ToString());
+				UBF_LOG(Verbose, TEXT("[SpawnMesh] ParentComp: %s"), *ParentInput->ToString());
 
-			AglTFRuntimeAssetActor* SpawnedActor;
-			
+				AActor* SpawnedActor = USpawnGLTFMeshLibrary::SpawnLODMesh(GetWorld(), Mesh);
+
+				if (!SpawnedActor)
+				{
+					HandleFailureFinish();
+					return;
+				}
+
+				HandleSpawnedActor(SpawnedActor, ParentInput);
+			});
+		}
+		else
+		{
+			GetContext().GetSetConfig()->GetMesh(ResourceID, FMeshImportSettings(MeshConfigData.RuntimeConfig)).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
 			{
-				TRACE_CPUPROFILER_EVENT_SCOPE(FSpawnMeshNode::ExecuteAsync_SpawnGLTFActor);
+				if (!Result.Result.Key)
+				{
+					UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
+					HandleFailureFinish();
+					return;
+				}
+
+				if (!CheckExecutionStillValid())
+				{
+					HandleFailureFinish();
+					return;
+				}
 				
-				FActorSpawnParameters SpawnParameters;
-				SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-						
-				SpawnedActor = GetWorld()->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
-				SpawnedActor->Asset = Asset;
-				SpawnedActor->SkeletalMeshConfig = MeshConfigData.SkeletalMeshConfig;
+				UglTFRuntimeAsset* Asset = Result.Result.Value;
+				
+				if (!Asset)
+				{
+					UBF_LOG(Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
+					HandleFailureFinish();
+					return;
+				}
+				
+				UBF_LOG(Verbose, TEXT("[SpawnMesh] ParentComp: %s"), *ParentInput->ToString());
+
+				AActor* SpawnedActor = USpawnGLTFMeshLibrary::SpawnMesh(GetWorld(), Asset, MeshConfigData);
+
+				if (!SpawnedActor)
+				{
+					HandleFailureFinish();
+					return;
+				}
+
+				HandleSpawnedActor(SpawnedActor, ParentInput);
+			});
+		}
+	}
+	
+	void FSpawnMeshNode::HandleSpawnedActor(AActor* SpawnedActor, const FSceneNode* ParentInput) const
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(FSpawnMeshNode::ExecuteAsync_SetupActor);
+
+		if (!GetRoot()->GetAttachmentComponent()->IsVisible())
+		{
+			SpawnedActor->SetActorHiddenInGame(true);
+		}
+					
+		// assuming that if the parent is a child transform, it's a bone transform
+		SpawnedActor->AttachToComponent(ParentInput->GetAttachmentComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, ParentInput->GetAttachmentSocket());
 							
-				if (!SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
-				{
-					SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
-				}
+		TArray<UMeshComponent*> MeshComponents;
+		SpawnedActor->GetComponents(MeshComponents);
+
+		// temp fix: assume first mesh component is the leader mesh component
+		auto HasMultipleMeshes = MeshComponents.Num() > 1;
+		USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
+			? Cast<USkeletalMeshComponent>(MeshComponents[0])
+			: nullptr;
+					
+		FDynamicHandle MeshArray = FDynamicHandle::Array();
 							
-				SpawnedActor->bAllowNodeAnimations = MeshConfigData.bLoadAnimation;
-				SpawnedActor->bAllowPoseAnimations = MeshConfigData.bLoadAnimation;
-				SpawnedActor->bAllowSkeletalAnimations = MeshConfigData.bLoadAnimation;
-				SpawnedActor->bAutoPlayAnimations = MeshConfigData.bLoadAnimation;
-				SpawnedActor->FinishSpawning(FTransform::Identity);
+		// need to decide whether it is okay to pass mesh renderers as scene nodes
+		FDynamicHandle SceneNodeArray = FDynamicHandle::Array();
+		for (auto MeshComponent : MeshComponents)
+		{
+			MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
+			SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
+		}
 
-				if (!GetRoot()->GetAttachmentComponent()->IsVisible())
-				{
-					SpawnedActor->SetActorHiddenInGame(true);
-				}
-
-				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
-				SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
-			}
-
+		// temp fix
+		if(HasMultipleMeshes)
+		{
+			// skip first one as setting itself as the leader will cause infinite loop
+			for (int i = 1; i < MeshComponents.Num(); ++i)
 			{
-				TRACE_CPUPROFILER_EVENT_SCOPE(FSpawnMeshNode::ExecuteAsync_SetupActor);
-				
-				// assuming that if the parent is a child transform, it's a bone transform
-				SpawnedActor->AttachToComponent(ParentInput->GetAttachmentComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, ParentInput->GetAttachmentSocket());
-						
-				TArray<UMeshComponent*> MeshComponents;
-				SpawnedActor->GetComponents(MeshComponents);
-
-				// temp fix: assume first mesh component is the leader mesh component
-				auto HasMultipleMeshes = MeshComponents.Num() > 1;
-				USkeletalMeshComponent* LeaderSkeletalMeshComponent = HasMultipleMeshes
-					? Cast<USkeletalMeshComponent>(MeshComponents[0])
-					: nullptr;
-				
-				FDynamicHandle MeshArray = FDynamicHandle::Array();
-						
-				// need to decide whether it is okay to pass mesh renderers as scene nodes
-				FDynamicHandle SceneNodeArray = FDynamicHandle::Array();
-				for (auto MeshComponent : MeshComponents)
+				const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponents[i]);
+				if (SkeletalMeshComponent && LeaderSkeletalMeshComponent)
 				{
-					MeshArray.Push(FDynamicHandle::ForeignHandled(new FMeshRenderer(MeshComponent)));
-					SceneNodeArray.Push(FDynamicHandle::ForeignHandled(new FSceneNode(MeshComponent)));
+					SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent);
 				}
-
-				// temp fix
-				if(HasMultipleMeshes)
-				{
-					// skip first one as setting itself as the leader will cause infinite loop
-					for (int i = 1; i < MeshComponents.Num(); ++i)
-					{
-						const auto SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponents[i]);
-						if (SkeletalMeshComponent && LeaderSkeletalMeshComponent)
-						{
-							SkeletalMeshComponent->SetLeaderPoseComponent(LeaderSkeletalMeshComponent);
-						}
-					}
-				}
-				UBF_LOG(Verbose, TEXT("[SpawnMesh] Outputting %d Renderers"), MeshComponents.Num());
-				WriteOutput("Renderers", MeshArray);
-				WriteOutput("Scene Nodes", SceneNodeArray);
 			}
-			
-			TriggerNext();
-			CompleteAsyncExecution();
-		});
+		}
+		UBF_LOG(Verbose, TEXT("[SpawnMesh] Outputting %d Renderers"), MeshComponents.Num());
+		WriteOutput("Renderers", MeshArray);
+		WriteOutput("Scene Nodes", SceneNodeArray);
+	
+				
+		TriggerNext();
+		CompleteAsyncExecution();
 	}
 
 	void FSpawnMeshNode::HandleFailureFinish() const

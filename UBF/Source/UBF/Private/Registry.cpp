@@ -97,15 +97,16 @@ namespace UBF
 		Registry.Register<FSGFurPropertiesNode>("SGFurProperties");
 		Registry.Register<FSGFurCardPropertiesNode>("SGFurCardProperties");
 		Registry.Register<FSpawnMeshNode>("SpawnMesh");
+		Registry.Register<FSpawnMeshNode>("SpawnModelFromLODs");
 		Registry.Register<FSetTextureSettingsNode>("SetTextureSettings");
 		Registry.Register<FSetBlendshapeNode>("SetBlendshape");
 		Registry.Register<FBindMeshes>("BindMeshes");
 		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint");
+		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint2");
 		Registry.Register<FCreateMeshConfig>("CreateMeshConfig");
 		Registry.Register<FFindRenderer>("FindRenderer");
 		Registry.Register<FTransformPositionNode>("TransformPosition");
 		Registry.Register<FTransformScaleNode>("TransformScale");
-		Registry.Register<FExecuteBlueprint2Node>("ExecuteBlueprint2");
 		Registry.Register<FMakePBRMaterial>("MakePBRMaterial");
 		Registry.Register<FMakeDecalMaterial>("MakeDecalMaterial");
 		Registry.Register<FMakeFurMaterial>("MakeFurMaterial");

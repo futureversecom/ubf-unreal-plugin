@@ -2,6 +2,7 @@
 
 #include "ExecutionInstanceData.h"
 #include "IExecutionSetConfig.h"
+#include "DataTypes/MeshConfig.h"
 
 namespace UBF
 {
@@ -14,6 +15,8 @@ namespace UBF
 		
 		virtual TFuture<FLoadExecutionInstanceResult> GetExecutionInstance(const FString& Id) override;
 		virtual TFuture<FLoadMeshResult> GetMesh(const FString& ArtifactId, const FMeshImportSettings& MeshImportSettings) override;
+		virtual TFuture<FLoadMeshLODResult> GetMeshLOD(const TArray<FMeshResource>& ArtifactId,
+			const FMeshConfigData& MeshConfigData) override;
 		virtual TFuture<FLoadTextureResult> GetTexture(const FString& ArtifactId) override;
 		virtual TSharedPtr<FSceneNode> GetRoot() override;
 		virtual TSharedPtr<FUBFLogData> GetLogData() override;
@@ -22,7 +25,7 @@ namespace UBF
 		
 	private:
 		UWorld* GetWorld() const;
-
+		
 		TMap<FString, TSharedPtr<FExecutionInstance>> ExecutionInstances;
 		TMap<FString, FExecutionInstanceData> ExecutionInstanceDataMap;
 		TSharedPtr<FSceneNode> RootNode = nullptr;
