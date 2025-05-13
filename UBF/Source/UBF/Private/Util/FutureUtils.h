@@ -3,7 +3,7 @@
 namespace UBF
 {
 	template <typename T>
-	TFuture<TArray<T>> WaitAll(const TArray<TFuture<T>>& Futures)
+	TFuture<TArray<T>> WaitAll(TArray<TFuture<T>>& Futures)
 	{
 		TSharedRef<TPromise<TArray<T>>> CombinedPromise = MakeShared<TPromise<TArray<T>>>();
 		TSharedRef<TArray<T>> Results = MakeShared<TArray<T>>();
