@@ -17,6 +17,17 @@ class UBF_API UUBFMeshConfigSettings : public UDeveloperSettings
 public:
 	FMeshConfigData GetMeshConfigData(const FString& ResourceID) const;
 	FMeshConfigData GetMeshConfigData() const;
+
+	UFUNCTION(BlueprintPure, DisplayName="GetMeshConfigData")
+	static FMeshConfigData BP_GetMeshConfigData(const FString& ResourceID)
+	{
+		if (const UUBFMeshConfigSettings* Settings = GetDefault<UUBFMeshConfigSettings>())
+		{
+			return Settings->GetMeshConfigData(ResourceID);
+		}
+		return FMeshConfigData();
+	}
+
 private:
 	UPROPERTY(EditAnywhere, Config)
 	FMeshConfigData DefaultMeshConfigData;
