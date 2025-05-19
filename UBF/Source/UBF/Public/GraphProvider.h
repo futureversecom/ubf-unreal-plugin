@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlueprintJson.h"
 #include "Graph.h"
-#include "Registry.h"
+#include "ExecutionSets/ExecutionInstance.h"
 #include "UObject/Interface.h"
 
 struct FglTFRuntimeConfig;
@@ -22,8 +21,8 @@ namespace UBF
 	
 	struct UBF_API FLoadGraphResult final : TLoadResult<FGraphHandle> {};
 	
-	struct UBF_API FLoadGraphInstanceResult final : TLoadResult<FBlueprintJson> {};
-
+	struct UBF_API FLoadExecutionInstanceResult final : TLoadResult<TSharedPtr<FExecutionInstance>> {};
+	
 	struct UBF_API FLoadTextureResult final : TLoadResult<UTexture*> {};
 
 	struct UBF_API FLoadMeshResult final : TLoadResult<UglTFRuntimeAsset*> {};

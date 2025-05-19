@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlueprintInstance.h"
 #include "Dynamic.h"
 #include "Managed.h"
 #include "UBFExecutionReport.h"
@@ -14,11 +13,11 @@ class IGraphProvider;
 
 namespace UBF
 {
+	class IExecutionSetConfig;
 	class FCustomNode;
 	class FOnComplete;
 
 	struct FRegistryHandle;
-//	struct FExecutionContextHandle;
 	
 	struct FBindingInfo
 	{
@@ -131,15 +130,16 @@ namespace UBF
 		
 		void Execute(
 			const FString& BlueprintId,
-			USceneComponent* Root,
-			TSharedPtr<IGraphProvider> GraphProvider,
-			const TSharedPtr<FUBFLogData>& LogData,
-			const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+			const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 			const TMap<FString, FDynamicHandle>& Inputs,
 			TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete,
 			struct FExecutionContextHandle& Handle) const;
 		
-		static void OnComplete(FFI::Dynamic*);
+		static void OnGraphComplete(FFI::Dynamic*);
+		static void OnNodeStart(const uint8_t*, int32_t, FFI::ScopeID, FFI::Dynamic*);
+		static void OnNodeComplete(const uint8_t*, int32_t, FFI::ScopeID, FFI::Dynamic*);
 		
 		static bool Load(const FRegistryHandle& Registry, const FString &Json, FGraphHandle& Graph);
 
@@ -154,5 +154,5 @@ namespace UBF
 	};
 
 	static FGraphVersion MinSupportedGraphVersion = FGraphVersion(TEXT("0.0.0"));
-	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("0.1.0"));
+	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("0.2.0"));
 }

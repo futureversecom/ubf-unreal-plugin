@@ -1,5 +1,3 @@
-// Copyright (c) 2025, Futureverse Corporation Limited. All rights reserved.
-
 #pragma once
 
 #include <cstdarg>
@@ -32,7 +30,9 @@ struct GraphInstance;
 /// TODO Expensive to clone, move to Arc in future? Ask Travers & Felix
 struct NodeRegistry;
 
-using CompletionID = uint32_t;
+using ScopeID = uint32_t;
+
+constexpr static const ScopeID ROOT_SCOPE = 0;
 
 extern "C" {
 
@@ -58,7 +58,14 @@ void graph_iter_outputs(GraphInstance *graph, intptr_t context, bool (*iterator)
 ArcExecutionContext *graph_execute(GraphInstance *graph,
                                    Dynamic *inputs,
                                    Dynamic *context_data,
-                                   void (*on_complete)(Dynamic*));
+                                   const uint16_t *graph_label,
+                                   int32_t graph_label_len,
+                                   void (*on_graph_complete)(Dynamic*),
+                                   void (*on_node_complete)(const uint8_t*,
+                                                            int32_t,
+                                                            ScopeID,
+                                                            Dynamic*),
+                                   void (*on_node_start)(const uint8_t*, int32_t, ScopeID, Dynamic*));
 
 /// Free graph
 void graph_release(GraphInstance *graph);
@@ -71,13 +78,15 @@ void ctx_release(ArcExecutionContext *execution_context);
 /// Retain reference
 ArcExecutionContext *ctx_retain(ArcExecutionContext *execution_context);
 
-bool ctx_trigger_node(ArcExecutionContext *execution_context,
-                      const uint16_t *source_node_id_str,
-                      int32_t source_node_id_len,
-                      const uint16_t *source_port_key_str,
-                      int32_t source_port_key_len);
+uint8_t ctx_trigger_node(ArcExecutionContext *execution_context,
+                         const uint16_t *source_node_id_str,
+                         int32_t source_node_id_len,
+                         const uint16_t *source_port_key_str,
+                         int32_t source_port_key_len,
+                         ScopeID scope,
+                         uint32_t *child_scope);
 
-bool ctx_complete_node(ArcExecutionContext *execution_context, CompletionID completion_id);
+bool ctx_complete_node(ArcExecutionContext *execution_context, ScopeID scope);
 
 bool ctx_read_output(ArcExecutionContext *execution_context,
                      const uint16_t *binding_id,
@@ -89,6 +98,7 @@ bool ctx_read_input(ArcExecutionContext *execution_context,
                     int32_t node_id_len,
                     const uint16_t *port_key,
                     int32_t port_key_len,
+                    uint32_t scope,
                     Dynamic **out);
 
 Dynamic *ctx_get_context_data(ArcExecutionContext *execution_context);
@@ -179,10 +189,7 @@ void registry_register_node(NodeRegistry *registry,
                             const uint16_t *name,
                             int32_t name_len,
                             intptr_t this_ptr,
-                            void (*execute_cb)(intptr_t,
-                                               const char*,
-                                               CompletionID,
-                                               ArcExecutionContext*),
+                            void (*execute_cb)(intptr_t, const char*, ScopeID, ArcExecutionContext*),
                             void (*_release_cb)(intptr_t));
 
 extern void _UnityPluginLoad(void*);

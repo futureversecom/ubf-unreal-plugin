@@ -40,14 +40,14 @@ namespace UBF
 
 	void ExecuteCallback(intptr_t const ThisPtr,
 	                     const char* NodeId,
-	                     const FFI::CompletionID CompletionId,
+	                     const FFI::ScopeID ScopeID,
 	                     FFI::ArcExecutionContext* ContextPtr)
 	{
 		const FRegistryHandle::CreateInstanceFn CreateFn = reinterpret_cast<FRegistryHandle::CreateInstanceFn>(ThisPtr);
 		
 		const FCustomNode* Node = CreateFn(
 			FString(strlen(NodeId), NodeId),
-			CompletionId,
+			ScopeID,
 			FExecutionContextHandle(ContextPtr));
 		
 		Node->Execute();
@@ -58,12 +58,12 @@ namespace UBF
 	{
 		CreateInstanceFn CreateInstanceFn = [](
 			const FString& NodeId,
-			const FFI::CompletionID CompletionID,
+			const FFI::ScopeID ScopeID,
 			FExecutionContextHandle Context
 		)
 		{
 			T* Node = new T;
-			Node->Bind(NodeId, CompletionID, Context);
+			Node->Bind(NodeId, ScopeID, Context);
 			return reinterpret_cast<FCustomNode*>(Node);
 		};
 

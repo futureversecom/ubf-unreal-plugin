@@ -7,25 +7,30 @@
 #include "UBF.h"
 #include "UBFLog.h"
 #include "UBFUtils.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 
 namespace UBF
 {
 	void FGraphHandle::Execute(
 		const FString& BlueprintId,
-		USceneComponent* Root,
-		TSharedPtr<IGraphProvider> GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
+		const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
 		const TMap<FString, FDynamicHandle>& Inputs,
-		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete, FExecutionContextHandle& Handle) const
+		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete,
+		TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+		TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete,
+		FExecutionContextHandle& Handle) const
 	{
 		UE_LOG(LogUBF, Log, TEXT("Executing Graph Id: %s version: %s"), *BlueprintId, *GetGraphVersion().ToString());
 		
-		if (!IsValid(Root))
+		if (!ExecutionSetConfig->GetRoot().IsValid() || !IsValid(ExecutionSetConfig->GetRoot()->GetAttachmentComponent()))
 		{
 			UE_LOG(LogUBF, Verbose, TEXT("FGraphHandle::Execute Root is invalid, aborting execution"));
 			return;
 		}
 		
-		const FContextData* ContextData = new FContextData(BlueprintId, Root, GraphProvider, LogData, InstancedBlueprints, *this, MoveTemp(OnComplete));
+		const FContextData* ContextData = new FContextData(BlueprintId, ExecutionSetConfig, *this,
+			MoveTemp(OnComplete), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete));
+		
 		const FDynamicHandle DynamicUserData(FDynamicHandle::ForeignHandled(ContextData));
 		
 		FDynamicHandle DynamicMap = FDynamicHandle::Dictionary();
@@ -49,28 +54,70 @@ namespace UBF
 			RustPtr,
 			DynamicMap.GetRustPtr(),
 			DynamicUserData.GetRustPtr(),
-			&FGraphHandle::OnComplete
+			TCHAR_TO_UTF16(*BlueprintId),
+			BlueprintId.Len(),
+			&FGraphHandle::OnGraphComplete,
+			&FGraphHandle::OnNodeComplete,
+			&FGraphHandle::OnNodeStart
 		));
 
 		Handle = TempHandle;
-		ContextData->SetReadyToComplete();
+		ContextData->SetGraphReadyToComplete();
 	}
 	
-	void FGraphHandle::OnComplete(FFI::Dynamic* RawUserData)
+	void FGraphHandle::OnGraphComplete(FFI::Dynamic* RawUserData)
 	{
-		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnComplete"));
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnGrpahComplete"));
 		const FDynamicHandle UserData(RawUserData);
 		
 		const FContextData* ContextUserData;
 		
 		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
 		{
-			ContextUserData->SetComplete();
+			ContextUserData->SetGraphComplete();
 		}
 		else
 		{
 			UE_LOG(LogUBF, Error,
 				TEXT("Failed to get user data from graph execution context. OnComplete callback will not be called."));
+		}
+	}
+
+	void FGraphHandle::OnNodeComplete(const uint8_t* NodeIdPtr, int32_t NodeIdLen, FFI::ScopeID ScopeID, FFI::Dynamic* RawUserData)
+	{
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnNodeComplete"));
+		const FDynamicHandle UserData(RawUserData);
+		
+		const FContextData* ContextUserData;
+		
+		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
+		{
+			const FString NodeId = UBFUtils::FromBytesToString(NodeIdPtr, NodeIdLen); 
+			ContextUserData->OnNodeComplete(NodeId, ScopeID);
+		}
+		else
+		{
+			UE_LOG(LogUBF, Error,
+				TEXT("Failed to get user data from graph execution context. OnNodeComplete callback will not be called."));
+		}
+	}
+
+	void FGraphHandle::OnNodeStart(const uint8_t* NodeIdPtr, int32_t NodeIdLen, FFI::ScopeID ScopeID, FFI::Dynamic* RawUserData)
+	{
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnNodeStart"));
+		const FDynamicHandle UserData(RawUserData);
+		
+		const FContextData* ContextUserData;
+		
+		if (UserData.TryInterpretAs<const FContextData>(ContextUserData))
+		{
+			const FString NodeId = UBFUtils::FromBytesToString(NodeIdPtr, NodeIdLen); 
+			ContextUserData->OnNodeStart(NodeId, ScopeID);
+		}
+		else
+		{
+			UE_LOG(LogUBF, Error,
+				TEXT("Failed to get user data from graph execution context. OnNodeStart callback will not be called."));
 		}
 	}
 

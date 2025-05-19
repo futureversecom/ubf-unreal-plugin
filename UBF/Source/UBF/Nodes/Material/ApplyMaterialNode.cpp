@@ -167,7 +167,7 @@ namespace UBF
 				return Future;
 			}
 
-			GetContext().GetGraphProvider()->GetTextureResource(TextureHandle.ResourceId).Next(
+			GetContext().GetUserData()->ExecutionSetConfig->GetTexture(TextureHandle.ResourceId).Next(
 				[this, Promise, Mat, Prop, ResourceId](const FLoadTextureResult& TextureResult)
 			{
 				if (!CheckExecutionStillValid())

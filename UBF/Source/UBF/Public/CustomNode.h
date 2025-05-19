@@ -19,50 +19,50 @@ namespace UBF
 	{
 		FString NodeId;
 		FExecutionContextHandle Context;
-		FFI::CompletionID CompletionID = -1;
+		FFI::ScopeID ScopeID = -1;
 		
 	protected:
 		// Use when DynamicValue is a pointer
 		template <typename T>
 		bool TryReadInput(const FString& PortKey, T*& Out) const 
 		{
-			return Context.TryReadInput<T>(NodeId, PortKey, Out);
+			return Context.TryReadInput<T>(NodeId, PortKey, ScopeID, Out);
 		}
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
 		bool TryReadInputValue(const FString& PortKey, T& Out) const
 		{
-			return Context.TryReadInputValue(NodeId, PortKey, Out);
+			return Context.TryReadInputValue(NodeId, PortKey, ScopeID, Out);
 		}
 
 		// Use when DynamicValue is a pointer
 		template <typename T>
 		bool TryReadInputArray(const FString& PortKey, TArray<T*>& Out) const
 		{
-			return Context.TryReadInputArray<T>(NodeId, PortKey, Out);
+			return Context.TryReadInputArray<T>(NodeId, PortKey, ScopeID, Out);
 		}
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
 		bool TryReadInputValueArray(const FString& PortKey, TArray<T>& Out) const
 		{
-			return Context.TryReadInputValueArray(NodeId, PortKey, Out);
+			return Context.TryReadInputValueArray(NodeId, PortKey, ScopeID, Out);
 		}
 
 		bool TryReadInput(const FString& PortKey, FDynamicHandle& Dynamic) const
 		{
-			return Context.TryReadInput(NodeId, PortKey, Dynamic);
+			return Context.TryReadInput(NodeId, PortKey, ScopeID, Dynamic);
 		}
 		
 		void TriggerNext() const
 		{
-			Context.TryTriggerNode(NodeId, FString("Exec"));
+			Context.TryTriggerNode(NodeId, FString("Exec"), ScopeID);
 		}
 
 		bool TryGetResourceId(const FString& PinName, FString& Id) const
 		{
-			return Context.TryReadInputValue(NodeId, PinName, Id);
+			return Context.TryReadInputValue(NodeId, PinName, ScopeID, Id);
 		}
 
 		void WriteOutput(const FString& Key, const FDynamicHandle& Dynamic) const
@@ -101,7 +101,7 @@ namespace UBF
 		{
 			// maybe its fine to complete in other threads? we just need to make sure execute sync nodes run in GT
 			check(IsInGameThread());
-			Context.CompleteNode(CompletionID);
+			Context.CompleteNode(ScopeID);
 			delete this; // Should this delete? FRegistry makes it seem like rust should be in charge of deleting nodes
 		}
 
@@ -165,7 +165,7 @@ namespace UBF
 			
 			if (!CheckExecutionStillValid() || ExecuteSync())
 			{
-				Context.CompleteNode(CompletionID);
+				Context.CompleteNode(ScopeID);
 				delete this;
 				return;
 			}
@@ -173,11 +173,11 @@ namespace UBF
 			ExecuteAsync();
 		}
 
-		void Bind(FString OurNodeId, const FFI::CompletionID OurCompletionID, const FExecutionContextHandle& OurContext)
+		void Bind(FString OurNodeId, const FFI::ScopeID OurScopeID, const FExecutionContextHandle& OurContext)
 		{
 			NodeId = OurNodeId;
 			Context = OurContext;
-			CompletionID = OurCompletionID;
+			ScopeID = OurScopeID;
 		}
 	};
 }

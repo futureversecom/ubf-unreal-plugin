@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlueprintInstance.h"
 #include "ContextData.h"
 #include "Dynamic.h"
 #include "UBFExecutionReport.h"
 #include "UBF/Lib/ubf_interpreter.h"
 #include "DataTypes/SceneNode.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 
 class IGraphProvider;
 
@@ -44,60 +44,15 @@ namespace UBF
 
 		FExecutionContextHandle() : FExecutionHandleBase(nullptr) {}
 
-		FSceneNode* GetRoot() const { return ContextData->Root; }
-		TSharedPtr<IGraphProvider> GetGraphProvider() const { return ContextData->GraphProvider; }
+		FSceneNode* GetRoot() const;
 		const FContextData* GetUserData() const { return ContextData; }
-
-		bool BlueprintInstanceExistsForId(const FString& InstanceId) const
-		{
-			if (ContextData == nullptr) return false;
-			return ContextData->InstancedBlueprints.Contains(InstanceId);
-		}
-
-		FBlueprintInstance GetInstanceForId(const FString& InstanceId) const
-		{
-			if (ContextData == nullptr) return FBlueprintInstance();
-			return ContextData->InstancedBlueprints[InstanceId];
-		}
+		const TSharedPtr<IExecutionSetConfig>& GetSetConfig() const { return ContextData->ExecutionSetConfig; }
 
 		// Gets world from UserData Root
-		UWorld* GetWorld() const
-		{
-			check(this);
-			
-			if (ContextData == nullptr)
-				DynamicContextData.TryInterpretAs(ContextData);
-			
-			check(ContextData);
-			check(ContextData->Root);
+		UWorld* GetWorld() const;
 
-			if (USceneComponent* SceneComponent = ContextData->Root->GetAttachmentComponent())
-			{
-				if (!IsValid(SceneComponent))
-					return nullptr;
+		bool GetCancelExecution() const;
 
-				return SceneComponent->GetWorld();
-			}
-			
-			return nullptr;
-		}
-
-		bool GetCancelExecution() const
-		{
-			if (ContextData == nullptr)
-				return false;
-
-			return ContextData->bCancelExecution;
-		}
-
-		void FlagCancelExecution()
-		{
-			if (ContextData == nullptr)
-				return;
-
-			const_cast<FContextData*>(ContextData)->bCancelExecution = true;
-		}
-		
 		FString GetBlueprintID() const
 		{
 			if (ContextData == nullptr)
@@ -110,21 +65,21 @@ namespace UBF
 		
 		void PrintBlueprintDebug(const FString& ContextString = FString()) const;
 
-		void CompleteNode(const FFI::CompletionID CompletionID) const
+		void CompleteNode(const FFI::ScopeID ScopeID) const
 		{
-			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, CompletionID);
+			CALL_RUST_FUNC(ctx_complete_node)(RustPtr, ScopeID);
 		}
 
-		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey) const;
+		bool TryTriggerNode(const FString& SourceNodeId, const FString& SourcePortKey, FFI::ScopeID ScopeID) const;
 		
-		bool TryReadInput(const FString& NodeId, const FString& PortKey, FDynamicHandle& Dynamic) const;
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, FDynamicHandle& Dynamic) const;
 
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInput(const FString& NodeId, const FString& PortKey, T*& Out) const
+		bool TryReadInput(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, T*& Out) const
 		{
 			FDynamicHandle Ptr;
-			if (!TryReadInput(NodeId, PortKey, Ptr))
+			if (!TryReadInput(NodeId, PortKey, ScopeID,Ptr))
 			{
 				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
@@ -149,10 +104,10 @@ namespace UBF
 
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValue(const FString& NodeId, const FString& PortKey, T& Out) const
+		bool TryReadInputValue(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, T& Out) const
 		{
 			FDynamicHandle Ptr;
-			if (!TryReadInput(NodeId, PortKey, Ptr))
+			if (!TryReadInput(NodeId, PortKey, ScopeID, Ptr))
 			{
 				return false;
 			}
@@ -164,10 +119,10 @@ namespace UBF
 		
 		// Use when DynamicValue is a pointer
 		template <class T>
-		bool TryReadInputArray(const FString& NodeId, const FString& PortKey, TArray<T*>& Out) const
+		bool TryReadInputArray(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID, TArray<T*>& Out) const
 		{
 			FDynamicHandle DynamicArray;
-			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			if (!TryReadInput(NodeId, PortKey, ScopeID, DynamicArray))
 			{
 				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;
@@ -177,11 +132,11 @@ namespace UBF
 		}
 		// Use when DynamicValue is a value such as string, bool, int, float
 		template <typename T>
-		bool TryReadInputValueArray(const FString& NodeId, const FString& PortKey,
+		bool TryReadInputValueArray(const FString& NodeId, const FString& PortKey, const FFI::ScopeID ScopeID,
 		TArray<T>& Out) const
 		{
 			FDynamicHandle DynamicArray;
-			if (!TryReadInput(NodeId, PortKey, DynamicArray))
+			if (!TryReadInput(NodeId, PortKey, ScopeID, DynamicArray))
 			{
 				UBF_LOG(Warning, TEXT("Failed to read input (Node:%s Port:%s)"), *NodeId, *FString(PortKey));
 				return false;

@@ -6,6 +6,8 @@
 #include "ExecutionContext.h"
 #include "UBFBindingObject.h"
 #include "Components/ActorComponent.h"
+#include "ExecutionSets/ExecutionInstanceData.h"
+#include "ExecutionSets/ExecutionSetHandle.h"
 #include "UBFRuntimeController.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnComplete, bool, Success, FUBFExecutionReport, ExecutionReport);
@@ -17,7 +19,7 @@ struct FBlueprintExecutionData
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TMap<FString, UUBFBindingObject*> InputMap;
-	TArray<UBF::FBlueprintInstance> BlueprintInstances;
+	TArray<UBF::FExecutionInstanceData> BlueprintInstances;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -30,7 +32,7 @@ public:
 	USceneComponent* RootComponent;
 
 	UFUNCTION(BlueprintCallable, meta = (AutoCreateRefTerm = "OnComplete"))
-	void ExecuteBlueprint(FString BlueprintId, const FBlueprintExecutionData& ExecutionData, const FOnComplete& OnComplete);
+	void ExecuteBlueprint(FString RootID, const FBlueprintExecutionData& ExecutionData, const FOnComplete& OnComplete);
 
 	UFUNCTION(BlueprintCallable)
 	void ClearBlueprint();
@@ -44,9 +46,7 @@ public:
 	// Tries to read last context output as UObject, returns nullptr if not read or if the type is not supported
 	UFUNCTION(BlueprintCallable)
 	UObject* TryReadLastContextUObjectOutput(const FString& OutputId) const;
-
-	void SetGraphProviders(const TSharedPtr<IGraphProvider>& GraphProvider);
-
+	
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -59,15 +59,10 @@ public:
 	bool bAutoUnHideUBFActorsOnComplete = true;
 
 private:
-	void TryExecute(const FString& BlueprintId, const TMap<FString, UBF::FDynamicHandle>& Inputs,
-				const TSharedPtr<IGraphProvider>&  GraphProvider,
-				const TMap<FString, UBF::FBlueprintInstance>& BlueprintInstances, UBF::FExecutionContextHandle& ExecutionContext, const
-				FOnComplete& OnComplete);
+
 	
 	void OnComplete(bool bWasSuccessful);
 	TArray<AActor*> GetSpawnedActors() const;
 	
-	mutable TSharedPtr<IGraphProvider> CurrentGraphProvider;
-	mutable UBF::FExecutionContextHandle LastExecutionContext;
-	mutable UBF::FGraphHandle LastGraphHandle;
+	UBF::FExecutionSetHandle LastSetHandle;
 };

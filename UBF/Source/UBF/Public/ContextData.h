@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "BlueprintInstance.h"
 #include "Graph.h"
 #include "DataTypes/SceneNode.h"
 
@@ -20,24 +19,23 @@ namespace UBF
 		~FContextData()
 		{
 			PinnedWorld->Release();
-			delete Root;
 		};
 
 		FString BlueprintId;
-		FSceneNode* Root;
-		TSharedPtr<IGraphProvider> GraphProvider;
-		TSharedPtr<FUBFLogData> LogData;
-		TMap<FString, FBlueprintInstance> InstancedBlueprints;
+		TSharedPtr<IExecutionSetConfig> ExecutionSetConfig;
 		UGCPin* PinnedWorld;
 		FGraphHandle Graph;
-		bool bCancelExecution = false;
-		TFunction<void(bool, FUBFExecutionReport)> OnComplete;
+		TFunction<void(bool, FUBFExecutionReport)> OnGraphComplete;
+		TFunction<void(FString, FFI::ScopeID)> OnNodeStart;
+		TFunction<void(FString, FFI::ScopeID)> OnNodeComplete;
 		
-		explicit FContextData(const FString& BlueprintId, USceneComponent* Root, const TSharedPtr<IGraphProvider>& GraphProvider, const TSharedPtr<FUBFLogData>& LogData, const TMap<FString, FBlueprintInstance>& InstancedBlueprints,
-			const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnComplete);
+		explicit FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
+			const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnGraphComplete,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart,
+			TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete);
 
-		void SetReadyToComplete() const;
-		void SetComplete() const;
+		void SetGraphReadyToComplete() const;
+		void SetGraphComplete() const;
 
 	private:
 		void TryCompleteInternal() const;

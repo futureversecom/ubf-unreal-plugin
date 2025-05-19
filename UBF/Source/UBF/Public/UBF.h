@@ -17,7 +17,7 @@
 		} else { \
 			/* UE_LOG(LogUBF, VeryVerbose, TEXT("DLL Export found \"" #FunctionName "\"")); */ \
 		} \
-		static FunctionType FunctionPtr = static_cast<FunctionType>(FnPtrRaw); \
+		static FunctionType FunctionPtr = reinterpret_cast<FunctionType>(FnPtrRaw); \
 		return FunctionPtr; \
 	}()
 

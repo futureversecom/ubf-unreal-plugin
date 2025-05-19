@@ -3,32 +3,34 @@
 #include "ContextData.h"
 
 #include "UBFLogData.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 
 namespace UBF
 {
-	FContextData::FContextData(const FString& BlueprintId, USceneComponent* Root,
-		const TSharedPtr<IGraphProvider>& GraphProvider, const TSharedPtr<FUBFLogData>& LogData,
-		const TMap<FString, FBlueprintInstance>& InstancedBlueprints, const FGraphHandle& Graph,
-		TFunction<void(bool, FUBFExecutionReport)>&& OnComplete): BlueprintId(BlueprintId), Root(new FSceneNode(Root)), GraphProvider(GraphProvider), LogData(LogData), InstancedBlueprints(InstancedBlueprints) ,Graph(Graph), OnComplete(MoveTemp(OnComplete))
+	FContextData::FContextData(const FString& BlueprintId, const TSharedPtr<IExecutionSetConfig>& ExecutionSetConfig,
+		const FGraphHandle& Graph, TFunction<void(bool, FUBFExecutionReport)>&& OnGraphComplete,
+		TFunction<void(FString, FFI::ScopeID)>&& OnNodeStart, TFunction<void(FString, FFI::ScopeID)>&& OnNodeComplete)
+		: BlueprintId(BlueprintId), ExecutionSetConfig(ExecutionSetConfig), Graph(Graph),
+		OnGraphComplete(MoveTemp(OnGraphComplete)), OnNodeStart(MoveTemp(OnNodeStart)), OnNodeComplete(MoveTemp(OnNodeComplete))
 	{
-		if (Root->GetWorld())
+		if (ExecutionSetConfig->GetRoot().IsValid() && IsValid(ExecutionSetConfig->GetRoot()->GetWorld()))
 		{
-			PinnedWorld = UGCPin::Pin(Root->GetWorld());
+			PinnedWorld = UGCPin::Pin(ExecutionSetConfig->GetRoot()->GetWorld());
 		}
 		else
 		{
-			LogData->Log(BlueprintId, EUBFLogLevel::Error, TEXT("Root GetWorld is Invalid"));
+			ExecutionSetConfig->GetLogData()->Log(BlueprintId, EUBFLogLevel::Error, TEXT("Root GetWorld is Invalid"));
 		}
 	}
 
-	void FContextData::SetReadyToComplete() const
+	void FContextData::SetGraphReadyToComplete() const
 	{
 		bIsReadyToComplete = true;
 
 		TryCompleteInternal();
 	}
 
-	void FContextData::SetComplete() const
+	void FContextData::SetGraphComplete() const
 	{
 		bIsComplete = true;
 
@@ -39,9 +41,9 @@ namespace UBF
 	{
 		if (bIsReadyToComplete && bIsComplete)
 		{
-			FUBFExecutionReport ExecutionReport = LogData->CreateReport();
+			FUBFExecutionReport ExecutionReport = ExecutionSetConfig->GetLogData()->CreateReport();
 
-			if (UBFLogging::ShouldPrintLogSummary() && LogData->GetRootBlueprintId() == BlueprintId)
+			if (UBFLogging::ShouldPrintLogSummary() && ExecutionSetConfig->GetLogData()->GetRootBlueprintId() == BlueprintId)
 			{
 				if (ExecutionReport.bWasSuccessful)
 				{
@@ -53,7 +55,7 @@ namespace UBF
 				}
 			}
 			
-			OnComplete(ExecutionReport.bWasSuccessful && !bCancelExecution, ExecutionReport);
+			OnGraphComplete(ExecutionReport.bWasSuccessful && !ExecutionSetConfig->GetCancelExecution(), ExecutionReport);
 		}
 	}
 }

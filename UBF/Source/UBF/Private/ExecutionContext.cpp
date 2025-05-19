@@ -3,39 +3,87 @@
 #include "ExecutionContext.h"
 
 #include "UBFLog.h"
-#include "GraphProvider.h"
+#include "ExecutionSets/IExecutionSetConfig.h"
 #include "UBFLogData.h"
 #include "UBFUtils.h"
 
 namespace UBF
 {
+	FSceneNode* FExecutionContextHandle::GetRoot() const
+	{
+		return ContextData->ExecutionSetConfig->GetRoot().Get();
+	}
+
+	UWorld* FExecutionContextHandle::GetWorld() const
+	{
+		check(this);
+			
+		if (ContextData == nullptr)
+			DynamicContextData.TryInterpretAs(ContextData);
+			
+		check(ContextData);
+		check(ContextData->ExecutionSetConfig.IsValid());
+		check(ContextData->ExecutionSetConfig->GetRoot().IsValid());
+
+		if (USceneComponent* SceneComponent = ContextData->ExecutionSetConfig->GetRoot()->GetAttachmentComponent())
+		{
+			if (!IsValid(SceneComponent))
+				return nullptr;
+
+			return SceneComponent->GetWorld();
+		}
+			
+		return nullptr;
+	}
+
+	bool FExecutionContextHandle::GetCancelExecution() const
+	{
+		if (ContextData == nullptr)
+			return false;
+
+		return ContextData->ExecutionSetConfig->GetCancelExecution();
+	}
+
 	void FExecutionContextHandle::Log(EUBFLogLevel Level, const FString& Log) const
 	{
 		if (!GetUserData()) return;
 
-		GetUserData()->LogData->Log(GetUserData()->BlueprintId, Level, Log);
+		GetUserData()->ExecutionSetConfig->GetLogData()->Log(GetUserData()->BlueprintId, Level, Log);
 	}
 
 	void FExecutionContextHandle::PrintBlueprintDebug(const FString& ContextString) const
 	{
-		if (ContextData == nullptr || ContextData->GraphProvider == nullptr)
-			return;
-
-		ContextData->GraphProvider->PrintBlueprintDebug(GetBlueprintID(), ContextString);
+		
 	}
 
-	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey) const
+	bool FExecutionContextHandle::TryTriggerNode(FString const& SourceNodeId, FString const& SourcePortKey, FFI::ScopeID ScopeID) const
 	{
-		return CALL_RUST_FUNC(ctx_trigger_node)(
+		uint32_t ChildScope = 0;
+		
+		uint8_t Result = CALL_RUST_FUNC(ctx_trigger_node)(
 			RustPtr,
 			TCHAR_TO_UTF16(*SourceNodeId),
 			SourceNodeId.Len(),
 			TCHAR_TO_UTF16(*SourcePortKey),
-			SourcePortKey.Len()
+			SourcePortKey.Len(),
+			ScopeID,
+			&ChildScope
 		);
+
+		if (Result == 1 /* pending */)
+		{
+			// TODO add to pending scopes?
+		}
+
+		if (Result == 2 /* error */)
+		{
+			return false;
+		}
+
+		return true;
 	}
 
-	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey,
+	bool FExecutionContextHandle::TryReadInput(FString const& NodeId, const FString& PortKey, FFI::ScopeID ScopeID,
 	                                           FDynamicHandle& Dynamic) const
 	{
 		FFI::Dynamic* DynamicPtr;
@@ -45,6 +93,7 @@ namespace UBF
 			NodeId.Len(),
 			TCHAR_TO_UTF16(*PortKey),
 			PortKey.Len(),
+			ScopeID,
 			&DynamicPtr))
 		{
 			UBF_LOG(Warning, TEXT("No Input Found (Node:%s Port:%s) on BlueprintId: %s"), *NodeId, *FString(PortKey), *GetBlueprintID());

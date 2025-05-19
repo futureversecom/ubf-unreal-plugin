@@ -2,11 +2,14 @@
 
 #include "ExecuteBlueprint2Node.h"
 
+#include "BlueprintUBFLibrary.h"
 #include "GraphProvider.h"
 #include "SubGraphResolver.h"
 
 void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 {
+	UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Executing: '%s'"), *GetContext().GetBlueprintID());
+	
 	FString BlueprintId;
 	if (!TryReadInputValue("Blueprint", BlueprintId))
 	{
@@ -28,14 +31,6 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 	GetContext().GetDeclaredNodeInputs(GetNodeId(), ExpectedInputs);
 	
 	TMap<FString, FDynamicHandle> ActualInputs;
-
-	if (GetContext().BlueprintInstanceExistsForId(BlueprintId))
-	{
-		FBlueprintInstance BlueprintInstance = GetContext().GetInstanceForId(BlueprintId);
-		UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Found blueprint instance for BlueprintId: '%s' BlueprintId will be replaced with '%s'"), *BlueprintId, *BlueprintInstance.GetBlueprintId());
-		BlueprintId = BlueprintInstance.GetBlueprintId();
-		ActualInputs = BlueprintInstance.GetInputs();
-	}
 	
 	for (auto ExpectedInput : ExpectedInputs)
 	{
@@ -46,10 +41,8 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			ActualInputs.Add(ExpectedInput, DynamicOutput);
 		}
 	}
-	
-	UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] NodeInputs Count %d for BlueprintId: '%s'"), ExpectedInputs.Num(), *BlueprintId);
 
-	GetContext().GetGraphProvider()->GetGraph(BlueprintId).Next([this, BlueprintId, ActualInputs](const FLoadGraphResult& Result)
+	GetContext().GetUserData()->ExecutionSetConfig->GetExecutionInstance(BlueprintId).Next([this, BlueprintId, ActualInputs](const FLoadExecutionInstanceResult& Result)
 	{
 		if (!CheckExecutionStillValid())
 		{
@@ -71,7 +64,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Completed Executing Graph '%s'"), *BlueprintId);
 	
 			TArray<FBindingInfo> Outputs;
-			Result.Result.Value.GetOutputs(Outputs);
+			Result.Result.Value->GetGraphHandleRef().GetOutputs(Outputs);
 			
 			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Output Count %d"), Outputs.Num());
 			
@@ -91,8 +84,10 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			CompleteAsyncExecution();
 		};
 
-		const FGraphHandle Graph = Result.Result.Value;
-		Graph.Execute(BlueprintId, GetContext().GetRoot()->GetAttachmentComponent(), GetContext().GetGraphProvider(), GetContext().GetUserData()->LogData, GetContext().GetUserData()->InstancedBlueprints,
-			ActualInputs, OnCompleteFunc, ExecContext);
+		auto OnNodeStart = [](FString, FFI::ScopeID){};
+		auto OnNodeComplete = [](FString, FFI::ScopeID){};
+		
+		Result.Result.Value->ExecuteWithInputs(GetContext().GetUserData()->ExecutionSetConfig,
+			MoveTemp(OnCompleteFunc), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete), ActualInputs, ExecContext);
 	});
 }

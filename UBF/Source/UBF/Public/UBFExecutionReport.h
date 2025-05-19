@@ -23,7 +23,7 @@ struct FLogData
 public:
 	
 	UPROPERTY(BlueprintReadWrite)
-	EUBFLogLevel Level;
+	EUBFLogLevel Level = EUBFLogLevel::Log;
 	UPROPERTY(BlueprintReadWrite)
 	FString Log;
 	UPROPERTY(BlueprintReadWrite)

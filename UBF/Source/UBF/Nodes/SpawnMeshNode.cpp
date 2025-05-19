@@ -9,6 +9,7 @@
 #include "DataTypes/MeshConfig.h"
 #include "DataTypes/MeshRenderer.h"
 #include "DataTypes/SceneNode.h"
+#include "GlobalArtifactProvider/CachedMesh.h"
 #include "Util/BoneRemapperUtil.h"
 
 namespace UBF
@@ -51,7 +52,7 @@ namespace UBF
 			MeshConfigData = MeshConfig->MeshConfigData;
 		}
 		
-		GetContext().GetGraphProvider()->GetMeshResource(ResourceID, MeshConfigData.RuntimeConfig).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
+		GetContext().GetSetConfig()->GetMesh(ResourceID, FMeshImportSettings(MeshConfigData.RuntimeConfig)).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
 		{
 			if (!Result.Result.Key)
 			{

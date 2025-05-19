@@ -1,0 +1,1 @@
+#include "GlobalArtifactProvider/CatalogElement.h"
