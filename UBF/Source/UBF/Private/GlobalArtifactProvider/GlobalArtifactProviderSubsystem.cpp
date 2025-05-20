@@ -235,14 +235,23 @@ TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODRes
 			FglTFRuntimeMeshLOD& Ref = LODs.AddDefaulted_GetRef();
 			USpawnGLTFMeshLibrary::LoadAssetAsLOD(Results[i].Value, MeshResources[i].MeshName, Ref);
 		}
-
-		UStreamableRenderAsset* Asset = USpawnGLTFMeshLibrary::LoadMeshLOD(LODs, MeshConfigData);
-		UBF::FLoadMeshLODResult LoadMeshLODResult;
-		LoadMeshLODResult.Value = Asset;
-		LoadMeshLODResult.bSuccess = true;
 		
-		Promise->SetValue(LoadMeshLODResult);
-		// Handle Asset
+		// temp solution till we figure out how to do this properly
+		if (Results.IsEmpty())
+		{
+			UBF::FLoadMeshLODResult LoadMeshLODResult;
+			Promise->SetValue(LoadMeshLODResult);
+		}
+		else
+		{
+			const FglTFRuntimeLODData LODData(Results[0].Value, LODs);
+			UStreamableRenderAsset* Asset = USpawnGLTFMeshLibrary::LoadMeshLOD(LODData, MeshConfigData);
+			UBF::FLoadMeshLODResult LoadMeshLODResult;
+			LoadMeshLODResult.SetResult(Asset);
+			
+			Promise->SetValue(LoadMeshLODResult);
+			// Handle Asset
+		}
 	});
 
 	return Future;

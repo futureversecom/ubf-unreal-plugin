@@ -8,6 +8,24 @@
 #include "SpawnGLTFMeshLibrary.generated.h"
 
 class UglTFRuntimeAsset;
+
+USTRUCT(BlueprintType)
+struct FglTFRuntimeLODData
+{
+	GENERATED_BODY()
+	
+	FglTFRuntimeLODData(): ParsingAsset(nullptr) {}
+
+	FglTFRuntimeLODData(UglTFRuntimeAsset* Asset, const TArray<FglTFRuntimeMeshLOD>& LODs)
+	: ParsingAsset(Asset), LODs(LODs) {}
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UglTFRuntimeAsset* ParsingAsset;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<FglTFRuntimeMeshLOD> LODs;
+};
+
 /**
  * 
  */
@@ -16,11 +34,15 @@ class UBF_API USpawnGLTFMeshLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContext"))
 	static AActor* SpawnMesh(UObject* WorldContext, UglTFRuntimeAsset* Asset, const FMeshConfigData& MeshConfig);
-	
+
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContext"))
 	static AActor* SpawnLODMesh(UObject* WorldContext, UStreamableRenderAsset* LODMesh);
 
-	static UStreamableRenderAsset* LoadMeshLOD(const TArray<FglTFRuntimeMeshLOD>& LODs, const FMeshConfigData& MeshConfig);
+	UFUNCTION(BlueprintCallable)
+	static UStreamableRenderAsset* LoadMeshLOD(const FglTFRuntimeLODData& LODData, const FMeshConfigData& MeshConfig);
 
+	UFUNCTION(BlueprintCallable)
 	static bool LoadAssetAsLOD(UglTFRuntimeAsset* Asset, const FString& MeshName, FglTFRuntimeMeshLOD& OutLOD);
 };

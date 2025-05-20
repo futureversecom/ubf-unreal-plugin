@@ -8,7 +8,7 @@
 /**
  * Data exists here so it can be handled in Editor
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct UBF_API FMeshConfigData
 {
 	GENERATED_BODY()

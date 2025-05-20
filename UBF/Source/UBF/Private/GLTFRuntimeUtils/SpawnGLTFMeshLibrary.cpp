@@ -4,6 +4,7 @@
 #include "GLTFRuntimeUtils/SpawnGLTFMeshLibrary.h"
 
 #include "glTFRuntimeAssetActor.h"
+#include "UBFLog.h"
 #include "Util/BoneRemapperUtil.h"
 
 AActor* USpawnGLTFMeshLibrary::SpawnMesh(UObject* WorldContext, UglTFRuntimeAsset* Asset,
@@ -38,18 +39,22 @@ AActor* USpawnGLTFMeshLibrary::SpawnMesh(UObject* WorldContext, UglTFRuntimeAsse
 	return SpawnedActor;
 }
 
-UStreamableRenderAsset* USpawnGLTFMeshLibrary::LoadMeshLOD(const TArray<FglTFRuntimeMeshLOD>& LODs, const FMeshConfigData& MeshConfig)
+UStreamableRenderAsset* USpawnGLTFMeshLibrary::LoadMeshLOD(const FglTFRuntimeLODData& LODData, const FMeshConfigData& MeshConfig)
 {
 	bool bIsSkeletal = true;
-	for (const auto& LOD : LODs)
+	for (const auto& LOD : LODData.LODs)
 	{
-		if (LOD.Skeleton.IsEmpty())
+		for (auto& Primitive : LOD.Primitives)
 		{
-			bIsSkeletal = false;
-			break;
+			if (Primitive.Joints.IsEmpty())
+			{
+				bIsSkeletal = false;
+				break;
+			}	
 		}
 	}
-
+	
+	UE_LOG(LogUBF, Verbose, TEXT("[LoadMeshLOD] Loading SkeltalMesh: %s "), bIsSkeletal? TEXT("true") : TEXT("false"));
 	if (bIsSkeletal)
 	{
 		FglTFRuntimeSkeletalMeshConfig SkeletalMeshConfig = MeshConfig.SkeletalMeshConfig;
@@ -58,7 +63,7 @@ UStreamableRenderAsset* USpawnGLTFMeshLibrary::LoadMeshLOD(const TArray<FglTFRun
 			SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
 		}
 		
-		USkeletalMesh* Mesh = NewObject<UglTFRuntimeAsset>()->LoadSkeletalMeshFromRuntimeLODs(LODs, 0, SkeletalMeshConfig);
+		USkeletalMesh* Mesh = LODData.ParsingAsset->LoadSkeletalMeshFromRuntimeLODs(LODData.LODs, 0, SkeletalMeshConfig);
 
 		SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.Clear();
 		SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Context = nullptr;
@@ -66,7 +71,7 @@ UStreamableRenderAsset* USpawnGLTFMeshLibrary::LoadMeshLOD(const TArray<FglTFRun
 	}
 	else
 	{
-		UStaticMesh* Mesh = NewObject<UglTFRuntimeAsset>()->LoadStaticMeshFromRuntimeLODs(LODs, FglTFRuntimeStaticMeshConfig());
+		UStaticMesh* Mesh = LODData.ParsingAsset->LoadStaticMeshFromRuntimeLODs(LODData.LODs, FglTFRuntimeStaticMeshConfig());
 		return Mesh;
 	}
 }
@@ -101,19 +106,19 @@ AActor* USpawnGLTFMeshLibrary::SpawnLODMesh(UObject* WorldContext,  UStreamableR
 	Actor->AddComponentByClass(USceneComponent::StaticClass(), false, FTransform(), false);
 	
 	// Determine if LODs is staticmesh or skeletal mesh
-
-	
 	if (USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(LODMesh))
 	{
 		USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Actor->AddComponentByClass(USkeletalMeshComponent::StaticClass(), false, FTransform(), false));
 		
 		SkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
+		Actor->SetRootComponent(SkeletalMeshComponent);
 	}
 	else if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(LODMesh))
 	{
 		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Actor->AddComponentByClass(UStaticMeshComponent::StaticClass(), false, FTransform(), false));
 		
 		StaticMeshComponent->SetStaticMesh(StaticMesh);
+		Actor->SetRootComponent(StaticMeshComponent);
 	}
 
 	return Actor;
