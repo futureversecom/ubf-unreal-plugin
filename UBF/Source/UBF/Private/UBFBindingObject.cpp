@@ -2,7 +2,7 @@
 
 #include "UBFBindingObject.h"
 
-#include "UBFUtils.h"
+#include "Util/UBFUtils.h"
 
 FString UUBFBindingObject::DynamicToString(const UBF::FDynamicHandle& DynamicHandle) const
 {

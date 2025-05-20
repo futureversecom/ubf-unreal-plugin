@@ -38,8 +38,7 @@ public class UBF : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-                Path.Combine(ModuleDirectory, "Lib"),
-                Path.Combine(ModuleDirectory, "Nodes")
+                Path.Combine(ModuleDirectory, "Lib")
 			}
 			);
 			
