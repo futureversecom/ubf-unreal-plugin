@@ -3,6 +3,7 @@
 
 #include "BlueprintUBFLibrary.h"
 
+#include "UBFUtils.h"
 #include "ExecutionSets/IExecutionSetConfig.h"
 #include "ExecutionSets/IExecutionSetData.h"
 #include "ExecutionSets/ExecutionInstance.h"
@@ -45,4 +46,10 @@ UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<co
 	});
 
 	return FExecutionSetHandle(ExecutionSetConfig, SetResult);
+}
+
+UUBFBindingObject* UBlueprintUBFLibrary::CreateNewInputBindingObject(const FString& Id, const FString& Type,
+	const FString& Value)
+{
+	return UBFUtils::CreateNewInputBindingObject(Id, Type, Value);
 }
