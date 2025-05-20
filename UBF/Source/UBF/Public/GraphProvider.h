@@ -44,6 +44,8 @@ namespace UBF
 	struct UBF_API FLoadStringResult final : TLoadResult<FString> {};
 	
 	struct UBF_API FLoadDataArrayResult final : TLoadResult<TSharedPtr<TArray<uint8>>> {};
+
+	template struct TLoadResult<TSharedPtr<TArray<uint8>>>;
 }
 
 class UBF_API IGraphProvider
