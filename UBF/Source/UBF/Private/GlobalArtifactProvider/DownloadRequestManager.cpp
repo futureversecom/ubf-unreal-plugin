@@ -20,9 +20,7 @@ FDownloadRequestManager* FDownloadRequestManager::GetInstance()
 
 TFuture<UBF::FLoadDataArrayResult> FDownloadRequestManager::LoadDataFromURI(
 	const FString& DownloadId, 
-	const FString& Path, 
-	const FString& Hash, 
-	TSharedPtr<ICacheLoader> CacheLoader)
+	const FString& Path)
 {
 	TSharedPtr<TPromise<UBF::FLoadDataArrayResult>> Promise = MakeShareable(new TPromise<UBF::FLoadDataArrayResult>());
 	TFuture<UBF::FLoadDataArrayResult> Future = Promise->GetFuture();
@@ -43,7 +41,7 @@ TFuture<UBF::FLoadDataArrayResult> FDownloadRequestManager::LoadDataFromURI(
 
 	PrintLog(DownloadId, Path);
 
-	APIUtils::LoadDataFromURI(Path, Hash, CacheLoader).Next([Path, DownloadId, this](const UBF::FLoadDataArrayResult& Result)
+	APIUtils::LoadDataFromURI(Path).Next([Path, DownloadId, this](const UBF::FLoadDataArrayResult& Result)
 	{
 		FScopeLock Lock(&ActiveRequestPathsLock);  // Lock starts here
 
@@ -65,7 +63,7 @@ TFuture<UBF::FLoadDataArrayResult> FDownloadRequestManager::LoadDataFromURI(
 }
 
 TFuture<UBF::FLoadStringResult> FDownloadRequestManager::LoadStringFromURI(const FString& DownloadId,
-                                                                           const FString& Path, const FString& Hash, TSharedPtr<ICacheLoader> CacheLoader)
+                                                                           const FString& Path)
 {
 	TSharedPtr<TPromise<UBF::FLoadStringResult>> Promise = MakeShareable(new TPromise<UBF::FLoadStringResult>());
 	TFuture<UBF::FLoadStringResult> Future = Promise->GetFuture();
@@ -86,7 +84,7 @@ TFuture<UBF::FLoadStringResult> FDownloadRequestManager::LoadStringFromURI(const
 
 	PrintLog(DownloadId, Path);
 
-	APIUtils::LoadStringFromURI(Path, Hash, CacheLoader).Next([Path, DownloadId, this](const UBF::FLoadStringResult& Result)
+	APIUtils::LoadStringFromURI(Path).Next([Path, DownloadId, this](const UBF::FLoadStringResult& Result)
 	{
 		FScopeLock Lock(&ActiveRequestPathsLock);  // Lock starts here
 

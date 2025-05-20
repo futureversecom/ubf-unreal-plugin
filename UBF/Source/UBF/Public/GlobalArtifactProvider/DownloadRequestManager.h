@@ -3,7 +3,6 @@
 #pragma once
 
 #include "GraphProvider.h"
-#include "GlobalArtifactProvider/CacheLoading/ICacheLoader.h"
 
 struct FActiveRequestData
 {
@@ -27,8 +26,8 @@ class UBF_API FDownloadRequestManager
 public:
 	static FDownloadRequestManager* GetInstance();
 	
-	TFuture<UBF::FLoadDataArrayResult> LoadDataFromURI(const FString& DownloadId, const FString& Path, const FString& Hash, TSharedPtr<ICacheLoader> CacheLoader = nullptr);
-	TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& DownloadId, const FString& Path, const FString& Hash, TSharedPtr<ICacheLoader> CacheLoader = nullptr);
+	TFuture<UBF::FLoadDataArrayResult> LoadDataFromURI(const FString& DownloadId, const FString& Path);
+	TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& DownloadId, const FString& Path);
 private:
 	void PrintLog(const FString& DownloadId, const FString& Path);
 	

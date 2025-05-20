@@ -16,7 +16,19 @@ namespace UBF
 	template<typename T>
 	struct UBF_API TLoadResult
 	{
-		TPair<bool, T> Result;
+		bool bSuccess = false;
+		T Value;
+
+		void SetResult(const T& InValue)
+		{
+			bSuccess = true;
+			Value = InValue;
+		}
+
+		void SetFailure()
+		{
+			bSuccess = false;
+		}
 	};
 	
 	struct UBF_API FLoadGraphResult final : TLoadResult<FGraphHandle> {};
@@ -31,7 +43,7 @@ namespace UBF
 	
 	struct UBF_API FLoadStringResult final : TLoadResult<FString> {};
 	
-	struct UBF_API FLoadDataArrayResult final : TLoadResult<TArray<uint8>> {};
+	struct UBF_API FLoadDataArrayResult final : TLoadResult<TSharedPtr<TArray<uint8>>> {};
 }
 
 class UBF_API IGraphProvider

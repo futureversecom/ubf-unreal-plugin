@@ -51,7 +51,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			return;
 		}
 		
-		if (!Result.Result.Key)
+		if (!Result.bSuccess)
 		{
 			UBF_LOG(Error, TEXT("[ExecuteBlueprint2Node] Aborting execution: graph '%s' is invalid"), *BlueprintId);
 			TriggerNext();
@@ -64,7 +64,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Completed Executing Graph '%s'"), *BlueprintId);
 	
 			TArray<FBindingInfo> Outputs;
-			Result.Result.Value->GetGraphHandleRef().GetOutputs(Outputs);
+			Result.Value->GetGraphHandleRef().GetOutputs(Outputs);
 			
 			UBF_LOG(Verbose, TEXT("[ExecuteBlueprint2Node] Output Count %d"), Outputs.Num());
 			
@@ -87,7 +87,7 @@ void UBF::FExecuteBlueprint2Node::ExecuteAsync() const
 		auto OnNodeStart = [](FString, FFI::ScopeID){};
 		auto OnNodeComplete = [](FString, FFI::ScopeID){};
 		
-		Result.Result.Value->ExecuteWithInputs(GetContext().GetUserData()->ExecutionSetConfig,
+		Result.Value->ExecuteWithInputs(GetContext().GetUserData()->ExecutionSetConfig,
 			MoveTemp(OnCompleteFunc), MoveTemp(OnNodeStart), MoveTemp(OnNodeComplete), ActualInputs, ExecContext);
 	});
 }

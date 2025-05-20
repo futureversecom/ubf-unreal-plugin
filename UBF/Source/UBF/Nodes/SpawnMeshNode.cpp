@@ -65,7 +65,7 @@ namespace UBF
 		{
 			GetContext().GetSetConfig()->GetMeshLOD(Meshes, MeshConfigData).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshLODResult Result)
 			{
-				if (!Result.Result.Key)
+				if (!Result.bSuccess)
 				{
 					UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
 					HandleFailureFinish();
@@ -78,7 +78,7 @@ namespace UBF
 					return;
 				}
 			
-				UStreamableRenderAsset* Mesh = Result.Result.Value;
+				UStreamableRenderAsset* Mesh = Result.Value;
 			
 				if (!Mesh)
 				{
@@ -104,7 +104,7 @@ namespace UBF
 		{
 			GetContext().GetSetConfig()->GetMesh(ResourceID, FMeshImportSettings(MeshConfigData.RuntimeConfig)).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshResult Result)
 			{
-				if (!Result.Result.Key)
+				if (!Result.bSuccess)
 				{
 					UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
 					HandleFailureFinish();
@@ -117,7 +117,7 @@ namespace UBF
 					return;
 				}
 				
-				UglTFRuntimeAsset* Asset = Result.Result.Value;
+				UglTFRuntimeAsset* Asset = Result.Value;
 				
 				if (!Asset)
 				{
