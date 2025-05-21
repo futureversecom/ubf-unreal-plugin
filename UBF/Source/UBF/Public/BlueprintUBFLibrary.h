@@ -7,6 +7,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BlueprintUBFLibrary.generated.h"
 
+class UUBFBindingObject;
+
 namespace UBF
 {
 	class IExecutionSetData;
@@ -22,5 +24,6 @@ class UBF_API UBlueprintUBFLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	
+	UFUNCTION(BlueprintCallable)
+	static UUBFBindingObject* CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value);
 };
