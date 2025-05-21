@@ -105,7 +105,14 @@ TFuture<UBF::FLoadTextureResult> UGlobalArtifactProviderSubsystem::GetTextureRes
 		TSharedPtr<TArray<uint8>> Data = DataResult.Value;
 		UBF::FLoadTextureResult LoadResult;
 		
-		if (Data->Num() == 0 || Data->GetData() == nullptr)
+		if (!DataResult.bSuccess)
+		{
+			UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetTextureResource data load failed"));
+			Promise->SetValue(LoadResult);
+			return;
+		}
+		
+		if (!Data.IsValid() || Data->Num() == 0 || Data->GetData() == nullptr)
 		{
 			UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetTextureResource Data is empty"));
 			Promise->SetValue(LoadResult);
@@ -161,8 +168,15 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 	{
 		TSharedPtr<TArray<uint8>> Data = DataResult.Value;
 		UBF::FLoadMeshResult LoadResult;
+		
+		if (!DataResult.bSuccess)
+		{
+			UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource data load failed"));
+			Promise->SetValue(LoadResult);
+			return;
+		}
 			
-		if (Data->Num() == 0 || Data->GetData() == nullptr)
+		if (!Data.IsValid() || Data->Num() == 0 || Data->GetData() == nullptr)
 		{
 			UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Data is empty"));
 			Promise->SetValue(LoadResult);
@@ -352,7 +366,8 @@ TFuture<UBF::FLoadDataArrayResult> UGlobalArtifactProviderSubsystem::LoadDataFro
 
 	Resolver->ResolveURI(TypeID, URI).Next([LoadResult, URI, Hash, Cache](const UBF::FLoadDataArrayResult& ResolveResult)
 	{
-		Cache->CacheBytes(URI, Hash, *ResolveResult.Value);
+		if (Cache.IsValid() && ResolveResult.bSuccess && ResolveResult.Value.IsValid())
+			Cache->CacheBytes(URI, Hash, *ResolveResult.Value);
 		LoadResult->SetValue(ResolveResult);
 	});
 
