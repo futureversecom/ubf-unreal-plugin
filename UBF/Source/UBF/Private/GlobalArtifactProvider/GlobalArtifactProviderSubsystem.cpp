@@ -140,15 +140,7 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 {
 	TSharedPtr<TPromise<UBF::FLoadMeshResult>> Promise = MakeShareable(new TPromise<UBF::FLoadMeshResult>());
 	TFuture<UBF::FLoadMeshResult> Future = Promise->GetFuture();
-	
-	if (LoadedMeshesMap.Contains(ArtifactId) && LoadedMeshesMap[ArtifactId].ContainsMesh(ImportSettings))
-	{
-		UBF::FLoadMeshResult LoadResult;
-		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, LoadedMeshesMap[ArtifactId].GetMesh(ImportSettings));
-		Promise->SetValue(LoadResult);
-		return Future;
-	}
-	
+
 	if (!Catalog.Contains(ArtifactId))
 	{
 		UBF::FLoadMeshResult LoadResult;
@@ -158,10 +150,20 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 		Promise->SetValue(LoadResult);
 		return Future;
 	}
-
+	
 	const auto ResourceManifestElement = Catalog[ArtifactId];
+	const auto Uri = ResourceManifestElement.Uri;
+	if (LoadedMeshesMap.Contains(ResourceManifestElement.Uri) && LoadedMeshesMap[ResourceManifestElement.Uri].ContainsMesh(ImportSettings))
+	{
+		UBF::FLoadMeshResult LoadResult;
+		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, LoadedMeshesMap[ResourceManifestElement.Uri].GetMesh(ImportSettings));
+		Promise->SetValue(LoadResult);
+		UE_LOG(LogUBF, VeryVerbose, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Found Cached Mesh for %s"), *Uri);
+		return Future;
+	}
+	
 	FDownloadRequestManager::GetInstance()->LoadDataFromURI(TEXT("Mesh"),ResourceManifestElement.Uri, ResourceManifestElement.Hash, ResourceCacheLoader)
-	.Next([this, Promise, ImportSettings, ArtifactId](const UBF::FLoadDataArrayResult& DataResult)
+	.Next([this, Promise, ImportSettings, ArtifactId, Uri](const UBF::FLoadDataArrayResult& DataResult)
 	{
 		const TArray<uint8> Data = DataResult.Result.Value;
 		UBF::FLoadMeshResult LoadResult;
@@ -176,9 +178,10 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 
 		UglTFRuntimeAsset* Asset;
 
-		if (LoadedMeshesMap.Contains(ArtifactId) && LoadedMeshesMap[ArtifactId].ContainsMesh(ImportSettings))
+		if (LoadedMeshesMap.Contains(Uri) && LoadedMeshesMap[Uri].ContainsMesh(ImportSettings))
 		{
-			Asset = LoadedMeshesMap[ArtifactId].GetMesh(ImportSettings);
+			Asset = LoadedMeshesMap[Uri].GetMesh(ImportSettings);
+			UE_LOG(LogUBF, VeryVerbose, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Found Cached Mesh for %s"), *Uri);
 		}
 		else
 		{
@@ -196,7 +199,8 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 				return;
 			}
 			
-			LoadedMeshesMap.FindOrAdd(ArtifactId).AddOrReplaceMesh(ImportSettings, Asset);
+			LoadedMeshesMap.FindOrAdd(Uri).AddOrReplaceMesh(ImportSettings, Asset);
+			UE_LOG(LogUBF, VeryVerbose, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Caching New Mesh for %s"), *Uri);
 		}
 		
 		LoadResult.Result = TPair<bool, UglTFRuntimeAsset*>(true, Asset);
