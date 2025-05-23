@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UBFRuntimeController.h"
 #include "ExecutionSets/ExecutionSetHandle.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BlueprintUBFLibrary.generated.h"
@@ -26,4 +27,11 @@ class UBF_API UBlueprintUBFLibrary : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable)
 	static UUBFBindingObject* CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value);
+
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+	static void RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath);
+	
+	UFUNCTION(BlueprintCallable)
+	static void ExecuteBlueprint(UUBFRuntimeController* RuntimeController, const FString& BlueprintId,
+	const TMap<FString, UUBFBindingObject*>& InputMap, const FOnComplete& OnComplete);
 };

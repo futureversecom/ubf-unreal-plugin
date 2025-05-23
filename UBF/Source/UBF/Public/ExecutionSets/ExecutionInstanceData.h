@@ -20,7 +20,6 @@ namespace UBF
 
 		FString ToString() const
 		{
-			// Implement please ChatGPT
 			FString InputStrings;
 			for (const auto& InputPair : Inputs)
 			{

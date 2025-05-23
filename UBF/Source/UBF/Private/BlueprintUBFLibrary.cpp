@@ -3,11 +3,16 @@
 
 #include "BlueprintUBFLibrary.h"
 
+#include "UBFRuntimeController.h"
 #include "Util/UBFUtils.h"
 #include "ExecutionSets/IExecutionSetConfig.h"
 #include "ExecutionSets/IExecutionSetData.h"
 #include "ExecutionSets/ExecutionInstance.h"
+#include "ExecutionSets/ExecutionSetData.h"
 #include "ExecutionSets/ExecutionSetResult.h"
+#include "GlobalArtifactProvider/DownloadRequestManager.h"
+#include "GlobalArtifactProvider/GlobalArtifactProviderSubsystem.h"
+#include "Util/CatalogUtils.h"
 
 UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData)
 {
@@ -52,4 +57,35 @@ UUBFBindingObject* UBlueprintUBFLibrary::CreateNewInputBindingObject(const FStri
 	const FString& Value)
 {
 	return UBFUtils::CreateNewInputBindingObject(Id, Type, Value);
+}
+
+void UBlueprintUBFLibrary::RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath)
+{
+	FDownloadRequestManager::GetInstance()->LoadStringFromURI(TEXT("Catalog"), CatalogPath, "hash")
+		.Next([WorldContextObject, CatalogPath](const UBF::FLoadStringResult& LoadResult)
+		{
+			if (!LoadResult.Result.Key)
+			{
+				UE_LOG(LogUBF, Warning, TEXT("Failed to load parsing catalog from %s"), *CatalogPath);
+				return;
+			}
+			
+			TMap<FString, UBF::FCatalogElement> CatalogMap;
+			CatalogUtils::ParseCatalog(LoadResult.Result.Value, CatalogMap);
+			UE_LOG(LogUBF, Verbose, TEXT("Adding parsing catalog from %s"), *CatalogPath);
+			
+			UGlobalArtifactProviderSubsystem::Get(WorldContextObject)->RegisterCatalogs(CatalogMap);
+		});
+}
+
+void UBlueprintUBFLibrary::ExecuteBlueprint(UUBFRuntimeController* RuntimeController, const FString& BlueprintId,
+	const TMap<FString, UUBFBindingObject*>& InputMap, const FOnComplete& OnComplete)
+{
+	const UBF::FExecutionInstanceData BlueprintData(BlueprintId);
+	
+	FBlueprintExecutionData ExecutionData;
+	ExecutionData.BlueprintInstances.Add(BlueprintData);
+	ExecutionData.InputMap = InputMap;
+	
+	RuntimeController->ExecuteBlueprint(BlueprintData.GetInstanceId(), ExecutionData, OnComplete);
 }
