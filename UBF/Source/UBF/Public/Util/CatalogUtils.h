@@ -4,12 +4,12 @@
 
 namespace CatalogUtils
 {
-	const FString Resources = TEXT("resources");
-	const FString Id = TEXT("id");
-	const FString Uri = TEXT("uri");
-	const FString Hash = TEXT("hash");
+	const FString ResourcesField = TEXT("resources");
+	const FString IdField = TEXT("id");
+	const FString UriField = TEXT("uri");
+	const FString HashField = TEXT("hash");
 	
-	inline void ParseCatalog(const FString& Json, TMap<FString, UBF::FCatalogElement>& CatalogElementMap)
+	inline void ParseCatalog(const FString& Json, TMap<FString, UBF::FCatalogElement>& CatalogElementMap, const FString& RelativePath = "")
 	{
 		// Create a shared pointer to hold the JSON object
 		TSharedPtr<FJsonObject> JsonObject;
@@ -25,7 +25,7 @@ namespace CatalogUtils
 		}
 		
 		// Get the "resources" array from the JSON
-		TArray<TSharedPtr<FJsonValue>> ResourcesArray = JsonObject->GetArrayField(Resources);
+		TArray<TSharedPtr<FJsonValue>> ResourcesArray = JsonObject->GetArrayField(ResourcesField);
 
 		// Iterate over each element in the resources array
 		for (const TSharedPtr<FJsonValue>& Value : ResourcesArray)
@@ -34,22 +34,33 @@ namespace CatalogUtils
 			TSharedPtr<FJsonObject> ResourceObject = Value->AsObject();
 			if (ResourceObject.IsValid())
 			{
-				if (!ResourceObject->HasField(Id)
-					|| !ResourceObject->HasField(Uri)
-					|| !ResourceObject->HasField(Hash))
+				if (!ResourceObject->HasField(IdField)
+					|| !ResourceObject->HasField(UriField)
+					|| !ResourceObject->HasField(HashField))
 				{
 					UE_LOG(LogUBF, Error, TEXT("Cannot parse Json, missing %s, %s or %s field in element %s in json %s"),
-						*Id, *Uri, *Hash, *Value->AsString(), *Json);
+						*IdField, *UriField, *HashField, *Value->AsString(), *Json);
 					continue;
 				}
 				UBF::FCatalogElement CatalogElement;
-				CatalogElement.Id = ResourceObject->GetStringField(Id);
-				CatalogElement.Uri = ResourceObject->GetStringField(Uri);
-				CatalogElement.Hash = ResourceObject->GetStringField(Hash);
+				CatalogElement.Id = ResourceObject->GetStringField(IdField);
+				FString Uri = ResourceObject->GetStringField(UriField);
+				
+				if (!RelativePath.IsEmpty())
+				{
+					// studio generates the catalogs in {./path} format
+					FString LeftString;
+					FString NewPath;
+					Uri.Split(".", &LeftString, &NewPath, ESearchCase::Type::IgnoreCase);
+					Uri = RelativePath + NewPath;
+				}
+				
+				CatalogElement.Uri = Uri;
+				CatalogElement.Hash = ResourceObject->GetStringField(HashField);
 				CatalogElementMap.Add(CatalogElement.Id, CatalogElement);
 				UE_LOG(LogUBF, VeryVerbose, TEXT("AssetProfileUtils::ParseCatalog "
 					"Added CatalogElement %s: %s %s: %s %s: %s"),
-					*Id, *CatalogElement.Id, *Uri, *CatalogElement.Uri, *Hash, *CatalogElement.Hash);
+					*IdField, *CatalogElement.Id, *UriField, *CatalogElement.Uri, *HashField, *CatalogElement.Hash);
 			}
 		}
 	}

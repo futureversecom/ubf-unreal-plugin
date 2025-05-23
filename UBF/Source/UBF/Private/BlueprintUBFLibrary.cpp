@@ -59,20 +59,22 @@ UUBFBindingObject* UBlueprintUBFLibrary::CreateNewInputBindingObject(const FStri
 	return UBFUtils::CreateNewInputBindingObject(Id, Type, Value);
 }
 
-void UBlueprintUBFLibrary::RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath)
+void UBlueprintUBFLibrary::RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath, const bool UseRelativePath)
 {
-	FDownloadRequestManager::GetInstance()->LoadStringFromURI(TEXT("Catalog"), CatalogPath, "hash")
-		.Next([WorldContextObject, CatalogPath](const UBF::FLoadStringResult& LoadResult)
+	FString ConvertedPath = CatalogPath.Replace(TEXT("\\"), TEXT("/"));
+	FDownloadRequestManager::GetInstance()->LoadStringFromURI(TEXT("Catalog"), ConvertedPath, "hash")
+		.Next([WorldContextObject, ConvertedPath, UseRelativePath](const UBF::FLoadStringResult& LoadResult)
 		{
 			if (!LoadResult.Result.Key)
 			{
-				UE_LOG(LogUBF, Warning, TEXT("Failed to load parsing catalog from %s"), *CatalogPath);
+				UE_LOG(LogUBF, Warning, TEXT("Failed to load parsing catalog from %s"), *ConvertedPath);
 				return;
 			}
 			
 			TMap<FString, UBF::FCatalogElement> CatalogMap;
-			CatalogUtils::ParseCatalog(LoadResult.Result.Value, CatalogMap);
-			UE_LOG(LogUBF, Verbose, TEXT("Adding parsing catalog from %s"), *CatalogPath);
+			const auto RelativePath = UseRelativePath ? FPaths::GetPath(ConvertedPath) : "";
+			CatalogUtils::ParseCatalog(LoadResult.Result.Value, CatalogMap, RelativePath);
+			UE_LOG(LogUBF, Verbose, TEXT("Adding catalog from %s"), *ConvertedPath);
 			
 			UGlobalArtifactProviderSubsystem::Get(WorldContextObject)->RegisterCatalogs(CatalogMap);
 		});

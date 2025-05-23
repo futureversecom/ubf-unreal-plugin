@@ -29,7 +29,7 @@ public:
 	static UUBFBindingObject* CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value);
 
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-	static void RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath);
+	static void RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath, const bool UseRelativePath);
 	
 	UFUNCTION(BlueprintCallable)
 	static void ExecuteBlueprint(UUBFRuntimeController* RuntimeController, const FString& BlueprintId,
