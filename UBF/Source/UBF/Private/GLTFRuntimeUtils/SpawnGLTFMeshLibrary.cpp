@@ -17,10 +17,25 @@ AActor* USpawnGLTFMeshLibrary::SpawnMesh(UObject* WorldContext, UglTFRuntimeAsse
 				
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-						
+	
+	FglTFRuntimeSkeletalMeshConfig SkeletalMeshConfig = MeshConfig.SkeletalMeshConfig;
+	
+	FRichCurve LODCurve = *MeshConfig.LODCurve.GetRichCurveConst();
+	if (MeshConfig.LODCurve.ExternalCurve != nullptr)
+	{
+		LODCurve = MeshConfig.LODCurve.ExternalCurve.Get()->FloatCurve;
+	}
+	
+	TMap<int32, float> LODScreenSize;
+	for (auto CurveKey : LODCurve.Keys)
+	{
+		LODScreenSize.Add(CurveKey.Time, CurveKey.Value);
+	}
+	SkeletalMeshConfig.LODScreenSize = LODScreenSize;
+	
 	AglTFRuntimeAssetActor* SpawnedActor = World->SpawnActorDeferred<AglTFRuntimeAssetActor>(AglTFRuntimeAssetActor::StaticClass(), FTransform::Identity);
 	SpawnedActor->Asset = Asset;
-	SpawnedActor->SkeletalMeshConfig = MeshConfig.SkeletalMeshConfig;
+	SpawnedActor->SkeletalMeshConfig = SkeletalMeshConfig;
 							
 	if (!SpawnedActor->SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.IsBound())
 	{
@@ -62,6 +77,19 @@ UStreamableRenderAsset* USpawnGLTFMeshLibrary::LoadMeshLOD(const FglTFRuntimeLOD
 		{
 			SkeletalMeshConfig.SkeletonConfig.BoneRemapper.Remapper.BindDynamic(NewObject<UBoneRemapperUtil>(), &UBoneRemapperUtil::RemapFormatBoneName);
 		}
+		
+		FRichCurve LODCurve = *MeshConfig.LODCurve.GetRichCurveConst();
+		if (MeshConfig.LODCurve.ExternalCurve != nullptr)
+		{
+			LODCurve = MeshConfig.LODCurve.ExternalCurve.Get()->FloatCurve;
+		}
+		
+		TMap<int32, float> LODScreenSize;
+		for (auto CurveKey : LODCurve.Keys)
+		{
+			LODScreenSize.Add(CurveKey.Time, CurveKey.Value);
+		}
+		SkeletalMeshConfig.LODScreenSize = LODScreenSize;
 		
 		USkeletalMesh* Mesh = LODData.ParsingAsset->LoadSkeletalMeshFromRuntimeLODs(LODData.LODs, 0, SkeletalMeshConfig);
 

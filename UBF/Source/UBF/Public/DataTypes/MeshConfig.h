@@ -21,6 +21,10 @@ struct UBF_API FMeshConfigData
 
 	UPROPERTY(EditAnywhere)
 	bool bLoadAnimation = false;
+
+	// Gets applied to SkeletalMeshConfig, Time will get used as Key
+	UPROPERTY(EditAnywhere)
+	FRuntimeFloatCurve LODCurve;
 };
 
 namespace UBF
