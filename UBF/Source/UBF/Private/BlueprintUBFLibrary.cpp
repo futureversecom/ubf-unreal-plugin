@@ -24,7 +24,7 @@ UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<co
 	
 	ExecutionSetConfig->GetExecutionInstance(RootId).Next([ExecutionSetConfig, ExecutionSetData, SetResult](const FLoadExecutionInstanceResult& Result)
 	{
-		if (!Result.Result.Key)
+		if (!Result.bSuccess)
 		{
 			auto OnCompleteFunc = ExecutionSetData->GetOnComplete();
 			SetResult->SetResults(false, FUBFExecutionReport::Failure());
@@ -32,7 +32,7 @@ UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<co
 			return;
 		}
 		
-		TSharedPtr<FExecutionInstance> ExecutionInstance = Result.Result.Value;
+		TSharedPtr<FExecutionInstance> ExecutionInstance = Result.Value;
 		
 		SetResult->SetGraphHandle(ExecutionInstance->GetGraphHandleRef());
 		

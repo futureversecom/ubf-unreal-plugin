@@ -173,14 +173,14 @@ namespace UBF
 					return;
 				}
 					
-				if (!TextureResult.Result.Key)
+				if (!TextureResult.bSuccess)
 				{
 					UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture download failed"));
 					Promise->SetValue(false);
 					return;
 				}
 				
-				UTexture* Texture = TextureResult.Result.Value;
+				UTexture* Texture = TextureResult.Value;
 				if (Texture == nullptr)
 				{
 					UBF_LOG(Verbose, TEXT("[ApplyMaterial] Applying Texture Property failed because Texture was null"));

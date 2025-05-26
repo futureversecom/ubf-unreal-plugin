@@ -81,7 +81,7 @@ namespace APIUtils
 		return true;
 	}
 	
-	static TFuture<UBF::FLoadDataArrayResult> LoadDataFromURI(const FString& Path, const FString& Hash, TSharedPtr<ICacheLoader> CacheLoader = nullptr)
+	static TFuture<UBF::FLoadDataArrayResult> LoadDataFromURI(const FString& Path)
 	{
 		TSharedPtr<TPromise<UBF::FLoadDataArrayResult>> Promise = MakeShareable(new TPromise<UBF::FLoadDataArrayResult>());
 		TFuture<UBF::FLoadDataArrayResult> Future = Promise->GetFuture();
@@ -89,46 +89,31 @@ namespace APIUtils
 		TArray<uint8> CachedData;
 
 		FString TrimmedPath = Path.TrimStartAndEnd();
-		
-		if (CacheLoader != nullptr && CacheLoader->TryGetCachedBytes(TrimmedPath, Hash, CachedData))
-		{
-			UE_LOG(LogUBF, VeryVerbose, TEXT("Loaded data from cached bytes : %s"), *TrimmedPath);
-			
-			UBF::FLoadDataArrayResult CacheLoadResult;
-			CacheLoadResult.Result = TPair<bool, TArray<uint8>>(true, CachedData);
-			Promise->SetValue(CacheLoadResult);
-			return Future;
-		}
-		
+
 		if (TrimmedPath.StartsWith(TEXT("http")))
 		{
-			MakeDownloadRequest(TrimmedPath).Next([Promise, TrimmedPath, Hash, CacheLoader](const TSharedPtr<IHttpResponse>& Response)
+			MakeDownloadRequest(TrimmedPath).Next([Promise, TrimmedPath](const TSharedPtr<IHttpResponse>& Response)
 			{
 				UBF::FLoadDataArrayResult LoadResult;
-				TArray<uint8> Data;
+				TSharedPtr<TArray<uint8>> Data = MakeShared<TArray<uint8>>();
 				
 				if (Response.IsValid() && Response->GetResponseCode() == EHttpResponseCodes::Ok)
 				{
-					Data = Response->GetContent();
-					if (CacheLoader != nullptr)
-					{
-						CacheLoader->CacheBytes(TrimmedPath, Hash, Data);
-					}
+					*Data = Response->GetContent();
 
-					LoadResult.Result = TPair<bool, TArray<uint8>>(true, Data);
+					LoadResult.bSuccess = true;
+					LoadResult.Value = Data;
 					Promise->SetValue(LoadResult);
 				}
 				else if (Response.IsValid())
 				{
 					FString ErrorMessage = GetDescription(static_cast<EHttpResponseCodes::Type>(Response->GetResponseCode())).ToString();
 					UE_LOG(LogUBF, Error, TEXT("Failed to download with URL: %s Message: %s"), *TrimmedPath, *ErrorMessage);
-					LoadResult.Result = TPair<bool, TArray<uint8>>(false, Data);
 					Promise->SetValue(LoadResult);
 				}
 				else
 				{
 					UE_LOG(LogUBF, Error, TEXT("Invalid Response from URL: %s"), *TrimmedPath);
-					LoadResult.Result = TPair<bool, TArray<uint8>>(false, Data);
 					Promise->SetValue(LoadResult);
 				}
 			});
@@ -137,68 +122,39 @@ namespace APIUtils
 		{
 			// path is local
 			UBF::FLoadDataArrayResult LoadResult;
-			TArray<uint8> Data;
+			TSharedPtr<TArray<uint8>> Data = MakeShared<TArray<uint8>>();
 			
-			bool WasSuccessful = LoadLocalFileToData(TrimmedPath, Data);
+			bool WasSuccessful = LoadLocalFileToData(TrimmedPath, *Data);
 			if (!WasSuccessful)
 			{
 				UE_LOG(LogUBF, Error, TEXT("Failed to load file to data from path: %s"), *TrimmedPath);
 			}
-			
-			if (WasSuccessful && CacheLoader != nullptr)
-			{
-				CacheLoader->CacheBytes(TrimmedPath, Hash, Data);
-			}
 
-			LoadResult.Result = TPair<bool, TArray<uint8>>(WasSuccessful, Data);
+			LoadResult.bSuccess = WasSuccessful;
+			LoadResult.Value = Data;
 			Promise->SetValue(LoadResult);
 		}
 		
 		return Future;
 	}
 
-	static TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& Path, const FString& Hash, TSharedPtr<ICacheLoader> CacheLoader = nullptr)
+	static TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& Path)
 	{
 		TSharedPtr<TPromise<UBF::FLoadStringResult>> Promise = MakeShareable(new TPromise<UBF::FLoadStringResult>());
 		TFuture<UBF::FLoadStringResult> Future = Promise->GetFuture();
 		
-		TArray<uint8> CachedData;
-		if (CacheLoader != nullptr && CacheLoader->TryGetCachedBytes(Path, Hash, CachedData))
-		{
-			// Convert TArray<uint8> (UTF-8) back to FString
-			FString LoadedString = FString(StringCast<TCHAR>(reinterpret_cast<const char*>(CachedData.GetData())));
-			UE_LOG(LogUBF, VeryVerbose, TEXT("Loaded string from cached bytes : %s"), *LoadedString);
-	
-			UBF::FLoadStringResult CacheLoadResult;
-			CacheLoadResult.Result = TPair<bool, FString>(true, LoadedString);
-			Promise->SetValue(CacheLoadResult);
-			return Future;
-		}
-		
 		if (Path.StartsWith(TEXT("http")))
 		{
-			MakeDownloadRequest(Path).Next([Promise, Path, Hash, CacheLoader](const TSharedPtr<IHttpResponse>& Response)
+			MakeDownloadRequest(Path).Next([Promise, Path](const TSharedPtr<IHttpResponse>& Response)
 			{
 				UBF::FLoadStringResult LoadResult;
 				FString LoadedString;
 				if (Response.IsValid() && Response->GetResponseCode() == EHttpResponseCodes::Ok)
 				{
 					LoadedString = Response->GetContentAsString();
-				
-					if (CacheLoader != nullptr)
-					{
-						// Convert FString to UTF-8 encoded TArray<uint8>
-						TArray<uint8> Data;
-						const auto UTF8String = StringCast<UTF8CHAR>(*LoadedString);
-						Data.Append(reinterpret_cast<const uint8*>(UTF8String.Get()), UTF8String.Length());
-							
-						// Append a null-terminator to ensure the UTF-8 string is properly terminated
-						Data.Add(0);
-							
-						CacheLoader->CacheBytes(Path, Hash, Data);
-					}
 
-					LoadResult.Result = TPair<bool, FString>(true, LoadedString);
+					LoadResult.bSuccess = true;
+					LoadResult.Value = LoadedString;
 					Promise->SetValue(LoadResult);
 
 				}
@@ -206,13 +162,11 @@ namespace APIUtils
 				{
 					FString ErrorMessage = GetDescription(static_cast<EHttpResponseCodes::Type>(Response->GetResponseCode())).ToString();
 					UE_LOG(LogUBF, Error, TEXT("Failed to download with URL: %s Message: %s"), *Path, *ErrorMessage);
-					LoadResult.Result = TPair<bool, FString>(false, LoadedString);
 					Promise->SetValue(LoadResult);
 				}
 				else
 				{
 					UE_LOG(LogUBF, Error, TEXT("Invalid Response from URL: %s"), *Path);
-					LoadResult.Result = TPair<bool, FString>(false, LoadedString);
 					Promise->SetValue(LoadResult);
 				}
 			});
@@ -228,21 +182,10 @@ namespace APIUtils
 			{
 				UE_LOG(LogUBF, Error, TEXT("Failed to load file to string from path: %s"), *Path);
 			}
-			
-			if (WasSuccessful && CacheLoader != nullptr)
-			{
-				// Convert FString to UTF-8 encoded TArray<uint8>
-				TArray<uint8> Data;
-				const auto UTF8String = StringCast<UTF8CHAR>(*LoadedString);
-				Data.Append(reinterpret_cast<const uint8*>(UTF8String.Get()), UTF8String.Length());
-				
-				// Append a null-terminator to ensure the UTF-8 string is properly terminated
-				Data.Add(0);
-				
-				CacheLoader->CacheBytes(Path, Hash, Data);
-			}
 
-			LoadResult.Result = TPair<bool, FString>(WasSuccessful, LoadedString);
+			LoadResult.Value = LoadedString;
+			LoadResult.bSuccess = WasSuccessful;
+			
 			Promise->SetValue(LoadResult);
 		}
 		

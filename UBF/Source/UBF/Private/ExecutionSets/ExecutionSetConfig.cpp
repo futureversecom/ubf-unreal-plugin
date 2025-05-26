@@ -30,7 +30,8 @@ namespace UBF
 		if (ExecutionInstances.Contains(Id))
 		{
 			FLoadExecutionInstanceResult LoadResult;
-			LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(true,  ExecutionInstances[Id]);
+			LoadResult.bSuccess = true;
+			LoadResult.Value = ExecutionInstances[Id];
 			Promise->SetValue(LoadResult);
 			return Future;
 		}
@@ -43,17 +44,17 @@ namespace UBF
 			{
 				FLoadExecutionInstanceResult LoadResult;
 
-				if (!LoadGraphResult.Result.Key)
+				if (!LoadGraphResult.bSuccess)
 				{
-					LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(false, nullptr);
+					LoadResult.SetFailure();
 					Promise->SetValue(LoadResult);
 					return;
 				}
 
-				TSharedPtr<FExecutionInstance> ExecutionInstance = MakeShared<FExecutionInstance>(Id, LoadGraphResult.Result.Value);
+				TSharedPtr<FExecutionInstance> ExecutionInstance = MakeShared<FExecutionInstance>(Id, LoadGraphResult.Value);
 				ExecutionInstance->SetInputs(InstanceData.GetInputs());
 			
-				LoadResult.Result = TPair<bool,TSharedPtr<FExecutionInstance>>(true,ExecutionInstance);
+				LoadResult.SetResult(ExecutionInstance);
 				Promise->SetValue(LoadResult);
 			});
 			return Future;
@@ -64,14 +65,14 @@ namespace UBF
 		{
 			FLoadExecutionInstanceResult LoadResult;
 
-			if (!LoadGraphResult.Result.Key)
+			if (!LoadGraphResult.bSuccess)
 			{
-				LoadResult.Result = TPair<bool, TSharedPtr<FExecutionInstance>>(false, nullptr);
+				LoadResult.SetFailure();
 				Promise->SetValue(LoadResult);
 				return;
 			}
 			
-			LoadResult.Result = TPair<bool, TSharedPtr<FExecutionInstance>>(true, MakeShared<FExecutionInstance>(Id, LoadGraphResult.Result.Value));
+			LoadResult.SetResult(MakeShared<FExecutionInstance>(Id, LoadGraphResult.Value));
 			Promise->SetValue(LoadResult);
 		});
 

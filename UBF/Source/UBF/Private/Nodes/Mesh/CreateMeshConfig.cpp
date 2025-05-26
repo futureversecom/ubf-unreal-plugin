@@ -47,9 +47,9 @@ void UBF::FCreateMeshConfig::ExecuteAsync() const
 	{
 		FMeshConfigData MutableMeshConfig = MeshConfigData;
 		
-		if (Result.Result.Key)
+		if (Result.bSuccess)
 		{
-			MutableMeshConfig.SkeletalMeshConfig.Skeleton = Result.Result.Value->LoadSkeleton(0, MeshConfigData.SkeletalMeshConfig.SkeletonConfig);
+			MutableMeshConfig.SkeletalMeshConfig.Skeleton = Result.Value->LoadSkeleton(0, MeshConfigData.SkeletalMeshConfig.SkeletonConfig);
 			MutableMeshConfig.SkeletalMeshConfig.bOverwriteRefSkeleton = true;
 		}
 		

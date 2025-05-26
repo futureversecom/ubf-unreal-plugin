@@ -52,13 +52,19 @@ SourceArt/**/*.tga
 # Builds
 Build/*
 
-# Don't ignore compiled binaries
+# Ignore everything under Binaries/
+Binaries/**
+
+# Re-allow all folders (needed for specific file allow rules to work)
 !Binaries/
-!Binaries/Win64/
+!Binaries/**/
+  
+# Allow specific files
 !Binaries/Win64/ubf_interpreter.dll
 !Binaries/Win64/ubf_interpreter.lib
-!Binaries/Mac/
 !Binaries/Mac/libubf_interpreter.dylib
+
+
 !Source/UBF/Lib/ubf_interpreter.dll
 !Source/UBF/Lib/ubf_interpreter.lib
 

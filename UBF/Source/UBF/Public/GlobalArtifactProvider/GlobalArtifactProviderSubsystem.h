@@ -11,6 +11,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GlobalArtifactProviderSubsystem.generated.h"
 
+class UURIResolverBase;
 class ICacheLoader;
 /**
  * 
@@ -35,8 +36,14 @@ public:
 
 	void RegisterCatalog(const UBF::FCatalogElement& CatalogElement);
 	void RegisterCatalogs(const TMap<FString, UBF::FCatalogElement>& CatalogMap);
-private:
 
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+private:
+	TFuture<UBF::FLoadDataArrayResult> LoadDataFromURI(const FString& TypeID, const FString& URI, const FString& Hash, const TSharedPtr<ICacheLoader>& Cache) const;
+	TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& TypeID, const FString& URI, const FString& Hash, const TSharedPtr<ICacheLoader>& Cache);
+	
+	UURIResolverBase* GetResolverForURI(const FString& URI) const;
+	
 	TMap<FString, TWeakObjectPtr<UTexture2D>> LoadedTexturesMap;
 	TMap<FString, UBF::FCachedMesh> LoadedMeshesMap;
 	
@@ -44,4 +51,7 @@ private:
 
 	TSharedPtr<ICacheLoader> GraphCacheLoader;
 	TSharedPtr<ICacheLoader> ResourceCacheLoader;
+
+	UPROPERTY()
+	TArray<UURIResolverBase*> Resolvers;
 };
