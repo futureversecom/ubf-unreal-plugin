@@ -146,8 +146,6 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 	TSharedPtr<TPromise<UBF::FLoadMeshResult>> Promise = MakeShareable(new TPromise<UBF::FLoadMeshResult>());
 	TFuture<UBF::FLoadMeshResult> Future = Promise->GetFuture();
 	
-	
-	
 	if (!Catalog.Contains(ArtifactId))
 	{
 		UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource UBF doesn't have a ResourceId %s entry."), *ArtifactId);
@@ -165,7 +163,6 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 		Promise->SetValue(LoadResult);
 		return Future;
 	}
-	
 	
 	LoadDataFromURI(TEXT("Mesh"),ResourceManifestElement.Uri, ResourceManifestElement.Hash, ResourceCacheLoader)
 	.Next([this, Promise, ImportSettings, ArtifactId, Uri](const UBF::FLoadDataArrayResult& DataResult)
@@ -192,7 +189,7 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 		if (LoadedMeshesMap.Contains(Uri) && LoadedMeshesMap[Uri].ContainsMesh(ImportSettings))
 		{
 			Asset = LoadedMeshesMap[Uri].GetMesh(ImportSettings);
-			UE_LOG(LogUBF, VeryVerbose, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Found Cached Mesh for %s"), *Uri);
+			UE_LOG(LogUBF, Verbose, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Found Cached Mesh for %s"), *Uri);
 		}
 		else
 		{
@@ -234,13 +231,12 @@ TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODRes
 	TArray<TFuture<UBF::FLoadMeshResult>> MeshFutures;
 	for (const FMeshResource& MeshResource : MeshResources)
 	{
-		MeshFutures.Add(GetMeshResource(MeshResource.ArtifactID, UBF::FMeshImportSettings(MeshConfigData.RuntimeConfig)));
+		MeshFutures.Add(GetMeshResource(MeshResource.RawArtifactID, UBF::FMeshImportSettings(MeshConfigData.RuntimeConfig)));
 	}
 
 	WaitAll(MeshFutures).Next([this, Promise, MeshConfigData, MeshResources](const TArray<UBF::FLoadMeshResult>& Results)
 	{
 		TArray<FglTFRuntimeMeshLOD> LODs;
-		LODs.SetNum(Results.Num());
 
 		for (int i = 0; i < Results.Num(); i++)
 		{
@@ -253,22 +249,26 @@ TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODRes
 			}
 
 			FglTFRuntimeMeshLOD& Ref = LODs.AddDefaulted_GetRef();
-			USpawnGLTFMeshLibrary::LoadAssetAsLOD(Results[i].Value, MeshResources[i].MeshName, Ref);
+			if (!USpawnGLTFMeshLibrary::LoadAssetAsLOD(Results[i].Value, MeshResources[i].MeshName, Ref))
+			{
+				UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Failed to Load Asset As LOD for %s"), *MeshResources[i].MeshName);
+				UBF::FLoadMeshLODResult LoadMeshLODResult;
+				Promise->SetValue(LoadMeshLODResult);
+				return;
+			}
 		}
 		
 		// temp solution till we figure out how to do this properly
-		if (Results.IsEmpty())
+		UStreamableRenderAsset* Asset = USpawnGLTFMeshLibrary::LoadMeshLOD(FglTFRuntimeLODData(Results.Last().Value, LODs), MeshConfigData);
+
+		UBF::FLoadMeshLODResult LoadMeshLODResult;
+		if (!Asset)
 		{
-			UBF::FLoadMeshLODResult LoadMeshLODResult;
 			Promise->SetValue(LoadMeshLODResult);
 		}
 		else
 		{
-			const FglTFRuntimeLODData LODData(Results[0].Value, LODs);
-			UStreamableRenderAsset* Asset = USpawnGLTFMeshLibrary::LoadMeshLOD(LODData, MeshConfigData);
-			UBF::FLoadMeshLODResult LoadMeshLODResult;
 			LoadMeshLODResult.SetResult(Asset);
-			
 			Promise->SetValue(LoadMeshLODResult);
 			// Handle Asset
 		}

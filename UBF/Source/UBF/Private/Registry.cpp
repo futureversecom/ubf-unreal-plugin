@@ -97,7 +97,8 @@ namespace UBF
 		Registry.Register<FSGFurPropertiesNode>("SGFurProperties");
 		Registry.Register<FSGFurCardPropertiesNode>("SGFurCardProperties");
 		Registry.Register<FSpawnMeshNode>("SpawnMesh");
-		Registry.Register<FSpawnMeshNode>("SpawnModelFromLODs");
+		Registry.Register<FSpawnMeshNode>("SpawnModel");
+		Registry.Register<FSpawnMeshNode>("SpawnModelWithLODs");
 		Registry.Register<FSetTextureSettingsNode>("SetTextureSettings");
 		Registry.Register<FSetBlendshapeNode>("SetBlendshape");
 		Registry.Register<FBindMeshes>("BindMeshes");

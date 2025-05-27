@@ -4,16 +4,17 @@ class FMeshResource
 {
 public:
 	FMeshResource() {}
-	FMeshResource(const FString& ResourceID) : ArtifactID(ResourceID)
+	FMeshResource(const FString& ResourceID) : RawArtifactID(ResourceID)
 	{
 		// Id can either be in <id> or <id>/<mesh-name> formats
-		if (ArtifactID.Contains(TEXT("/")))
+		if (RawArtifactID.Contains(TEXT("/")))
 		{
-			ArtifactID.Split(TEXT("/"), &ArtifactID, &MeshName);
+			RawArtifactID.Split(TEXT("/"), &ArtifactID, &MeshName);
 		}
 	}
 	FMeshResource(const FString& ResourceID, const FString& MeshName) : ArtifactID(ResourceID), MeshName(MeshName) {}
-	
+
+	FString RawArtifactID;
 	FString ArtifactID;
 	FString MeshName;
 };

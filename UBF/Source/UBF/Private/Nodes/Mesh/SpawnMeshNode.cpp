@@ -34,11 +34,15 @@ namespace UBF
 			for (auto ID : RawMeshes)
 			{
 				Meshes.Add(FMeshResource(ID));
+				UBF_LOG(Verbose, TEXT("[SpawnMesh] found MeshResource with ID %s"), *ID);
 			}
 			bUsesMeshes = true;
 		}
-		
-		UBF_LOG(Verbose, TEXT("[SpawnMesh] found Resource with ID %s"), *ResourceID);
+
+		if (!bUsesMeshes)
+		{
+			UBF_LOG(Verbose, TEXT("[SpawnMesh] found Resource with ID %s"), *ResourceID);
+		}
 
 		FSceneNode* ParentInput = nullptr;
 		if (!TryReadInput("Parent", ParentInput))
@@ -63,11 +67,11 @@ namespace UBF
 		
 		if (bUsesMeshes)
 		{
-			GetContext().GetSetConfig()->GetMeshLOD(Meshes, MeshConfigData).Next([this, ResourceID, MeshConfigData, ParentInput](const FLoadMeshLODResult Result)
+			GetContext().GetSetConfig()->GetMeshLOD(Meshes, MeshConfigData).Next([this, MeshConfigData, ParentInput](const FLoadMeshLODResult Result)
 			{
 				if (!Result.bSuccess)
 				{
-					UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load mesh %s"), *ResourceID);
+					UBF_LOG(Error, TEXT("[SpawnMesh] Failed to load lod mesh"));
 					HandleFailureFinish();
 					return;
 				}
@@ -82,7 +86,7 @@ namespace UBF
 			
 				if (!Mesh)
 				{
-					UBF_LOG(Error, TEXT("[SpawnMesh] MeshAsset invalid %s"), *ResourceID);
+					UBF_LOG(Error, TEXT("[SpawnMesh] LOD MeshAsset invalid"));
 					HandleFailureFinish();
 					return;
 				}

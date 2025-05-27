@@ -113,10 +113,19 @@ bool USpawnGLTFMeshLibrary::LoadAssetAsLOD(UglTFRuntimeAsset* Asset, const FStri
 		if (Node.Name.Equals(MeshName))
 		{
 			MeshIndex = Node.MeshIndex;
+			UE_LOG(LogUBF, Verbose, TEXT("[LoadAssetAsLOD] Found Matching Node: %s with MeshName: %s MeshIndex: %d"), *Node.Name, *MeshName, MeshIndex);
+		}
+		else
+		{
+			if (Node.Name.Contains(MeshName))
+			{
+				MeshIndex = Node.MeshIndex;
+				UE_LOG(LogUBF, Verbose, TEXT("[LoadAssetAsLOD] Found Matching Node: %s with MeshName: %s MeshIndex: %d"), *Node.Name, *MeshName, MeshIndex);
+			}
 		}
 	}
 	FglTFRuntimeMaterialsConfig MaterialsConfig;
-	return  Asset->LoadMeshAsRuntimeLOD(MeshIndex, OutLOD, MaterialsConfig);
+	return Asset->LoadMeshAsRuntimeLOD(MeshIndex, OutLOD, MaterialsConfig);
 }
 
 AActor* USpawnGLTFMeshLibrary::SpawnLODMesh(UObject* WorldContext,  UStreamableRenderAsset* LODMesh)
