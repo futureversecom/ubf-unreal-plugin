@@ -27,7 +27,7 @@ void UUBFRuntimeController::ExecuteBlueprint(FString RootID, const FBlueprintExe
 		this->OnComplete(Success);
 
 		/* fixes race condition from UBF::Execute finishing instantly */
-		if (!LastSetHandle.GetResult().IsValid())
+		if (!LastSetHandle.IsValid() || !LastSetHandle.GetResult().IsValid())
 		{
 			LastSetHandle = UBF::FExecutionSetHandle(nullptr, ExecutionSetResult);
 		}
@@ -108,6 +108,8 @@ void UUBFRuntimeController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UUBFRuntimeController::SetUBFActorsHidden(bool bIsHidden)
 {
+	if (!IsValid(RootComponent)) return;
+	
 	RootComponent->SetVisibility(!bIsHidden);
 
 	for (AActor* Actor : GetSpawnedActors())
@@ -127,6 +129,8 @@ void UUBFRuntimeController::OnComplete(bool bWasSuccessful)
 TArray<AActor*> UUBFRuntimeController::GetSpawnedActors() const
 {
 	TArray<AActor*> ChildActors;
+	if (!IsValid(RootComponent)) return ChildActors;
+	
 	for (const auto AttachChild : RootComponent->GetAttachChildren())
 	{
 		if (AttachChild->GetOwner() != RootComponent->GetOwner())

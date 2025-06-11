@@ -25,6 +25,7 @@ namespace UBF
 		if (!ExecutionSetConfig->GetRoot().IsValid() || !IsValid(ExecutionSetConfig->GetRoot()->GetAttachmentComponent()))
 		{
 			UE_LOG(LogUBF, Verbose, TEXT("FGraphHandle::Execute Root is invalid, aborting execution"));
+			OnComplete(false, FUBFExecutionReport::Failure());
 			return;
 		}
 		
