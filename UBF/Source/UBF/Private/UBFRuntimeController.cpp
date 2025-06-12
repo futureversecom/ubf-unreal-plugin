@@ -22,17 +22,31 @@ void UUBFRuntimeController::ExecuteBlueprint(FString RootID, const FBlueprintExe
 	if (bStartWithUBFActorsHidden)
 		SetUBFActorsHidden(true);
 
-	auto OnCompleteFunc = [OnComplete, this](bool Success, TSharedPtr<UBF::FExecutionSetResult> ExecutionSetResult)
+	TWeakObjectPtr WeakThis(this);
+	auto OnCompleteFunc = [OnComplete, WeakThis](bool Success, TSharedPtr<UBF::FExecutionSetResult> ExecutionSetResult)
 	{
-		this->OnComplete(Success);
-
-		/* fixes race condition from UBF::Execute finishing instantly */
-		if (!LastSetHandle.IsValid() || !LastSetHandle.GetResult().IsValid())
+		if (!WeakThis.IsValid())
 		{
-			LastSetHandle = UBF::FExecutionSetHandle(nullptr, ExecutionSetResult);
+			OnComplete.ExecuteIfBound(false, ExecutionSetResult->GetExecutionReport());
+			return;
 		}
-		
-		OnComplete.ExecuteIfBound(Success, ExecutionSetResult->GetExecutionReport());
+
+		UUBFRuntimeController* StrongThis = WeakThis.Get();
+		if (IsValid(StrongThis))
+		{
+			StrongThis->OnComplete(Success);
+
+			/* fixes race condition from UBF::Execute finishing instantly */
+			if (!StrongThis->LastSetHandle.GetResult().IsValid())
+			{
+				StrongThis->LastSetHandle = UBF::FExecutionSetHandle(nullptr, ExecutionSetResult);
+			}
+			OnComplete.ExecuteIfBound(Success, ExecutionSetResult->GetExecutionReport());
+		}
+		else
+		{
+			OnComplete.ExecuteIfBound(false, ExecutionSetResult->GetExecutionReport());
+		}
 	};
 
 	TSharedPtr<UBF::FExecutionSetData> ExecutionSetData = MakeShared<UBF::FExecutionSetData>(MakeShared<UBF::FSceneNode>(RootComponent), ExecutionData.BlueprintInstances, MoveTemp(OnCompleteFunc));
