@@ -10,11 +10,13 @@
 /**
  * 
  */
-UCLASS(Config=Game, defaultconfig, meta = (DisplayName = "Global Artifact Provider"))
+UCLASS(Config=Engine, defaultconfig, meta = (DisplayName = "Global Artifact Provider"))
 class UBF_API UGlobalArtifactProviderSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 public:
+	UGlobalArtifactProviderSettings();
+	
 	UPROPERTY(EditAnywhere, Config, meta=(MetaClass="/Script/UBF.URIResolverBase"))
 	TArray<FSoftClassPath> URIResolvers {FSoftClassPath(TEXT("/Script/UBF.DefaultURIResolver"))};
 };

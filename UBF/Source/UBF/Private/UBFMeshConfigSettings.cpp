@@ -3,6 +3,11 @@
 
 #include "UBFMeshConfigSettings.h"
 
+UUBFMeshConfigSettings::UUBFMeshConfigSettings()
+{
+	CategoryName = TEXT("Plugins");
+}
+
 FMeshConfigData UUBFMeshConfigSettings::GetMeshConfigData(const FString& ResourceID) const
 {
 	// Check direct match first for efficiency

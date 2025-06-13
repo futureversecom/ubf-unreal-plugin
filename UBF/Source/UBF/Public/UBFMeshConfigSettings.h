@@ -15,6 +15,8 @@ class UBF_API UUBFMeshConfigSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 public:
+	UUBFMeshConfigSettings();
+	
 	FMeshConfigData GetMeshConfigData(const FString& ResourceID) const;
 	FMeshConfigData GetMeshConfigData() const;
 

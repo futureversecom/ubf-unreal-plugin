@@ -2,3 +2,8 @@
 
 
 #include "GlobalArtifactProvider/GlobalArtifactProviderSettings.h"
+
+UGlobalArtifactProviderSettings::UGlobalArtifactProviderSettings()
+{
+	CategoryName = TEXT("Plugins");
+}
