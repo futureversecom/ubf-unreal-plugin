@@ -36,10 +36,10 @@ UBF::FExecutionSetHandle UBF::Execute(const FString& RootId, const TSharedPtr<co
 		
 		SetResult->SetGraphHandle(ExecutionInstance->GetGraphHandleRef());
 		
-		auto OnCompleteFunc = ExecutionSetData->GetOnComplete();
 		// TODO refactor how FUBFExecutionReport gets returned, we should do something to do with FExecutionSetResult
-		auto OnComplete = [SetResult, ExecutionSetConfig, OnCompleteFunc](bool bSuccess, FUBFExecutionReport ExecutionReport)
+		auto OnComplete = [SetResult, ExecutionSetConfig, ExecutionSetData](bool bSuccess, FUBFExecutionReport ExecutionReport)
 		{
+			auto OnCompleteFunc = ExecutionSetData->GetOnComplete();
 			SetResult->SetResults(bSuccess, ExecutionReport);
 			OnCompleteFunc(bSuccess, SetResult);
 		};
