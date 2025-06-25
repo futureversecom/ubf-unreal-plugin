@@ -17,6 +17,8 @@ namespace UBF
 	UBF_API FExecutionSetHandle Execute(const FString& RootId, const TSharedPtr<const IExecutionSetData>& ExecutionSetData);
 }
 
+DECLARE_DYNAMIC_DELEGATE(FOnRegisterCatalogComplete);
+
 /**
  * 
  */
@@ -29,7 +31,7 @@ public:
 	static UUBFBindingObject* CreateNewInputBindingObject(const FString& Id, const FString& Type, const FString& Value);
 
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-	static void RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath, const bool UseRelativePath);
+	static void RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath, const bool UseRelativePath, FOnRegisterCatalogComplete OnComplete);
 	
 	UFUNCTION(BlueprintCallable)
 	static void ExecuteBlueprint(UUBFRuntimeController* RuntimeController, const FString& BlueprintId,

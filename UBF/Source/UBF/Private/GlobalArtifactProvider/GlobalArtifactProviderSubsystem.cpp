@@ -277,6 +277,22 @@ TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODRes
 	return Future;
 }
 
+void UGlobalArtifactProviderSubsystem::GetAllLoadedBlueprintIDs(TArray<FString>& Ids) const
+{
+	Ids.Reset();
+	
+	for (const auto& Element : Catalog)
+	{
+		if (Element.Value.Type == TEXT("Blueprint"))
+			Ids.Add(Element.Value.Id);
+	}
+}
+
+UBF::FCatalogElement UGlobalArtifactProviderSubsystem::GetCatalogInfo(const FString& ArtifactId) const
+{
+	return Catalog.FindRef(ArtifactId);
+}
+
 void UGlobalArtifactProviderSubsystem::PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString)
 {
 	if (!Catalog.Contains(ArtifactId))

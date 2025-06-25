@@ -6,6 +6,7 @@ namespace CatalogUtils
 {
 	const FString ResourcesField = TEXT("resources");
 	const FString IdField = TEXT("id");
+	const FString TypeField = TEXT("type");
 	const FString UriField = TEXT("uri");
 	const FString HashField = TEXT("hash");
 	
@@ -44,6 +45,7 @@ namespace CatalogUtils
 				}
 				UBF::FCatalogElement CatalogElement;
 				CatalogElement.Id = ResourceObject->GetStringField(IdField);
+				CatalogElement.Type = ResourceObject->GetStringField(TypeField);
 				FString Uri = ResourceObject->GetStringField(UriField);
 				
 				if (!RelativePath.IsEmpty())

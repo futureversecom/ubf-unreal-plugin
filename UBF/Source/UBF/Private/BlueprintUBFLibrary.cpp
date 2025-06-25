@@ -59,11 +59,12 @@ UUBFBindingObject* UBlueprintUBFLibrary::CreateNewInputBindingObject(const FStri
 	return UBFUtils::CreateNewInputBindingObject(Id, Type, Value);
 }
 
-void UBlueprintUBFLibrary::RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath, const bool UseRelativePath)
+void UBlueprintUBFLibrary::RegisterCatalogs(const UObject* WorldContextObject, const FString& CatalogPath,
+	const bool UseRelativePath, FOnRegisterCatalogComplete OnComplete)
 {
 	FString ConvertedPath = CatalogPath.Replace(TEXT("\\"), TEXT("/"));
 	FDownloadRequestManager::GetInstance()->LoadStringFromURI(TEXT("Catalog"), ConvertedPath)
-		.Next([WorldContextObject, ConvertedPath, UseRelativePath](const UBF::FLoadStringResult& LoadResult)
+		.Next([WorldContextObject, ConvertedPath, UseRelativePath, OnComplete](const UBF::FLoadStringResult& LoadResult)
 		{
 			if (!LoadResult.bSuccess)
 			{
@@ -74,9 +75,12 @@ void UBlueprintUBFLibrary::RegisterCatalogs(const UObject* WorldContextObject, c
 			TMap<FString, UBF::FCatalogElement> CatalogMap;
 			const auto RelativePath = UseRelativePath ? FPaths::GetPath(ConvertedPath) : "";
 			CatalogUtils::ParseCatalog(LoadResult.Value, CatalogMap, RelativePath);
-			UE_LOG(LogUBF, Verbose, TEXT("Adding catalog from %s"), *ConvertedPath);
+			UE_LOG(LogUBF, Verbose, TEXT("Adding catalog from Path: %s"), *ConvertedPath);
 			
 			UGlobalArtifactProviderSubsystem::Get(WorldContextObject)->RegisterCatalogs(CatalogMap);
+
+			if (OnComplete.IsBound())
+				OnComplete.Execute();
 		});
 }
 

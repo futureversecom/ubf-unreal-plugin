@@ -31,6 +31,10 @@ public:
 
 	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& ArtifactId, const UBF::FMeshImportSettings& ImportSettings);
 	virtual TFuture<UBF::FLoadMeshLODResult> GetMeshLODResource(const TArray<FMeshResource>& MeshResources, const FMeshConfigData& MeshConfigData);
+
+	UFUNCTION(BlueprintCallable)
+	void GetAllLoadedBlueprintIDs(TArray<FString>& BlueprintIds) const;
+	UBF::FCatalogElement GetCatalogInfo(const FString& ArtifactId) const;
 	
 	virtual void PrintBlueprintDebug(const FString& ArtifactId, const FString& ContextString);
 
