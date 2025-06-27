@@ -48,7 +48,7 @@ namespace CatalogUtils
 				CatalogElement.Type = ResourceObject->GetStringField(TypeField);
 				FString Uri = ResourceObject->GetStringField(UriField);
 				
-				if (!RelativePath.IsEmpty())
+				if (!RelativePath.IsEmpty() && Uri.StartsWith(TEXT("./")))
 				{
 					// studio generates the catalogs in {./path} format
 					FString LeftString;
