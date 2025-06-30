@@ -47,6 +47,8 @@ private:
 	TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& TypeID, const FString& URI, const FString& Hash, const TSharedPtr<ICacheLoader>& Cache);
 	
 	UURIResolverBase* GetResolverForURI(const FString& URI) const;
+
+	void ClearFromUnrealCaches(const UBF::FCatalogElement& CatalogElement);
 	
 	TMap<FString, TWeakObjectPtr<UTexture2D>> LoadedTexturesMap;
 	TMap<FString, UBF::FCachedMesh> LoadedMeshesMap;

@@ -315,10 +315,19 @@ void UGlobalArtifactProviderSubsystem::RegisterCatalog(const UBF::FCatalogElemen
 {
 	if (Catalog.Contains(CatalogElement.Id))
 	{
-		// If we are just registering the same catalog element again its ok
-		// TODO maybe use new hash?
-		if (Catalog[CatalogElement.Id].EqualWithoutHash(CatalogElement))
+		// If it matches with has just ignore
+		if (Catalog[CatalogElement.Id] == CatalogElement)
+		{
 			return;
+		}
+		
+		// If we are just registering the same catalog element again its ok
+		if (Catalog[CatalogElement.Id].EqualWithoutHash(CatalogElement))
+		{
+			ClearFromUnrealCaches(Catalog[CatalogElement.Id]);
+			Catalog[CatalogElement.Id] = CatalogElement;
+			return;
+		}
 
 		UE_LOG(LogUBF, Warning, TEXT("[APIGraphProvider] Catalog Id Collision Detected. Existing entry: %s New Entry: %s"),
 			*Catalog[CatalogElement.Id].ToString(), *CatalogElement.ToString());
@@ -431,4 +440,10 @@ UURIResolverBase* UGlobalArtifactProviderSubsystem::GetResolverForURI(const FStr
 	}
 
 	return nullptr;
+}
+
+void UGlobalArtifactProviderSubsystem::ClearFromUnrealCaches(const UBF::FCatalogElement& CatalogElement)
+{
+	LoadedTexturesMap.Remove(CatalogElement.Id);
+	LoadedMeshesMap.Remove(CatalogElement.Id);
 }

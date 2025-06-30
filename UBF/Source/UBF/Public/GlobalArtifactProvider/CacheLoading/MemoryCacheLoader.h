@@ -9,30 +9,31 @@ class UBF_API FMemoryCacheLoader final : public ICacheLoader
 public:
 	virtual void CacheBytes(const FString& Uri, const FString& Hash, const TArray<uint8>& Bytes) override
 	{
-		if (CachedBytesMap.Contains(Uri))
-		{
-			CachedBytesMap[Uri] = Bytes;
-		}
-		else
-		{
-			CachedBytesMap.Add(Uri, Bytes);
-		}
-
-		UE_LOG(LogUBF, VeryVerbose, TEXT("FMemoryCacheLoader::CacheBytes Successfully cached bytes for %s"), *Uri);
+		CachedBytesMap.Add(Uri, FCacheEntry{ Hash, Bytes });
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FMemoryCacheLoader::CacheBytes Cached bytes for %s with hash %s"), *Uri, *Hash);
 	}
-	
+
 	virtual bool TryGetCachedBytes(const FString& Uri, const FString& Hash, TArray<uint8>& CachedBytes) const override
 	{
-		if (CachedBytesMap.Contains(Uri))
+		const FCacheEntry* Entry = CachedBytesMap.Find(Uri);
+		if (Entry && Entry->Hash == Hash)
 		{
-			CachedBytes = CachedBytesMap[Uri];
-			UE_LOG(LogUBF, VeryVerbose, TEXT("FMemoryCacheLoader::TryGetCachedBytes Cache exists for %s"), *Uri);
+			CachedBytes = Entry->Bytes;
+			UE_LOG(LogUBF, VeryVerbose, TEXT("FMemoryCacheLoader::TryGetCachedBytes Cache hit for %s with matching hash %s"), *Uri, *Hash);
 			return true;
 		}
-		UE_LOG(LogUBF, VeryVerbose, TEXT("FMemoryCacheLoader::TryGetCachedBytes Cache doesn't exist for %s"), *Uri);
+
+		UE_LOG(LogUBF, VeryVerbose, TEXT("FMemoryCacheLoader::TryGetCachedBytes Cache miss or hash mismatch for %s (requested hash: %s)"), *Uri, *Hash);
 		return false;
 	}
-	
+
 private:
-	TMap<FString, TArray<uint8>> CachedBytesMap;
+	struct FCacheEntry
+	{
+		FString Hash;
+		TArray<uint8> Bytes;
+	};
+
+	TMap<FString, FCacheEntry> CachedBytesMap;
 };
+
