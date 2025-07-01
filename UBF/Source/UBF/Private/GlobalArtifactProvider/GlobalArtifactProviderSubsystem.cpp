@@ -326,6 +326,7 @@ void UGlobalArtifactProviderSubsystem::RegisterCatalog(const UBF::FCatalogElemen
 		{
 			ClearFromUnrealCaches(Catalog[CatalogElement.Id]);
 			Catalog[CatalogElement.Id] = CatalogElement;
+			OnCatalogElementChanged.Broadcast(CatalogElement.Id);
 			return;
 		}
 

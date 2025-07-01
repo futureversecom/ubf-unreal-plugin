@@ -13,6 +13,9 @@
 
 class UURIResolverBase;
 class ICacheLoader;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCatalogElementChanged, const FString&, Id);
+
 /**
  * 
  */
@@ -42,6 +45,9 @@ public:
 	void RegisterCatalogs(const TMap<FString, UBF::FCatalogElement>& CatalogMap);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCatalogElementChanged OnCatalogElementChanged;
 private:
 	TFuture<UBF::FLoadDataArrayResult> LoadDataFromURI(const FString& TypeID, const FString& URI, const FString& Hash, const TSharedPtr<ICacheLoader>& Cache) const;
 	TFuture<UBF::FLoadStringResult> LoadStringFromURI(const FString& TypeID, const FString& URI, const FString& Hash, const TSharedPtr<ICacheLoader>& Cache);
