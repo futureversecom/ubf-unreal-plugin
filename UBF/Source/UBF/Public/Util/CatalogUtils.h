@@ -45,7 +45,10 @@ namespace CatalogUtils
 				}
 				UBF::FCatalogElement CatalogElement;
 				CatalogElement.Id = ResourceObject->GetStringField(IdField);
-				CatalogElement.Type = ResourceObject->GetStringField(TypeField);
+				
+				FString Type;
+				ResourceObject->TryGetStringField(TypeField, Type);
+				CatalogElement.Type = Type;
 				FString Uri = ResourceObject->GetStringField(UriField);
 				
 				if (!RelativePath.IsEmpty() && Uri.StartsWith(TEXT("./")))
