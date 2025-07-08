@@ -14,7 +14,7 @@ class UglTFRuntimeAsset;
 namespace UBF
 {
 	template<typename T>
-	struct UBF_API TLoadResult
+	struct UBF_API TUBFLoadResult
 	{
 		bool bSuccess = false;
 		T Value;
@@ -31,21 +31,21 @@ namespace UBF
 		}
 	};
 	
-	struct UBF_API FLoadGraphResult final : TLoadResult<FGraphHandle> {};
+	struct UBF_API FLoadGraphResult final : TUBFLoadResult<FGraphHandle> {};
 	
-	struct UBF_API FLoadExecutionInstanceResult final : TLoadResult<TSharedPtr<FExecutionInstance>> {};
+	struct UBF_API FLoadExecutionInstanceResult final : TUBFLoadResult<TSharedPtr<FExecutionInstance>> {};
 	
-	struct UBF_API FLoadTextureResult final : TLoadResult<UTexture*> {};
+	struct UBF_API FLoadTextureResult final : TUBFLoadResult<UTexture*> {};
 
-	struct UBF_API FLoadMeshResult final : TLoadResult<UglTFRuntimeAsset*> {};
+	struct UBF_API FLoadMeshResult final : TUBFLoadResult<UglTFRuntimeAsset*> {};
 	
-	struct UBF_API FLoadMeshLODResult final : TLoadResult<UStreamableRenderAsset*> {};
+	struct UBF_API FLoadMeshLODResult final : TUBFLoadResult<UStreamableRenderAsset*> {};
 	
-	struct UBF_API FLoadStringResult final : TLoadResult<FString> {};
+	struct UBF_API FLoadStringResult final : TUBFLoadResult<FString> {};
 	
-	struct UBF_API FLoadDataArrayResult final : TLoadResult<TSharedPtr<TArray<uint8>>> {};
+	struct UBF_API FLoadDataArrayResult final : TUBFLoadResult<TSharedPtr<TArray<uint8>>> {};
 
-	template struct TLoadResult<TSharedPtr<TArray<uint8>>>;
+	template struct TUBFLoadResult<TSharedPtr<TArray<uint8>>>;
 }
 
 class UBF_API IGraphProvider
