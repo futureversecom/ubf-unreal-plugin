@@ -36,7 +36,10 @@ constexpr static const ScopeID ROOT_SCOPE = 0;
 
 extern "C" {
 
-GraphInstance *graph_load(NodeRegistry *registry, const uint16_t *json, int32_t json_len);
+GraphInstance *graph_load(NodeRegistry *registry,
+                          const uint16_t *json,
+                          int32_t json_len,
+                          void (*on_log)(int32_t, const uint8_t*, int32_t));
 
 bool graph_version(GraphInstance *graph, const uint16_t **out_ptr, uintptr_t *out_len);
 
@@ -65,7 +68,8 @@ ArcExecutionContext *graph_execute(GraphInstance *graph,
                                                             int32_t,
                                                             ScopeID,
                                                             Dynamic*),
-                                   void (*on_node_start)(const uint8_t*, int32_t, ScopeID, Dynamic*));
+                                   void (*on_node_start)(const uint8_t*, int32_t, ScopeID, Dynamic*),
+                                   void (*on_log)(int32_t, const uint8_t*, int32_t, Dynamic*));
 
 /// Free graph
 void graph_release(GraphInstance *graph);
@@ -198,10 +202,6 @@ extern void _UnityPluginUnload();
 
 extern void _log(const char *msg);
 
-extern void _log_warn(const char *msg);
-
-extern void _log_error(const char *msg);
-
 /// This function is called when the plugin is loaded.
 ///
 /// note: For reasons the C symbol is not exported after building; hence the
@@ -214,7 +214,7 @@ void UnityPluginLoad(void *ptr);
 /// wrapper function to forward the call.
 void UnityPluginUnload();
 
-void init_ue_logger(void (*log)(const char *msg));
+void init_ue_logger(void (*log)(uintptr_t lvl, const char *msg, ArcExecutionContext *ctx));
 
 } // extern "C"
 
