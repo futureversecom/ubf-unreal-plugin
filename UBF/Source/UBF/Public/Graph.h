@@ -140,8 +140,10 @@ namespace UBF
 		static void OnGraphComplete(FFI::Dynamic*);
 		static void OnNodeStart(const uint8_t*, int32_t, FFI::ScopeID, FFI::Dynamic*);
 		static void OnNodeComplete(const uint8_t*, int32_t, FFI::ScopeID, FFI::Dynamic*);
+		static void OnExecuteGraphLog(const int32_t, const uint8_t*, int32_t, FFI::Dynamic*);
 		
 		static bool Load(const FRegistryHandle& Registry, const FString &Json, FGraphHandle& Graph);
+		static void OnGraphLoadLog(const int32_t, const uint8_t*, int32_t);
 
 		void GetOutputs(TArray<FBindingInfo>& Outputs) const;
 		void GetInputs(TArray<FBindingInfo>& Inputs) const;

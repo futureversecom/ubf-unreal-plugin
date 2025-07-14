@@ -59,7 +59,8 @@ namespace UBF
 			BlueprintId.Len(),
 			&FGraphHandle::OnGraphComplete,
 			&FGraphHandle::OnNodeComplete,
-			&FGraphHandle::OnNodeStart
+			&FGraphHandle::OnNodeStart,
+			&FGraphHandle::OnExecuteGraphLog
 		));
 
 		Handle = TempHandle;
@@ -103,6 +104,12 @@ namespace UBF
 		}
 	}
 
+	void FGraphHandle::OnExecuteGraphLog(const int32_t UBFLogLevel, const uint8_t* Message, int32_t MessageLength, FFI::Dynamic* Context)
+	{
+		// todo: make use of context
+		OnGraphLoadLog(UBFLogLevel, Message, MessageLength);
+	}
+
 	void FGraphHandle::OnNodeStart(const uint8_t* NodeIdPtr, int32_t NodeIdLen, FFI::ScopeID ScopeID, FFI::Dynamic* RawUserData)
 	{
 		UE_LOG(LogUBF, VeryVerbose, TEXT("FGraphHandle::OnNodeStart"));
@@ -126,7 +133,8 @@ namespace UBF
 	{
 		const uint16_t* RawJson = TCHAR_TO_UTF16(*Json);
 		const int32_t RawJsonLen = TCString<uint16_t>::Strlen(RawJson); // omit '\0'
-		FFI::GraphInstance* RustPtr = CALL_RUST_FUNC(graph_load)(Registry.GetRustPtr(), RawJson, RawJsonLen);
+		FFI::GraphInstance* RustPtr = CALL_RUST_FUNC(graph_load)
+		(Registry.GetRustPtr(), RawJson, RawJsonLen, &FGraphHandle::OnGraphLoadLog);
 		if (RustPtr == nullptr)
 		{
 			UE_LOG(LogUBF, Error, TEXT("Failed to parse Graph JSON %s"), *Json);
@@ -135,6 +143,23 @@ namespace UBF
 		
 		Graph = FGraphHandle(RustPtr);
 		return true;
+	}
+
+	void FGraphHandle::OnGraphLoadLog(const int32_t UBFLogLevel, const uint8_t* Message, int32_t MessageLength)
+	{
+		FString MessageString = UBFUtils::FromBytesToString(Message, MessageLength);
+		switch (UBFLogLevel)
+		{
+			case 1:
+				UE_LOG(LogUBF, Warning, TEXT("[NativeLog] %s"), *MessageString);
+				break;
+			case 2:
+				UE_LOG(LogUBF, Error, TEXT("[NativeLog] %s"), *MessageString);
+				break;
+			default:
+				UE_LOG(LogUBF, VeryVerbose, TEXT("[NativeLog] %s"), *MessageString);
+				break;
+		}
 	}
 
 	void FGraphHandle::GetOutputs(TArray<FBindingInfo>& Outputs) const

@@ -8,38 +8,25 @@
 #include "ubf_interpreter.h"
 #include "Interfaces/IPluginManager.h"
 
-static void UELogCallback(const char* Bytes)
+static void UELogCallback(const uintptr_t UBFLogLevel, const char *Bytes, UBF::FFI::ArcExecutionContext* Context)
 {
+	// todo: make use of context
+	
 	const size_t n = strlen(Bytes);
 	const FString Str = FString(n, Bytes);
-
-	// Convert the FString to lowercase for case-insensitive comparison
-	FString LowerStr = Str.ToLower();
-
-	// Determine log level based on keywords
-	ELogVerbosity::Type LogLevelToUse = ELogVerbosity::VeryVerbose;
-
-	if (LowerStr.Contains(TEXT("fail")) || LowerStr.Contains(TEXT("error")))
-	{
-		LogLevelToUse = ELogVerbosity::Error;
-	}
-	else if (LowerStr.Contains(TEXT("warn")))
-	{
-		LogLevelToUse = ELogVerbosity::Warning;
-	}
-
+	
 	// Log with the determined log level
-	switch (LogLevelToUse)
+	switch (UBFLogLevel)
 	{
-	case ELogVerbosity::Error:
-		UE_LOG(LogUBF, Error, TEXT("[NativeLog] %s"), *Str);
-		break;
-	case ELogVerbosity::Warning:
-		UE_LOG(LogUBF, Warning, TEXT("[NativeLog] %s"), *Str);
-		break;
-	default:
-		UE_LOG(LogUBF, VeryVerbose, TEXT("[NativeLog] %s"), *Str);
-		break;
+		case 1:
+			UE_LOG(LogUBF, Warning, TEXT("[NativeLog] %s"), *Str);
+			break;
+		case 2:
+			UE_LOG(LogUBF, Error, TEXT("[NativeLog] %s"), *Str);
+			break;
+		default:
+			UE_LOG(LogUBF, VeryVerbose, TEXT("[NativeLog] %s"), *Str);
+			break;
 	}
 }
 
