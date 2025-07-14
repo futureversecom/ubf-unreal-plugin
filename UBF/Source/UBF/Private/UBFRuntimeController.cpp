@@ -22,7 +22,7 @@ void UUBFRuntimeController::ExecuteBlueprint(FString RootID, const FBlueprintExe
 	if (bStartWithUBFActorsHidden)
 		SetUBFActorsHidden(true);
 
-	TWeakObjectPtr WeakThis(this);
+	TWeakObjectPtr<UUBFRuntimeController> WeakThis(this);
 	auto OnCompleteFunc = [OnComplete, WeakThis](bool Success, TSharedPtr<UBF::FExecutionSetResult> ExecutionSetResult)
 	{
 		if (!WeakThis.IsValid())
