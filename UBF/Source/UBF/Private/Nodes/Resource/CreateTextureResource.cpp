@@ -40,7 +40,7 @@ namespace UBF
 		CatalogElement.Id = URI;
 		CatalogElement.Uri = URI;
 		CatalogElement.Type = TEXT("texture");
-		CatalogElement.Hash = URI;
+		CatalogElement.Hash = FMD5::HashAnsiString(*URI);
 		CatalogElement.MetadataJsonWrapper = SettingsJsonObjectWrapper;
 
 		UBF_LOG(Verbose, TEXT("[CreateTextureResource] Registering Runtime Catalog: %s"), *CatalogElement.ToString());

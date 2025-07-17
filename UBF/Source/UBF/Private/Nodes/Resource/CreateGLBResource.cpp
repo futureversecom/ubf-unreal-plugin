@@ -29,7 +29,7 @@ namespace UBF
 		CatalogElement.Id = FString::Printf(TEXT("%s_%s"), *URI, *Settings.MeshIdentifier);
 		CatalogElement.Uri = URI;
 		CatalogElement.Type = TEXT("glb");
-		CatalogElement.Hash = URI;
+		CatalogElement.Hash = FMD5::HashAnsiString(*URI);
 		CatalogElement.MetadataJsonWrapper = SettingsJsonObjectWrapper;
 
 		UBF_LOG(Verbose, TEXT("[CreateGLBResource] Registering Runtime Catalog: %s"), *CatalogElement.ToString());
