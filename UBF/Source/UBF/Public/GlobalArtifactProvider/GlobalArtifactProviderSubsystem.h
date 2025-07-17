@@ -7,7 +7,6 @@
 #include "CatalogElement.h"
 #include "GraphProvider.h"
 #include "DataTypes/MeshConfig.h"
-#include "DataTypes/MeshResource.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GlobalArtifactProviderSubsystem.generated.h"
 
