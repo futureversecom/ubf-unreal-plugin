@@ -15,9 +15,11 @@ namespace UBF
 		
 		virtual TFuture<FLoadExecutionInstanceResult> GetExecutionInstance(const FString& Id) override;
 		virtual TFuture<FLoadMeshResult> GetMesh(const FString& ArtifactId, const FMeshImportSettings& MeshImportSettings) override;
-		virtual TFuture<FLoadMeshLODResult> GetMeshLOD(const TArray<FMeshResource>& ArtifactId,
+		virtual TFuture<FLoadMeshLODResult> GetMeshLOD(const TArray<FString>& ArtifactIds,
 			const FMeshConfigData& MeshConfigData) override;
 		virtual TFuture<FLoadTextureResult> GetTexture(const FString& ArtifactId) override;
+		virtual void RegisterRuntimeCatalog(const FCatalogElement& CatalogElement) override; 
+		
 		virtual TSharedPtr<FSceneNode> GetRoot() override;
 		virtual TSharedPtr<FUBFLogData> GetLogData() override;
 		virtual bool GetCancelExecution() override;

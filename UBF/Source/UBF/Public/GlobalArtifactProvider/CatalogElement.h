@@ -2,6 +2,7 @@
 
 
 #pragma once
+#include "JsonObjectWrapper.h"
 
 namespace UBF
 {
@@ -22,19 +23,20 @@ namespace UBF
 		{
 			return Id == Other.Id &&
 				   Type == Other.Type &&
-				   Uri == Other.Uri;
+				   Uri == Other.Uri &&
+				   MetadataJsonWrapper.JsonString == Other.MetadataJsonWrapper.JsonString;
 		}
-
-		// ToString method
+		
 		FString ToString() const
 		{
-			return FString::Printf(TEXT("Id: %s, Type: %s, Uri: %s, Hash: %s"),
-								   *Id, *Type, *Uri, *Hash);
+			return FString::Printf(TEXT("Id: %s, Type: %s, Uri: %s, Hash: %s, Metadata: %s"),
+				*Id, *Type, *Uri, *Hash, *MetadataJsonWrapper.JsonString);
 		}
 	
 		FString Id;
 		FString Type;
 		FString Uri;
 		FString Hash;
+		FJsonObjectWrapper MetadataJsonWrapper; 
 	};
 }

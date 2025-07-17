@@ -62,7 +62,8 @@ public class UBF : ModuleRules
 				"HTTP",
 				"Json",
 				"DeveloperSettings", 
-				"Projects"
+				"Projects",
+				"JsonUtilities"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

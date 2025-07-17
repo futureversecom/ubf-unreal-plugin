@@ -155,6 +155,6 @@ namespace UBF
 		mutable FGraphVersion CachedVersion;
 	};
 
-	static FGraphVersion MinSupportedGraphVersion = FGraphVersion(TEXT("0.0.0"));
-	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("0.3.0"));
+	static FGraphVersion MinSupportedGraphVersion = FGraphVersion(TEXT("0.2.0"));
+	static FGraphVersion MaxSupportedGraphVersion = FGraphVersion(TEXT("1.0.0"));
 }

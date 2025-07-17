@@ -18,22 +18,20 @@ namespace UBF
 		UBF_LOG(Verbose, TEXT("[SpawnMesh] Executing Node"));
 		
 		FString ResourceID;
-		TArray<FMeshResource> Meshes;
+		TArray<FString> Meshes;
 		bool bUsesMeshes = false;
 		
 		if (!TryReadInputValue("Resource", ResourceID))
 		{
-			TArray<FString> RawMeshes;
-			if (!TryReadInputValueArray("Meshes", RawMeshes))
+			if (!TryReadInputValueArray("Meshes", Meshes))
 			{
 				UBF_LOG(Warning, TEXT("[SpawnMesh] failed to get Resource or Meshes input"));
 				HandleFailureFinish();
 				return;
 			}
 
-			for (auto ID : RawMeshes)
+			for (auto ID : Meshes)
 			{
-				Meshes.Add(FMeshResource(ID));
 				UBF_LOG(Verbose, TEXT("[SpawnMesh] found MeshResource with ID %s"), *ID);
 			}
 			bUsesMeshes = true;
@@ -67,7 +65,7 @@ namespace UBF
 		
 		if (bUsesMeshes)
 		{
-			GetContext().GetSetConfig()->GetMeshLOD(Meshes, MeshConfigData).Next([this, MeshConfigData, ParentInput](const FLoadMeshLODResult Result)
+			GetContext().GetSetConfig()->GetMeshLOD(Meshes, MeshConfigData).Next([this, ParentInput](const FLoadMeshLODResult Result)
 			{
 				if (!Result.bSuccess)
 				{

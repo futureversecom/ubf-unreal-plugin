@@ -5,11 +5,13 @@
 
 #include "glTFRuntimeAsset.h"
 #include "ImageUtils.h"
+#include "JsonObjectConverter.h"
 #include "Registry.h"
 #include "GlobalArtifactProvider/DownloadRequestManager.h"
 #include "GlobalArtifactProvider/GlobalArtifactProviderSettings.h"
 #include "GlobalArtifactProvider/CacheLoading/TempCacheLoader.h"
 #include "GlobalArtifactProvider/CacheLoading/MemoryCacheLoader.h"
+#include "GlobalArtifactProvider/ImportSettings/MeshArtifactImportSettings.h"
 #include "GLTFRuntimeUtils/SpawnGLTFMeshLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Util/FutureUtils.h"
@@ -220,7 +222,7 @@ TFuture<UBF::FLoadMeshResult> UGlobalArtifactProviderSubsystem::GetMeshResource(
 }
 
 TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODResource(
-	const TArray<FMeshResource>& MeshResources, const FMeshConfigData& MeshConfigData)
+	const TArray<FString>& ArtifactIds, const FMeshConfigData& MeshConfigData)
 {
 	// TODO cache end results
 	
@@ -229,13 +231,28 @@ TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODRes
 	
 	// Load all mesh resources
 	TArray<TFuture<UBF::FLoadMeshResult>> MeshFutures;
-	for (const FMeshResource& MeshResource : MeshResources)
+	TArray<FString> MeshIds;
+	for (const FString& ArtifactId : ArtifactIds)
 	{
-		MeshFutures.Add(GetMeshResource(MeshResource.RawArtifactID, UBF::FMeshImportSettings(MeshConfigData.RuntimeConfig)));
+		MeshFutures.Add(GetMeshResource(ArtifactId, UBF::FMeshImportSettings(MeshConfigData.RuntimeConfig)));
+		
+		if (Catalog.Contains(ArtifactId))
+		{
+			const auto MeshArtifact = Catalog[ArtifactId];
+			if (!MeshArtifact.MetadataJsonWrapper.JsonString.IsEmpty())
+			{
+				FMeshArtifactImportSettings MeshArtifactImportSettings;
+				FJsonObjectConverter::JsonObjectStringToUStruct(MeshArtifact.MetadataJsonWrapper.JsonString, &MeshArtifactImportSettings);
+				MeshIds.Add(MeshArtifactImportSettings.MeshIdentifier);
+				UE_LOG(LogUBF, Verbose, TEXT("UGlobalArtifactProviderSubsystem::GetMeshLODResource Found MeshId metadata %s."), *MeshArtifactImportSettings.MeshIdentifier);
+			}
+		}
 	}
-
-	WaitAll(MeshFutures).Next([this, Promise, MeshConfigData, MeshResources](const TArray<UBF::FLoadMeshResult>& Results)
+	
+	WaitAll(MeshFutures).Next([this, Promise, MeshConfigData, MeshIds](const TArray<UBF::FLoadMeshResult>& Results)
 	{
+		ensure(MeshIds.Num() == Results.Num());
+		
 		TArray<FglTFRuntimeMeshLOD> LODs;
 
 		for (int i = 0; i < Results.Num(); i++)
@@ -249,9 +266,9 @@ TFuture<UBF::FLoadMeshLODResult> UGlobalArtifactProviderSubsystem::GetMeshLODRes
 			}
 
 			FglTFRuntimeMeshLOD& Ref = LODs.AddDefaulted_GetRef();
-			if (!USpawnGLTFMeshLibrary::LoadAssetAsLOD(Results[i].Value, MeshResources[i].MeshName, Ref))
+			if (!USpawnGLTFMeshLibrary::LoadAssetAsLOD(Results[i].Value, MeshIds[i], Ref))
 			{
-				UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Failed to Load Asset As LOD for %s"), *MeshResources[i].MeshName);
+				UE_LOG(LogUBF, Error, TEXT("UGlobalArtifactProviderSubsystem::GetMeshResource Failed to Load Asset As LOD for %s"), *MeshIds[i]);
 				UBF::FLoadMeshLODResult LoadMeshLODResult;
 				Promise->SetValue(LoadMeshLODResult);
 				return;
@@ -283,7 +300,7 @@ void UGlobalArtifactProviderSubsystem::GetAllLoadedBlueprintIDs(TArray<FString>&
 	
 	for (const auto& Element : Catalog)
 	{
-		if (Element.Value.Type == TEXT("Blueprint"))
+		if (Element.Value.Type.ToLower() == TEXT("blueprint"))
 			Ids.Add(Element.Value.Id);
 	}
 }

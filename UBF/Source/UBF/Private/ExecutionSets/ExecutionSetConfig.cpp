@@ -84,15 +84,20 @@ namespace UBF
 		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetMeshResource(ArtifactId, MeshImportSettings);
 	}
 
-	TFuture<FLoadMeshLODResult> FExecutionSetConfig::GetMeshLOD(const TArray<FMeshResource>& ArtifactId,
+	TFuture<FLoadMeshLODResult> FExecutionSetConfig::GetMeshLOD(const TArray<FString>& ArtifactIds,
 		const FMeshConfigData& MeshConfigData)
 	{
-		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetMeshLODResource(ArtifactId, MeshConfigData);
+		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetMeshLODResource(ArtifactIds, MeshConfigData);
 	}
 
 	TFuture<FLoadTextureResult> FExecutionSetConfig::GetTexture(const FString& ArtifactId)
 	{
 		return UGlobalArtifactProviderSubsystem::Get(GetWorld())->GetTextureResource(ArtifactId);
+	}
+
+	void FExecutionSetConfig::RegisterRuntimeCatalog(const FCatalogElement& CatalogElement)
+	{
+		UGlobalArtifactProviderSubsystem::Get(GetWorld())->RegisterCatalog(CatalogElement);
 	}
 
 	TSharedPtr<FSceneNode> FExecutionSetConfig::GetRoot()

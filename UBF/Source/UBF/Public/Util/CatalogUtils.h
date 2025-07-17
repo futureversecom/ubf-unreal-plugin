@@ -9,6 +9,7 @@ namespace CatalogUtils
 	const FString TypeField = TEXT("type");
 	const FString UriField = TEXT("uri");
 	const FString HashField = TEXT("hash");
+	const FString MetadataField = TEXT("metadata");
 	
 	inline void ParseCatalog(const FString& Json, TMap<FString, UBF::FCatalogElement>& CatalogElementMap, const FString& RelativePath = "")
 	{
@@ -49,8 +50,8 @@ namespace CatalogUtils
 				FString Type;
 				ResourceObject->TryGetStringField(TypeField, Type);
 				CatalogElement.Type = Type;
-				FString Uri = ResourceObject->GetStringField(UriField);
 				
+				FString Uri = ResourceObject->GetStringField(UriField);
 				if (!RelativePath.IsEmpty() && Uri.StartsWith(TEXT("./")))
 				{
 					// studio generates the catalogs in {./path} format
@@ -59,13 +60,22 @@ namespace CatalogUtils
 					Uri.Split(".", &LeftString, &NewPath, ESearchCase::Type::IgnoreCase);
 					Uri = RelativePath + NewPath;
 				}
+
+				FJsonObjectWrapper MetadataJsonWrapper;
+				FString MetadataJson;
+				if (const TSharedPtr<FJsonObject>* MetadataObject; ResourceObject->TryGetObjectField(MetadataField, MetadataObject))
+				{
+					const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&MetadataJson);
+					FJsonSerializer::Serialize(MetadataObject->ToSharedRef(), Writer);
+				}
+				MetadataJsonWrapper.JsonString = MetadataJson;
+				CatalogElement.MetadataJsonWrapper = MetadataJsonWrapper;
 				
 				CatalogElement.Uri = Uri;
 				CatalogElement.Hash = ResourceObject->GetStringField(HashField);
 				CatalogElementMap.Add(CatalogElement.Id, CatalogElement);
 				UE_LOG(LogUBF, VeryVerbose, TEXT("AssetProfileUtils::ParseCatalog "
-					"Added CatalogElement %s: %s %s: %s %s: %s"),
-					*IdField, *CatalogElement.Id, *UriField, *CatalogElement.Uri, *HashField, *CatalogElement.Hash);
+					"Added CatalogElement: %s"),  *CatalogElement.ToString());
 			}
 		}
 	}

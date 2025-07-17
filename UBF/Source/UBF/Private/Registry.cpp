@@ -30,6 +30,10 @@
 #include "Nodes/Mesh/BindMeshes.h"
 #include "Nodes/Mesh/CreateMeshConfig.h"
 #include "Nodes/Mesh/SpawnMeshNode.h"
+#include "Nodes/Resource/CreateBlueprintResource.h"
+#include "Nodes/Resource/CreateGLBResource.h"
+#include "Nodes/Resource/CreateMeshResource.h"
+#include "Nodes/Resource/CreateTextureResource.h"
 
 namespace UBF
 {
@@ -113,6 +117,10 @@ namespace UBF
 		Registry.Register<FMakeFurMaterial>("MakeFurMaterial");
 		Registry.Register<FMakeHairMaterial>("MakeHairMaterial");
 		Registry.Register<FMakeSkinMaterial>("MakeSkinMaterial");
+		Registry.Register<FCreateTextureResource>("CreateTextureResource");
+		Registry.Register<FCreateBlueprintResource>("CreateBlueprintResource");
+		Registry.Register<FCreateMeshResource>("CreateMeshResource");
+		Registry.Register<FCreateGLBResource>("CreateGLBResource");
 		
 		return Registry;
 	}

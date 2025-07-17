@@ -33,7 +33,7 @@ public:
 	virtual TFuture<UBF::FLoadTextureResult> GetTextureResource(const FString& ArtifactId);
 
 	virtual TFuture<UBF::FLoadMeshResult> GetMeshResource(const FString& ArtifactId, const UBF::FMeshImportSettings& ImportSettings);
-	virtual TFuture<UBF::FLoadMeshLODResult> GetMeshLODResource(const TArray<FMeshResource>& MeshResources, const FMeshConfigData& MeshConfigData);
+	virtual TFuture<UBF::FLoadMeshLODResult> GetMeshLODResource(const TArray<FString>& ArtifactIds, const FMeshConfigData& MeshConfigData);
 
 	UFUNCTION(BlueprintCallable)
 	void GetAllLoadedBlueprintIDs(TArray<FString>& BlueprintIds) const;
