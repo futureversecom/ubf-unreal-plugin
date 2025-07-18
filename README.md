@@ -8,7 +8,13 @@ This SDK provides a runtime interpreter for the **Universal Blueprint Framework 
 
 ## Installation
 
-Download latest release and extract the zip into your unreal project's plugin folder.
+Requires unreal engine 5.3 and above c++ project.
+
+1. Download latest release
+2. Find or create the 'Plugins' folder in your unreal engine project
+3. Extract the zip into the plugins folder.
+4. Compile or Build your unreal engine project.
+5. Open your project and enable the 'UBF' plugin in the plugins tab of the unreal editor.
 
 ## Overview
 
