@@ -52,6 +52,10 @@
 #define MAX_BONE_INFLUENCE_WEIGHT 0xff
 #endif
 
+#if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 5
+#include "PhysicsEngine/SkeletalBodySetup.h"
+#endif
+
 struct FglTFRuntimeSkeletalMeshContextFinalizer
 {
 	TSharedRef<FglTFRuntimeSkeletalMeshContext, ESPMode::ThreadSafe> SkeletalMeshContext;
