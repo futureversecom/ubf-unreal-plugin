@@ -42,9 +42,13 @@ These concerns fall outside the Interpreter’s scope and can be handled by the 
 
 ## Using The Interpreter
 
-Below is a small sample script to show how you can use the UBF Interpreter in your project. If you are unfamiliar with the terms Blueprint and Catalog, it is recommended to read the [UBF Standard](https://ubfstandard.com/) first and then return to this.
+Under UBF plugins content folder see Levels/LocalBlueprintDemo to see the interpreter in action.
 
-// TODO c++ example
+This is driven by UI/W_SimpleBlueprintTestUI which simply registers catalogs selected from file explorer and lets you run any blueprint from a loaded catalog.
 
-// TODO Blueprints example
+<img width="666" height="187" alt="image" src="https://github.com/user-attachments/assets/4a716646-c0c0-4a53-8b8d-6e35ea64379e" />
+
+<img width="776" height="379" alt="image" src="https://github.com/user-attachments/assets/4dc35b8d-054f-4941-861f-7bc39b10eb53" />
+
+
 
