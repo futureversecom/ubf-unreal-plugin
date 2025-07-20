@@ -22,9 +22,9 @@ namespace UBF
 		bool EqualWithoutHash(const FCatalogElement& Other) const
 		{
 			return Id == Other.Id &&
-				   Type == Other.Type &&
-				   Uri == Other.Uri &&
-				   MetadataJsonWrapper.JsonString == Other.MetadataJsonWrapper.JsonString;
+				   Uri == Other.Uri;
+				   //Type == Other.Type &&
+				  // MetadataJsonWrapper.JsonString == Other.MetadataJsonWrapper.JsonString;
 		}
 		
 		FString ToString() const
