@@ -21,10 +21,17 @@ namespace UBF
 
 		bool EqualWithoutHash(const FCatalogElement& Other) const
 		{
+			// legacy catalog elements have either empty or unknown as the value for type
+			if (Type.IsEmpty() || Type.ToLower().Equals("unknown")
+				|| (Other.Type.IsEmpty() || Other.Type.ToLower().Equals("unknown")))
+			{
+				return Id == Other.Id &&
+					   Uri == Other.Uri;
+			}
+			
 			return Id == Other.Id &&
-				   Uri == Other.Uri;
-				   //Type == Other.Type &&
-				  // MetadataJsonWrapper.JsonString == Other.MetadataJsonWrapper.JsonString;
+					Type == Other.Type &&
+					Uri == Other.Uri;
 		}
 		
 		FString ToString() const
